@@ -28,16 +28,44 @@ Objectif : survivre, combattre des créatures marines et découvrir des trésors
 
 ```
 GROUPE-02/
-├── identifiants.txt
-├── README.md
-├── PROGRESSION.md
-├── code/
-│   ├── Makefile
-│   ├── src/
-│   │   ├── main.c
-│   │   └── *Plus tard...*
-│   ├── include/
-│   │   ├── my.h
-│   │   └── *Plus tard...*
-│   └── saves/
+│   .gitignore
+│   README.md
+│   
+├───code/
+│   │   conf
+│   │   Makefile
+│   │   oceandepth.exe
+│   │
+│   ├───include/
+│   │       carte.h
+│   │       combat.h
+│   │       creatures.h
+│   │       global.h
+│   │       inventaire.h
+│   │       joueur.h
+│   │       sauvegarde.h
+│   │
+│   ├───saves/
+│   └───src/
+│           carte.c
+│           combat.c
+│           creatures.c
+│           inventaire.c
+│           joueur.c
+│           main.c
+│           sauvegarde.c
+│
+└───documentation/
+    │   identifiants.txt
+    │   PROGRESSION.md
+    │   setup_windows.md
+    │
+    ├───consignes/
+    │       2025 - OceanDepth.md
+    │       2025 - OceanDepth.pdf
+    │       SyllabusDuProjet.pdf
+    │
+    └───src/
+            setup_1.png
+            setup_2.png
 ```
