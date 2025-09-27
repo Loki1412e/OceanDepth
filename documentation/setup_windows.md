@@ -57,8 +57,5 @@ Si les 2 fonctionnent c'est bon 👌
 Depuis le dossier racine du projet :
 
 ```bash
-cd code/
-make clean && make
-./oceandepth.exe
-cd ..
+clear && cd .\code\ && make clean && make debug && .\oceandepth.exe && cd ..
 ```
