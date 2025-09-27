@@ -1,0 +1,2 @@
+#include "../include/inventaire.h"
+
