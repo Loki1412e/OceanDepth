@@ -6,7 +6,12 @@ Membres : FUGON Sofiane, HADDAD Thinina, JAIEL FERRO Milhane
 
 ## ⚠️ Configuration de l'environement de travail ⚠️
 
-Il faut avoir l'environement bien configuré : voir [`setup_windows.md`](./documentation/setup_windows.md)
+Prérequis :
+
+- GCC
+- Make
+
+Voici comment configurer l'environement sous windows : [`setup_windows.md`](./documentation/setup_windows.md)
 
 ## 🚀 Lancer le projet
 
