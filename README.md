@@ -13,10 +13,7 @@ Il faut avoir l'environement bien configuré : voir [`setup_windows.md`](./docum
 Depuis le dossier racine du projet :
 
 ```bash
-cd code/
-make clean && make
-./oceandepth.exe
-cd ..
+clear && cd .\code\ && make clean && make debug && .\oceandepth.exe && cd ..
 ```
 
 ## 📖 Description
