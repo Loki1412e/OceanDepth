@@ -18,7 +18,8 @@ Voici comment configurer l'environement sous windows : [`setup_windows.md`](./do
 Depuis le dossier racine du projet :
 
 ```bash
-clear && cd .\code\ && make clean && make debug && .\oceandepth.exe && cd ..
+cd .\code\
+clear && make clean && make debug && .\oceandepth.exe
 ```
 
 ## 📖 Description
