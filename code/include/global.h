@@ -49,8 +49,8 @@
     typedef struct {
         CreatureMarine **models;
         size_t longueur_models;
-        CreatureMarine **creatures;
-        size_t longueur_creatures;
+        // CreatureMarine **creatures;
+        // size_t longueur_creatures;
     } Bestiaire;
 
     typedef struct {
@@ -60,7 +60,6 @@
         // A penser pour la suite,
         // Peux etre des compétences pour les creatures...
     } Competence;
-    
 
     typedef struct {
         char *nom;
@@ -77,6 +76,21 @@
         unsigned niveau;
         Competence **competences;
         size_t longueur_competences;
+        unsigned row_X; // 0
+        unsigned col_Y; // 0
     } Plongeur;
+
+    typedef struct {
+        int content;
+        short apparition; // bool
+        int difficulte;
+        CreatureMarine **creatures;
+        size_t longueur_creatures;
+    } Case;
+
+    typedef struct {
+        Case **cases;
+        size_t longueur_cases;
+    } Carte;
 
 #endif
