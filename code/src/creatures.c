@@ -2,6 +2,7 @@
 
 
 Bestiary *initBestiary();
+int generateCreatureInBestiary(Bestiary *bestiary, unsigned depth_level);
 int addCreatureInBestiary(Bestiary *bestiary, char *type_name, unsigned depth_level);
 void freeBestiary(Bestiary *bestiary);
 void freeCreatures(CreatureMarine **creatures, unsigned length);
@@ -12,6 +13,57 @@ unsigned *parseCreaturesApparitionConf(int index, char *line, unsigned *length, 
 int applyModel(CreatureMarine *model, CreatureMarine *creature);
 int countAllUniqueModel();
 EffetsSpeciaux charSpecialEffectToEnum(char *special_effect);
+
+
+int generateCreatureInBestiary(Bestiary *bestiary, unsigned depth_level) {
+    if (!bestiary || bestiary->longueur_models == 0) {
+        fprintf(stderr, "Erreur: generateCreatureInBestiary(): betiary ou bestiary->longueur_models n'est pas défini.");
+        return EXIT_FAILURE;
+    }
+
+    unsigned total = 0;
+
+    // Calcul du poids total (somme des taux_apparition valides)
+    for (unsigned i = 0; i < bestiary->longueur_models; i++) {
+        CreatureMarine *model = bestiary->models[i];
+        if (!model || !model->apparition) continue;
+
+        for (unsigned j = 0; j < model->apparition->longueur_profondeurs; j++) {
+            if (model->apparition->profondeurs[j] == depth_level) {
+                total += model->apparition->taux[j];
+            }
+        }
+    }
+
+    if (total == 0) {
+        fprintf(stderr, "Erreur: generateCreatureInBestiary(): Aucune creature dispo a la profondeur %d.", depth_level);
+        return EXIT_FAILURE;
+    }
+
+    unsigned tirage = random_int(total - 1); // de 0 à total - 1 = total options
+    unsigned cumul = 0;
+
+    for (unsigned i = 0; i < bestiary->longueur_models; i++) {
+        CreatureMarine *model = bestiary->models[i];
+        if (!model || !model->apparition) continue;
+
+        for (unsigned j = 0; j < model->apparition->longueur_profondeurs; j++) {
+            if (model->apparition->profondeurs[j] == depth_level) {
+                cumul += model->apparition->taux[j];
+                if (tirage < cumul) {
+                    
+                    // On l'ajoute dans le Bestiaire
+                    if (addCreatureInBestiary(bestiary, model->nom_type, depth_level)) return EXIT_FAILURE;
+
+                    return EXIT_SUCCESS;
+                }
+            }
+        }
+    }
+    
+    fprintf(stderr, "Erreur: generateCreatureInBestiary(): Erreur pas censé arrivé ??");
+    return EXIT_FAILURE;
+}
 
 
 int addCreatureInBestiary(Bestiary *bestiary, char *type_name, unsigned depth_level) {
@@ -70,7 +122,7 @@ int addCreatureInBestiary(Bestiary *bestiary, char *type_name, unsigned depth_le
 
     if (!existInModel) {
         fprintf(stderr, "Erreur: addCreatureInBestiary(): Aucune creature ne correspond (type_name=\"%s\" / depth_level=%hu)\n", type_name, depth_level);
-        return EXIT_FAILURE;
+        return -1;
     }
 
     return EXIT_SUCCESS;
