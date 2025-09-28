@@ -5,7 +5,7 @@
 
 int main() {
 
-    Bestiary *bestiary;
+    Bestiaire *bestiary;
 
     int res;
 
