@@ -33,6 +33,11 @@ void seed_random() {
     srand(seed);
 }
 
-int random_int(int max) {
-    return rand() % (max + 1);
+unsigned random_int(unsigned min, unsigned max) {
+    if (min > max) {
+        unsigned tmp = max;
+        max = min;
+        min = tmp;
+    }
+    return rand() % (max + 1 - min) + min;
 }

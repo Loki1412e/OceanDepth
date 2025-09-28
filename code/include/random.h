@@ -5,6 +5,6 @@
     #include <stdint.h>
 
     void seed_random();
-    int random_int(int max);
+    int random_int(int min, int max);
 
 #endif
