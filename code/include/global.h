@@ -32,7 +32,7 @@
     typedef struct {
         unsigned *profondeurs;
         size_t longueur_profondeurs;
-        unsigned *taux; // entre 0 et 100
+        unsigned *taux; // calculé avec niveau d'importance en comparaison avec les autres
         size_t longueur_taux;
     } ApparitionCreature;
     
@@ -47,15 +47,16 @@
         int attaque_max;
         int defense;
         int vitesse;
-        EffetsSpeciaux effet_special; // voir EffetsSpeciaux -> a modifier mettre liste d'effets speciaux
-        Etat *etat;
+        // On va attribuer des etats a partir de compétences ce sera mieux
+        // ---> // EffetsSpeciaux effet_special; // voir EffetsSpeciaux -> a modifier mettre liste d'effets speciaux
+        Etat *etats_subi;
         short est_vivant;
         ApparitionCreature *apparition;
     } CreatureMarine;
 
     typedef struct {
-        CreatureMarine **models;
-        size_t longueur_models;
+        // CreatureMarine **models;
+        // size_t longueur_models;
         CreatureMarine **creatures;
         size_t longueur_creatures;
     } Bestiaire;
@@ -82,7 +83,7 @@
         int vitesse;
         unsigned perles; // monnaie du jeu
         unsigned niveau;
-        Etat *etat;
+        Etat *etats_subi;
         Competence **competences;
         size_t longueur_competences;
         unsigned row_X; // 0
@@ -93,8 +94,7 @@
         int content;
         short apparition; // bool
         int difficulte;
-        CreatureMarine **creatures;
-        size_t longueur_creatures;
+        Bestiaire *bestiaire;
     } Case;
 
     typedef struct {

@@ -79,3 +79,17 @@ GROUPE-02/
             setup_1.png
             setup_2.png
 ```
+
+# Etat Actuel
+
+// a faire :
+
+IMPORTANT: creatures.c -> ne gere pas les effects que les creatures peuvent mettre ni leur compétences (voir struct mais en comm pour le moment)
+
+1 - ITEMS
+
+
+2 - EFFETS : Gestion des effets -> boucle combat / 2 types attaques
+
+
+3 - CARTES : thinina
