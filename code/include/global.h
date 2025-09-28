@@ -24,6 +24,12 @@
     /* Struct */
 
     typedef struct {
+        EffetsSpeciaux **etats;
+        size_t longueur_etats;
+    } Etat;
+    
+
+    typedef struct {
         unsigned *profondeurs;
         size_t longueur_profondeurs;
         unsigned *taux; // entre 0 et 100
@@ -41,7 +47,8 @@
         int attaque_max;
         int defense;
         int vitesse;
-        EffetsSpeciaux effet_special; // voir EffetsSpeciaux
+        EffetsSpeciaux effet_special; // voir EffetsSpeciaux -> a modifier mettre liste d'effets speciaux
+        Etat *etat;
         short est_vivant;
         ApparitionCreature *apparition;
     } CreatureMarine;
@@ -49,8 +56,8 @@
     typedef struct {
         CreatureMarine **models;
         size_t longueur_models;
-        // CreatureMarine **creatures;
-        // size_t longueur_creatures;
+        CreatureMarine **creatures;
+        size_t longueur_creatures;
     } Bestiaire;
 
     typedef struct {
@@ -68,12 +75,14 @@
         int niveau_oxygene;
         int niveau_oxygene_max;
         int niveau_fatigue; // 0 à 5
+        int fatigue_max;
         int attaque_max;
         int attaque_min;
         int defense;
         int vitesse;
         unsigned perles; // monnaie du jeu
         unsigned niveau;
+        Etat *etat;
         Competence **competences;
         size_t longueur_competences;
         unsigned row_X; // 0
