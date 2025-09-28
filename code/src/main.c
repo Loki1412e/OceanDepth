@@ -7,21 +7,21 @@
 
 int main() {
 
-    Bestiaire *bestiary;
+    Bestiaire *modelBestiary, *bestiary;
     Plongeur *player = initDiver("Feur");
-
-    int res;
 
     seed_random();
 
     printf("\n");
 
-    bestiary = initBestiary();
+    modelBestiary = initBestiaryModel();
+    if (!modelBestiary) return EXIT_FAILURE;
+
+    bestiary = malloc(sizeof(Bestiaire));
     if (!bestiary) return EXIT_FAILURE;
 
     for (unsigned i = 0; i < random_int(1, 4); i++) {
-        res = generateCreatureInBestiary(bestiary, 0);
-        if (res == EXIT_FAILURE) return EXIT_FAILURE;
+        if (generateCreatureInBestiary(modelBestiary, bestiary, 0)) return EXIT_FAILURE;
     }
 
     for (size_t i = 0; i < bestiary->longueur_creatures; i++) {
@@ -32,6 +32,6 @@ int main() {
     // printDiver(player);
     
     free(player);
-    freeBestiary(bestiary);
+    freeBestiary(modelBestiary);
     return EXIT_SUCCESS;
 }

@@ -2,7 +2,7 @@
 
 
 void printCreature(CreatureMarine *creature);
-void printCreatures(CreatureMarine **creatures, size_t length, char *modelsORcreatures);
+void printCreatures(CreatureMarine **creatures, size_t length);
 void printBestiary(Bestiaire *bestiary);
 void printDiver(Plongeur *diver);
 
@@ -20,7 +20,7 @@ void printCreature(CreatureMarine *creature) {
     printf("Attaque: Min %d, Max %d\n", creature->attaque_min, creature->attaque_max);
     printf("Defense: %d\n", creature->defense);
     printf("Vitesse: %d\n", creature->vitesse);
-    printf("Effet Special: %s\n", enumSpecialEffectToChar(creature->effet_special));
+    // printf("Effet Special: %s\n", enumSpecialEffectToChar(creature->effet_special));
     printf("Est Vivant: %s\n", creature->est_vivant ? "Oui" : "Non");
 
     if (creature->apparition) {
@@ -42,10 +42,9 @@ void printCreature(CreatureMarine *creature) {
 }
 
 
-void printCreatures(CreatureMarine **creatures, size_t length, char *modelsORcreatures) {
-    printf("Bestiaire %s (%llu):\n\n", strcmp(modelsORcreatures, "model") ? "Creatures" : "Models", length);
+void printCreatures(CreatureMarine **creatures, size_t length) {
+    printf("Bestiaire (%llu):\n\n", length);
     for (size_t i = 0; i < length; i++) {
-        printf("%s %llu:\n", strcmp(modelsORcreatures, "model") ? "Creature" : "Model", i);
         printCreature(creatures[i]);
         printf("\n");
     }
@@ -59,12 +58,8 @@ void printBestiary(Bestiaire *bestiary) {
     }
     
     printf("\n====================================\n\n");
-    
-    printCreatures(bestiary->models, bestiary->longueur_models, "Models");
-    
-    printf("\n\n====================================\n\n");
 
-    printCreatures(bestiary->creatures, bestiary->longueur_creatures, "Creatures");
+    printCreatures(bestiary->creatures, bestiary->longueur_creatures);
 
     printf("\n====================================\n\n");
 }

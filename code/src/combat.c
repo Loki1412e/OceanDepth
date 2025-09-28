@@ -41,7 +41,7 @@ int combat(CreatureMarine *creature, Plongeur *joueur) {
                 // nettoyage si entrée invalide (ex: lettres)
                 while (getchar() != '\n'); 
                 choice = 0; // force la répétition
-                printf("Entrée invalide, veuillez taper un nombre.\n");
+                printf("Entrée invalide, veuillez taper un nombre.\n> ");
                 continue;
             }
             if (choice < 1 || choice > 5) {
@@ -153,7 +153,7 @@ void afficherInterface(Plongeur *joueur, CreatureMarine *creatures) {
     
     printf("    %s (%d/%d PV)", creatures->nom_type,
     creatures->pv, creatures->pv_max);
-    if (creatures->etat) printf(" [PARALYSÉ]");
+    // if (creatures->etat) printf(" [PARALYSÉ]");
     printf("\n");
     
         printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
