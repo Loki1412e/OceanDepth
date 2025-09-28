@@ -1,21 +1,21 @@
 #include "../include/creatures.h"
 
 
-Bestiary *initBestiary();
-int generateCreatureInBestiary(Bestiary *bestiary, unsigned depth_level);
-int addCreatureInBestiary(Bestiary *bestiary, char *type_name, unsigned depth_level);
-void freeBestiary(Bestiary *bestiary);
+Bestiaire *initBestiary();
+int generateCreatureInBestiary(Bestiaire *bestiary, unsigned depth_level);
+int addCreatureInBestiary(Bestiaire *bestiary, char *type_name, unsigned depth_level);
+void freeBestiary(Bestiaire *bestiary);
 void freeCreatures(CreatureMarine **creatures, unsigned length);
 void freeCreature(CreatureMarine *creature);
 
-int setBestiaryFromConf(Bestiary *bestiary);
+int setBestiaryFromConf(Bestiaire *bestiary);
 unsigned *parseCreaturesApparitionConf(int index, char *line, unsigned *length, char *errorOrigin, short *errorCode);
 int applyModel(CreatureMarine *model, CreatureMarine *creature);
 int countAllUniqueModel();
 EffetsSpeciaux charSpecialEffectToEnum(char *special_effect);
 
 
-int generateCreatureInBestiary(Bestiary *bestiary, unsigned depth_level) {
+int generateCreatureInBestiary(Bestiaire *bestiary, unsigned depth_level) {
     if (!bestiary || bestiary->longueur_models == 0) {
         fprintf(stderr, "Erreur: generateCreatureInBestiary(): betiary ou bestiary->longueur_models n'est pas défini.");
         return EXIT_FAILURE;
@@ -66,7 +66,7 @@ int generateCreatureInBestiary(Bestiary *bestiary, unsigned depth_level) {
 }
 
 
-int addCreatureInBestiary(Bestiary *bestiary, char *type_name, unsigned depth_level) {
+int addCreatureInBestiary(Bestiaire *bestiary, char *type_name, unsigned depth_level) {
 
     short existInModel = 0;
     CreatureMarine **tmp = NULL;
@@ -129,14 +129,14 @@ int addCreatureInBestiary(Bestiary *bestiary, char *type_name, unsigned depth_le
 }
 
 
-Bestiary *initBestiary() {
+Bestiaire *initBestiary() {
     
     unsigned count_all_unique_model = countAllUniqueModel();
     if (!count_all_unique_model) return NULL;
 
     // Allocation mémoire
 
-    Bestiary *bestiary = malloc(sizeof(Bestiary));
+    Bestiaire *bestiary = malloc(sizeof(Bestiaire));
     if (bestiary == NULL) {
         fprintf(stderr, "Erreur: initBestiary(): Allocation mémoire bestiary\n");
         return NULL;
@@ -188,7 +188,7 @@ Bestiary *initBestiary() {
 }
 
 
-int setBestiaryFromConf(Bestiary *bestiary) {
+int setBestiaryFromConf(Bestiaire *bestiary) {
     FILE *f = fopen("config/creatures.conf", "r");
     if (f == NULL) return EXIT_FAILURE;
 
@@ -481,7 +481,7 @@ void freeCreatures(CreatureMarine **creatures, unsigned length) {
     creatures = NULL;
 }
 
-void freeBestiary(Bestiary *bestiary) {
+void freeBestiary(Bestiaire *bestiary) {
     if (!bestiary) return;
     freeCreatures(bestiary->creatures, bestiary->longueur_creatures);
     freeCreatures(bestiary->models, bestiary->longueur_models);

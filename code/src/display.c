@@ -3,7 +3,7 @@
 
 void printCreature(CreatureMarine *creature);
 void printCreatures(CreatureMarine **creatures, unsigned length, char *modelsORcreatures);
-void printBestiary(Bestiary *bestiary);
+void printBestiary(Bestiaire *bestiary);
 
 char *enumSpecialEffectToChar(EffetsSpeciaux special_effect);
 
@@ -42,7 +42,7 @@ void printCreature(CreatureMarine *creature) {
 
 
 void printCreatures(CreatureMarine **creatures, unsigned length, char *modelsORcreatures) {
-    printf("Bestiary %s (%u):\n\n", strcmp(modelsORcreatures, "model") ? "Creatures" : "Models", length);
+    printf("Bestiaire %s (%u):\n\n", strcmp(modelsORcreatures, "model") ? "Creatures" : "Models", length);
     for (unsigned i = 0; i < length; i++) {
         printf("%s %u:\n", strcmp(modelsORcreatures, "model") ? "Creature" : "Model", i);
         printCreature(creatures[i]);
@@ -51,9 +51,9 @@ void printCreatures(CreatureMarine **creatures, unsigned length, char *modelsORc
 }
 
 
-void printBestiary(Bestiary *bestiary) {
+void printBestiary(Bestiaire *bestiary) {
     if (!bestiary) {
-        printf("NULL Bestiary pointer\n");
+        printf("NULL Bestiaire pointer\n");
         return;
     }
     

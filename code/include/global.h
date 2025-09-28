@@ -51,7 +51,7 @@
         unsigned longueur_models;
         CreatureMarine **creatures;
         unsigned longueur_creatures;
-    } Bestiary;
+    } Bestiaire;
 
     typedef struct {
         int pv;
