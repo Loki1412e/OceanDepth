@@ -54,13 +54,28 @@
     } Bestiaire;
 
     typedef struct {
+        char *nom;
+        int cout_oxygene;
+        int gain_oxygene;
+        // A penser pour la suite,
+        // Peux etre des compétences pour les creatures...
+    } Competence;
+    
+
+    typedef struct {
+        char *nom;
         int pv;
         int pv_max;
         int niveau_oxygene;
         int niveau_oxygene_max;
         int niveau_fatigue; // 0 à 5
+        int attaque_max;
+        int attaque_min;
+        int defense;
+        int vitesse;
         unsigned perles; // monnaie du jeu
-        competences;
+        unsigned niveau;
+        Competence **competences;
         size_t longueur_competences;
     } Plongeur;
 

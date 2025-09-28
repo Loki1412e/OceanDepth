@@ -272,7 +272,7 @@ int setBestiaryFromConf(Bestiaire *bestiary) {
     if (bestiary->longueur_models != length) {
         freeBestiary(bestiary);
         fclose(f);
-        fprintf(stderr, "Erreur: setBestiaryFromConf(): bestiary->longueur_models (%hu) != index (%hu)\n", bestiary->longueur_models, index);
+        fprintf(stderr, "Erreur: setBestiaryFromConf(): bestiary->longueur_models (%llu) != index (%hu)\n", bestiary->longueur_models, index);
         return EXIT_FAILURE;
     }
 
