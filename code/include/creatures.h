@@ -7,7 +7,7 @@
     int generateCreatureInBestiary(Bestiaire *bestiary, unsigned depth_level);
     int addCreatureInBestiary(Bestiaire *bestiary, char *type_name, unsigned depth_level);
     void freeBestiary(Bestiaire *bestiary);
-    void freeCreatures(CreatureMarine **creatures, unsigned length);
+    void freeCreatures(CreatureMarine **creatures, size_t length);
     void freeCreature(CreatureMarine *creature);
 
 #endif
