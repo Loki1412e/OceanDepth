@@ -2,8 +2,9 @@
 
 
 void printCreature(CreatureMarine *creature);
-void printCreatures(CreatureMarine **creatures, unsigned length, char *modelsORcreatures);
+void printCreatures(CreatureMarine **creatures, size_t length, char *modelsORcreatures);
 void printBestiary(Bestiaire *bestiary);
+void printDiver(Plongeur *diver);
 
 char *enumSpecialEffectToChar(EffetsSpeciaux special_effect);
 
@@ -24,15 +25,15 @@ void printCreature(CreatureMarine *creature) {
 
     if (creature->apparition) {
         printf("ApparitionCreature:\n");
-        printf("  Profondeurs (%u): ", creature->apparition->longueur_profondeurs);
-        for (unsigned i = 0; i < creature->apparition->longueur_profondeurs; i++) {
-            printf("%u ", creature->apparition->profondeurs[i]);
+        printf("  Profondeurs (%llu): ", creature->apparition->longueur_profondeurs);
+        for (size_t i = 0; i < creature->apparition->longueur_profondeurs; i++) {
+            printf("%hu ", creature->apparition->profondeurs[i]);
         }
         printf("\n");
 
-        printf("  Taux (%u): ", creature->apparition->longueur_taux);
-        for (unsigned i = 0; i < creature->apparition->longueur_taux; i++) {
-            printf("%u ", creature->apparition->taux[i]);
+        printf("  Taux (%llu): ", creature->apparition->longueur_taux);
+        for (size_t i = 0; i < creature->apparition->longueur_taux; i++) {
+            printf("%hu ", creature->apparition->taux[i]);
         }
         printf("\n");
     } else {
@@ -41,10 +42,10 @@ void printCreature(CreatureMarine *creature) {
 }
 
 
-void printCreatures(CreatureMarine **creatures, unsigned length, char *modelsORcreatures) {
-    printf("Bestiaire %s (%u):\n\n", strcmp(modelsORcreatures, "model") ? "Creatures" : "Models", length);
-    for (unsigned i = 0; i < length; i++) {
-        printf("%s %u:\n", strcmp(modelsORcreatures, "model") ? "Creature" : "Model", i);
+void printCreatures(CreatureMarine **creatures, size_t length, char *modelsORcreatures) {
+    printf("Bestiaire %s (%llu):\n\n", strcmp(modelsORcreatures, "model") ? "Creatures" : "Models", length);
+    for (size_t i = 0; i < length; i++) {
+        printf("%s %llu:\n", strcmp(modelsORcreatures, "model") ? "Creature" : "Model", i);
         printCreature(creatures[i]);
         printf("\n");
     }
@@ -76,4 +77,35 @@ char *enumSpecialEffectToChar(EffetsSpeciaux special_effect) {
         case SAIGNEMENT: return "SAIGNEMENT";
         default: return "AUCUN";
     }
+}
+
+
+void printDiver(Plongeur *diver) {
+    if (!diver) {
+        printf("NULL Plongeur pointer\n");
+        return;
+    }
+    
+    printf("\n====================================\n");
+    printf("PLONGEUR: %s\n", diver->nom ? diver->nom : "(Sans nom)");
+    printf("------------------------------------\n");
+    printf("PV: %d / %d\n", diver->pv, diver->pv_max);
+    printf("Oxygène: %d / %d\n", diver->niveau_oxygene, diver->niveau_oxygene_max);
+    printf("Fatigue: %d / 5\n", diver->niveau_fatigue);
+    printf("Attaque: %d - %d\n", diver->attaque_min, diver->attaque_max);
+    printf("Défense: %d\n", diver->defense);
+    printf("Vitesse: %d\n", diver->vitesse);
+    printf("Niveau: %hu\n", diver->niveau);
+    printf("Perles: %hu\n", diver->perles);
+
+    if (diver->longueur_competences > 0 && diver->competences != NULL) {
+        printf("Compétences (%zu):\n", diver->longueur_competences);
+        for (size_t i = 0; i < diver->longueur_competences; i++) {
+            printf("  - %s\n", diver->competences[i]->nom ? diver->competences[i]->nom : "(Aucune)");
+        }
+    } else {
+        printf("Compétences: Aucune\n");
+    }
+
+    printf("====================================\n\n");
 }
