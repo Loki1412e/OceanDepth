@@ -2,6 +2,7 @@
 
 
 Plongeur *initDiver(char *diver_name);
+int diverIsAlive(Plongeur *diver);
 void freeDiver(Plongeur *diver);
 
 int setDiverFromConf(Plongeur *diver);
@@ -54,6 +55,9 @@ int setDiverFromConf(Plongeur *diver) {
         
         if (strncmp(line, "niveau_fatigue=", 15) == 0)
             diver->niveau_fatigue = atoi(line + 15);
+        
+        if (strncmp(line, "fatigue_max=", 12) == 0)
+            diver->fatigue_max = atoi(line + 12);
 
         else if (strncmp(line, "attaque_minimale=", 17) == 0)
             diver->attaque_min = atoi(line + 17);
@@ -72,10 +76,21 @@ int setDiverFromConf(Plongeur *diver) {
         
         else if (strncmp(line, "perles=", 6) == 0)
             diver->perles = atoi(line + 6);
+        
+        else if (strncmp(line, "row_X=", 6) == 0)
+            diver->row_X = atoi(line + 6);
+        
+        else if (strncmp(line, "col_Y=", 6) == 0)
+            diver->col_Y = atoi(line + 6);
     }
 
     fclose(f);
     return EXIT_SUCCESS;
+}
+
+
+int diverIsDead(Plongeur *diver) {    
+    return !(diver->pv > 0) || !(diver->niveau_oxygene > 0);
 }
 
 
