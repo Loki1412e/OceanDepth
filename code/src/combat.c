@@ -1,17 +1,40 @@
 #include "../include/combat.h"
 
-
 int combat(CreatureMarine *creature, Plongeur *joueur);
-int joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creatures);
-int creatureAttaqueJoueur(Plongeur *joueur, CreatureMarine *creatures);
 
+int joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature, char *info, size_t info_size);
+int creatureAttaqueJoueur(Plongeur *joueur, CreatureMarine *creatures, char *info, size_t info_size);
 void afficherBarre(const char *label, int valeur, int max, int longueur);
-void afficherInterface(Plongeur *joueur, CreatureMarine *creatures);
+void afficherInterface(Plongeur *joueur, CreatureMarine *creatures, char *info);
+
 
 int combat(CreatureMarine *creature, Plongeur *joueur) {
+    
     int choice = 0;
-
     short firstLoop = 1;
+
+    char info[1024], info2[1024];
+    info[0] = '\0';
+    info2[0] = '\0';
+
+    if (creature->vitesse >= joueur->vitesse) {
+        int len = snprintf(info2, sizeof(info2),
+            "\n[%s] a été plus rapide que vous\n\n", creature->nom_type);
+
+        if (len < 0 || len >= (int) sizeof(info2)) {
+            strcpy(info2, "La créature a été plus rapide.\n\n");
+        }
+    }
+    else {
+        int len = snprintf(info2, sizeof(info2),
+            "\nVous attaquez [%s] en premier (le goat)\n\n", creature->nom_type);
+
+        if (len < 0 || len >= (int) sizeof(info2)) {
+            strcpy(info2, "Vous avez été plus rapide.\n\n");
+        }
+    }
+
+
 
     while (1) {
         system("clear");
@@ -20,20 +43,19 @@ int combat(CreatureMarine *creature, Plongeur *joueur) {
         // appliquerEffetJoueur(joueur);
         // appliquerEffetCreature(creature);
 
-        if (diverIsDead(joueur) || creature->pv <= 0) break;
+        if (creature->vitesse >= joueur->vitesse) {
+            creatureAttaqueJoueur(joueur, creature, info, sizeof(info));
+            if (diverIsDead(joueur) || creature->pv <= 0) break;
+        }
 
-        if (creature->vitesse >= joueur->vitesse)
-            creatureAttaqueJoueur(joueur, creature);
-        
         if (firstLoop) {
-            if (creature->vitesse >= joueur->vitesse)
-                printf("\n[%s] à été plus rapide que vous\n\n", creature->nom_type);
-            else printf("\nVous attaquez [%s] en premier (le goat)\n\n", creature->nom_type);
-            firstLoop = 0;
+            strcat(info2, info);
+            afficherInterface(joueur, creature, info2);
+        }
+        else afficherInterface(joueur, creature, info);
+        info[0] = '\0';
 
-        } 
-
-        afficherInterface(joueur, creature);
+        if (diverIsDead(joueur) || creature->pv <= 0) break;
 
         // boucle pour forcer 1 à 4
         do {
@@ -52,7 +74,7 @@ int combat(CreatureMarine *creature, Plongeur *joueur) {
         switch (choice) {
             case 1:
                 printf("→ Attaquer\n");
-                joueurAttaqueCreature(joueur, creature);
+                joueurAttaqueCreature(joueur, creature, info2, sizeof(info2));
                 break;
             case 2:
                 printf("→ Utiliser une compétence marine.\n");
@@ -69,20 +91,20 @@ int combat(CreatureMarine *creature, Plongeur *joueur) {
         }
 
         if (creature->vitesse < joueur->vitesse)
-            creatureAttaqueJoueur(joueur, creature);
+            creatureAttaqueJoueur(joueur, creature, info, sizeof(info));
     }
 
     if (creature->pv <= 0)
-        printf("\n\n[%s] a pérdu.\n", creature->nom_type);
+        printf("\n[%s] a pérdu.\n\n", creature->nom_type);
 
     else if (joueur->pv <= 0)
-        printf("\n\nGAME OVER loooser.\n");
+        printf("\nGAME OVER loooser.\n\n");
 
     return EXIT_SUCCESS;
 }
 
 
-int joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature) {
+int joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature, char *info, size_t info_size) {
     
     int degats_base = random_int(joueur->attaque_min, joueur->attaque_max);
 
@@ -95,14 +117,21 @@ int joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature) {
     creature->pv -= att;
     if (creature->pv < 0) creature->pv = 0;
 
-    printf("Vous infligez %d dégâts à %s ! (PV restants: %d)\n", att, creature->nom_type, creature->pv);
-
     joueur->niveau_oxygene -= random_int(1, 3);
+
+    int len = snprintf(info, info_size,
+        "Vous infligez %d dégâts à %s ! (PV restants: %d)\n\n",
+        att, creature->nom_type, creature->pv);
+
+    if (len < 0 || (size_t)len >= info_size) {
+        fprintf(stderr, "Erreur : message tronqué ou snprintf échoué.\n");
+        return EXIT_FAILURE;
+    }
 
     return EXIT_SUCCESS;
 }
 
-int creatureAttaqueJoueur(Plongeur *joueur, CreatureMarine *creature) {
+int creatureAttaqueJoueur(Plongeur *joueur, CreatureMarine *creature, char *info, size_t info_size) {
     
     int att = random_int(creature->attaque_min, creature->attaque_max);
 
@@ -112,7 +141,14 @@ int creatureAttaqueJoueur(Plongeur *joueur, CreatureMarine *creature) {
     joueur->pv -= att;
     if (joueur->pv < 0) joueur->pv = 0;
 
-    printf("[%s] vous à fait %d dégâts !\n", creature->nom_type, att);
+    int len = snprintf(info, info_size,
+        "[%s] vous a infligé %d dégâts !\n\n",
+        creature->nom_type, att);
+
+    if (len < 0 || len >= (int)info_size) {
+        fprintf(stderr, "Erreur : message tronqué ou snprintf échoué.\n");
+        return EXIT_FAILURE;
+    }
 
     // a faire
 
@@ -130,7 +166,7 @@ void afficherBarre(const char *label, int valeur, int max, int longueur) {
     printf("] %d/%d\n\n", valeur, max);
 }
 
-void afficherInterface(Plongeur *joueur, CreatureMarine *creatures) {
+void afficherInterface(Plongeur *joueur, CreatureMarine *creatures, char *info) {
     printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
     printf("OceanDepths - Profondeur: %c%dm                    Perles: %d\n\n",
            joueur->row_X ? '-' : ' ',
@@ -156,7 +192,9 @@ void afficherInterface(Plongeur *joueur, CreatureMarine *creatures) {
     // if (creatures->etat) printf(" [PARALYSÉ]");
     printf("\n");
     
-        printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
+    printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
+
+    if (strlen(info) > 0) printf("%s", info);
 
     printf("Actions disponibles:\n");
     printf("[1] - Attaquer\n");
