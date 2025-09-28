@@ -3,7 +3,8 @@
 
     #include "global.h"
     
-    void printBestiary(const Bestiary *bestiary);
-    void printCreatureMarine(const CreatureMarine *creature);
+    void printCreature(CreatureMarine *creature);
+    void printCreatures(CreatureMarine **creatures, unsigned length, char *modelsORcreatures);
+    void printBestiary(Bestiary *bestiary);
 
 #endif

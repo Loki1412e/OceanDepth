@@ -1,13 +1,14 @@
 # include "../include/display.h"
 
 
-void printCreatureMarine(const CreatureMarine *creature);
-void printBestiary(const Bestiary *bestiary);
+void printCreature(CreatureMarine *creature);
+void printCreatures(CreatureMarine **creatures, unsigned length, char *modelsORcreatures);
+void printBestiary(Bestiary *bestiary);
 
 char *enumSpecialEffectToChar(EffetsSpeciaux special_effect);
 
 
-void printCreatureMarine(const CreatureMarine *creature) {
+void printCreature(CreatureMarine *creature) {
     if (!creature) {
         printf("NULL CreatureMarine pointer\n");
         return;
@@ -39,31 +40,32 @@ void printCreatureMarine(const CreatureMarine *creature) {
     }
 }
 
-void printBestiary(const Bestiary *bestiary) {
+
+void printCreatures(CreatureMarine **creatures, unsigned length, char *modelsORcreatures) {
+    printf("Bestiary %s (%u):\n\n", strcmp(modelsORcreatures, "model") ? "Creatures" : "Models", length);
+    for (unsigned i = 0; i < length; i++) {
+        printf("%s %u:\n", strcmp(modelsORcreatures, "model") ? "Creature" : "Model", i);
+        printCreature(creatures[i]);
+        printf("\n");
+    }
+}
+
+
+void printBestiary(Bestiary *bestiary) {
     if (!bestiary) {
         printf("NULL Bestiary pointer\n");
         return;
     }
+    
+    printf("\n====================================\n\n");
+    
+    printCreatures(bestiary->models, bestiary->longueur_models, "Models");
+    
+    printf("\n\n====================================\n\n");
 
-    printf("====================================\n\n");
-    
-    printf("Bestiary Models (%u):\n\n", bestiary->longueur_models);
-    for (unsigned i = 0; i < bestiary->longueur_models; i++) {
-        printf("Model %u:\n", i);
-        printCreatureMarine(bestiary->models[i]);
-        printf("\n");
-    }
-    
-    printf("====================================\n\n");
+    printCreatures(bestiary->creatures, bestiary->longueur_creatures, "Creatures");
 
-    printf("Bestiary Creatures (%u):\n\n", bestiary->longueur_creatures);
-    for (unsigned i = 0; i < bestiary->longueur_creatures; i++) {
-        printf("Creature %u:\n", i);
-        printCreatureMarine(bestiary->creatures[i]);
-        printf("\n");
-    }
-    
-    printf("====================================\n\n");
+    printf("\n====================================\n\n");
 }
 
 
