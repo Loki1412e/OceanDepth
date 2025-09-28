@@ -6,5 +6,6 @@
     void printCreature(CreatureMarine *creature);
     void printCreatures(CreatureMarine **creatures, size_t length, char *modelsORcreatures);
     void printBestiary(Bestiaire *bestiary);
+    void printDiver(Plongeur *diver);
 
 #endif
