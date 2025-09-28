@@ -40,7 +40,7 @@ int generateCreatureInBestiary(Bestiary *bestiary, unsigned depth_level) {
         return EXIT_FAILURE;
     }
 
-    unsigned tirage = random_int(total - 1); // de 0 à total - 1 = total options
+    unsigned tirage = random_int(0, total - 1); // de 0 à total - 1 = total options
     unsigned cumul = 0;
 
     for (unsigned i = 0; i < bestiary->longueur_models; i++) {
@@ -60,7 +60,7 @@ int generateCreatureInBestiary(Bestiary *bestiary, unsigned depth_level) {
             }
         }
     }
-    
+
     fprintf(stderr, "Erreur: generateCreatureInBestiary(): Erreur pas censé arrivé ??");
     return EXIT_FAILURE;
 }
