@@ -5,11 +5,11 @@ Bestiaire *initBestiary();
 int generateCreatureInBestiary(Bestiaire *bestiary, unsigned depth_level);
 int addCreatureInBestiary(Bestiaire *bestiary, char *type_name, unsigned depth_level);
 void freeBestiary(Bestiaire *bestiary);
-void freeCreatures(CreatureMarine **creatures, unsigned length);
+void freeCreatures(CreatureMarine **creatures, size_t length);
 void freeCreature(CreatureMarine *creature);
 
 int setBestiaryFromConf(Bestiaire *bestiary);
-unsigned *parseCreaturesApparitionConf(int index, char *line, unsigned *length, char *errorOrigin, short *errorCode);
+unsigned *parseCreaturesApparitionConf(int index, char *line, size_t *length, char *errorOrigin, short *errorCode);
 int applyModel(CreatureMarine *model, CreatureMarine *creature);
 int countAllUniqueModel();
 EffetsSpeciaux charSpecialEffectToEnum(char *special_effect);
@@ -24,11 +24,11 @@ int generateCreatureInBestiary(Bestiaire *bestiary, unsigned depth_level) {
     unsigned total = 0;
 
     // Calcul du poids total (somme des taux_apparition valides)
-    for (unsigned i = 0; i < bestiary->longueur_models; i++) {
+    for (size_t i = 0; i < bestiary->longueur_models; i++) {
         CreatureMarine *model = bestiary->models[i];
         if (!model || !model->apparition) continue;
 
-        for (unsigned j = 0; j < model->apparition->longueur_profondeurs; j++) {
+        for (size_t j = 0; j < model->apparition->longueur_profondeurs; j++) {
             if (model->apparition->profondeurs[j] == depth_level) {
                 total += model->apparition->taux[j];
             }
@@ -43,11 +43,11 @@ int generateCreatureInBestiary(Bestiaire *bestiary, unsigned depth_level) {
     unsigned tirage = random_int(0, total - 1); // de 0 à total - 1 = total options
     unsigned cumul = 0;
 
-    for (unsigned i = 0; i < bestiary->longueur_models; i++) {
+    for (size_t i = 0; i < bestiary->longueur_models; i++) {
         CreatureMarine *model = bestiary->models[i];
         if (!model || !model->apparition) continue;
 
-        for (unsigned j = 0; j < model->apparition->longueur_profondeurs; j++) {
+        for (size_t j = 0; j < model->apparition->longueur_profondeurs; j++) {
             if (model->apparition->profondeurs[j] == depth_level) {
                 cumul += model->apparition->taux[j];
                 if (tirage < cumul) {
@@ -72,9 +72,9 @@ int addCreatureInBestiary(Bestiaire *bestiary, char *type_name, unsigned depth_l
     CreatureMarine **tmp = NULL;
     unsigned index, max_id;
 
-    for (unsigned i = 0; i < bestiary->longueur_models; i++) {
+    for (size_t i = 0; i < bestiary->longueur_models; i++) {
         if (strcmp(bestiary->models[i]->nom_type, type_name) == 0) {
-            for (unsigned j = 0; j < bestiary->models[i]->apparition->longueur_profondeurs; j++) {
+            for (size_t j = 0; j < bestiary->models[i]->apparition->longueur_profondeurs; j++) {
                 if (bestiary->models[i]->apparition->profondeurs[j] <= depth_level) {
                     
                     existInModel = 1;
@@ -147,7 +147,7 @@ Bestiaire *initBestiary() {
 
     bestiary->longueur_creatures = 0;
     
-    for (unsigned i = 0; i < count_all_unique_model; i++) {
+    for (size_t i = 0; i < count_all_unique_model; i++) {
         
         bestiary->models[i] = malloc(sizeof(CreatureMarine));
         if (bestiary->models[i] == NULL) {
@@ -178,7 +178,7 @@ Bestiaire *initBestiary() {
         return NULL;
     }
 
-    for (unsigned i = 0; i < count_all_unique_model; i++) {
+    for (size_t i = 0; i < count_all_unique_model; i++) {
         bestiary->models[i]->pv = bestiary->models[i]->pv_max;
         bestiary->models[i]->est_vivant = 1;
         bestiary->models[i]->id = 0;
@@ -276,7 +276,7 @@ int setBestiaryFromConf(Bestiaire *bestiary) {
         return EXIT_FAILURE;
     }
 
-    for (unsigned i = 0; i < bestiary->longueur_models; i++) {
+    for (size_t i = 0; i < bestiary->longueur_models; i++) {
         
         if (bestiary->models[i]->apparition->longueur_taux != bestiary->models[i]->apparition->longueur_profondeurs) {
             unsigned *tmp = realloc(
@@ -292,7 +292,7 @@ int setBestiaryFromConf(Bestiaire *bestiary) {
             bestiary->models[i]->apparition->taux = tmp;
 
             if (bestiary->models[i]->apparition->longueur_taux < bestiary->models[i]->apparition->longueur_profondeurs) {
-                for (unsigned j = (bestiary->models[i]->apparition->longueur_profondeurs - bestiary->models[i]->apparition->longueur_taux); j < bestiary->models[i]->apparition->longueur_profondeurs; j++)
+                for (size_t j = (bestiary->models[i]->apparition->longueur_profondeurs - bestiary->models[i]->apparition->longueur_taux); j < bestiary->models[i]->apparition->longueur_profondeurs; j++)
                     bestiary->models[i]->apparition->taux[j] = 0;
             }
 
@@ -305,7 +305,7 @@ int setBestiaryFromConf(Bestiaire *bestiary) {
 }
 
 
-unsigned *parseCreaturesApparitionConf(int index, char *line, unsigned *length, char *errorOrigin, short *errorCode) {
+unsigned *parseCreaturesApparitionConf(int index, char *line, size_t *length, char *errorOrigin, short *errorCode) {
 
     int prefixLen = strlen(errorOrigin) + 1;
     unsigned *depth = NULL;
@@ -404,10 +404,10 @@ int applyModel(CreatureMarine *model, CreatureMarine *creature) {
     creature->apparition->taux = malloc(sizeof(unsigned) * creature->apparition->longueur_taux);
     if (creature->apparition->taux == NULL) goto MEMORY_ERROR;
     
-    for (unsigned i = 0; i < creature->apparition->longueur_profondeurs; i++)
+    for (size_t i = 0; i < creature->apparition->longueur_profondeurs; i++)
         creature->apparition->profondeurs[i] = model->apparition->profondeurs[i];
     
-    for (unsigned i = 0; i < creature->apparition->longueur_taux; i++)
+    for (size_t i = 0; i < creature->apparition->longueur_taux; i++)
         creature->apparition->taux[i] = model->apparition->taux[i];
     
     return EXIT_SUCCESS;
@@ -473,9 +473,9 @@ void freeCreature(CreatureMarine *creature) {
     creature = NULL;
 }
 
-void freeCreatures(CreatureMarine **creatures, unsigned length) {
+void freeCreatures(CreatureMarine **creatures, size_t length) {
     if (!creatures) return;
-    for (unsigned i = 0; i < length; i++)
+    for (size_t i = 0; i < length; i++)
         freeCreature(creatures[i]);
     free(creatures);
     creatures = NULL;

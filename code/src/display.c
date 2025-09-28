@@ -2,7 +2,7 @@
 
 
 void printCreature(CreatureMarine *creature);
-void printCreatures(CreatureMarine **creatures, unsigned length, char *modelsORcreatures);
+void printCreatures(CreatureMarine **creatures, size_t length, char *modelsORcreatures);
 void printBestiary(Bestiaire *bestiary);
 
 char *enumSpecialEffectToChar(EffetsSpeciaux special_effect);
@@ -25,13 +25,13 @@ void printCreature(CreatureMarine *creature) {
     if (creature->apparition) {
         printf("ApparitionCreature:\n");
         printf("  Profondeurs (%u): ", creature->apparition->longueur_profondeurs);
-        for (unsigned i = 0; i < creature->apparition->longueur_profondeurs; i++) {
+        for (size_t i = 0; i < creature->apparition->longueur_profondeurs; i++) {
             printf("%u ", creature->apparition->profondeurs[i]);
         }
         printf("\n");
 
         printf("  Taux (%u): ", creature->apparition->longueur_taux);
-        for (unsigned i = 0; i < creature->apparition->longueur_taux; i++) {
+        for (size_t i = 0; i < creature->apparition->longueur_taux; i++) {
             printf("%u ", creature->apparition->taux[i]);
         }
         printf("\n");
@@ -41,9 +41,9 @@ void printCreature(CreatureMarine *creature) {
 }
 
 
-void printCreatures(CreatureMarine **creatures, unsigned length, char *modelsORcreatures) {
+void printCreatures(CreatureMarine **creatures, size_t length, char *modelsORcreatures) {
     printf("Bestiaire %s (%u):\n\n", strcmp(modelsORcreatures, "model") ? "Creatures" : "Models", length);
-    for (unsigned i = 0; i < length; i++) {
+    for (size_t i = 0; i < length; i++) {
         printf("%s %u:\n", strcmp(modelsORcreatures, "model") ? "Creature" : "Model", i);
         printCreature(creatures[i]);
         printf("\n");

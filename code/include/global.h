@@ -25,9 +25,9 @@
 
     typedef struct {
         unsigned *profondeurs;
-        unsigned longueur_profondeurs;
+        size_t longueur_profondeurs;
         unsigned *taux; // entre 0 et 100
-        unsigned longueur_taux;
+        size_t longueur_taux;
     } ApparitionCreature;
     
 
@@ -48,9 +48,9 @@
 
     typedef struct {
         CreatureMarine **models;
-        unsigned longueur_models;
+        size_t longueur_models;
         CreatureMarine **creatures;
-        unsigned longueur_creatures;
+        size_t longueur_creatures;
     } Bestiaire;
 
     typedef struct {
@@ -60,6 +60,8 @@
         int niveau_oxygene_max;
         int niveau_fatigue; // 0 à 5
         unsigned perles; // monnaie du jeu
+        competences;
+        size_t longueur_competences;
     } Plongeur;
 
 #endif
