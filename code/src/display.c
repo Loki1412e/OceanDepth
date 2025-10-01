@@ -21,7 +21,7 @@ void printCreature(CreatureMarine *creature) {
     printf("Defense: %d\n", creature->defense);
     printf("Vitesse: %d\n", creature->vitesse);
     // printf("Effet Special: %s\n", enumSpecialEffectToChar(creature->effet_special));
-    printf("Est Vivant: %s\n", creature->est_vivant ? "Oui" : "Non");
+    // printf("Est Vivant: %s\n", creature->pv > 0 ? "Oui" : "Non");
 
     if (creature->apparition) {
         printf("ApparitionCreature:\n");
@@ -96,7 +96,7 @@ void printDiver(Plongeur *diver) {
     if (diver->longueur_competences > 0 && diver->competences != NULL) {
         printf("Compétences (%zu):\n", diver->longueur_competences);
         for (size_t i = 0; i < diver->longueur_competences; i++) {
-            printf("  - %s\n", diver->competences[i]->nom ? diver->competences[i]->nom : "(Aucune)");
+            printf("  - %s\n", diver->competences[i].nom ? diver->competences[i].nom : "(Aucune)");
         }
     } else {
         printf("Compétences: Aucune\n");

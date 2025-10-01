@@ -84,7 +84,9 @@ GROUPE-02/
 
 // a faire :
 
-IMPORTANT: creatures.c -> ne gere pas les effects que les creatures peuvent mettre ni leur compétences (voir struct mais en comm pour le moment)
+IMPORTANT:
+- creatures.c -> ne gere pas les effects que les creatures peuvent mettre ni leur compétences (voir struct mais en comm pour le moment)
+- revoir l'affichage des info lors d'un combat 
 
 1 - ITEMS
 
