@@ -18,13 +18,6 @@ Plongeur *initDiver(char *diver_name) {
         return NULL;
     }
 
-    diver->etats_subi = malloc(sizeof(Etat));
-    if (diver->etats_subi == NULL) {
-        fprintf(stderr, "Erreur: initDiver(): Allocation mémoire diver->etats_subi\n");
-        free(diver);
-        return NULL;
-    }
-
     // Initialisation du Joueur
 
     if (setDiverFromConf(diver)) {
@@ -34,6 +27,9 @@ Plongeur *initDiver(char *diver_name) {
 
     diver->pv = diver->pv_max;
     diver->niveau_oxygene = diver->niveau_oxygene_max;
+
+    diver->etats_subi.etats = NULL;
+    diver->etats_subi.longueur_etats = 0;
 
     size_t length = strlen(diver_name);
     diver->nom = malloc(sizeof(char) * length);
@@ -103,6 +99,18 @@ int diverIsDead(Plongeur *diver) {
 
 void freeDiver(Plongeur *diver) {
     if (!diver) return;
-    if (diver->etats_subi) free(diver->etats_subi);
+    if (diver->etats_subi.etats) {
+        free(diver->etats_subi.etats);
+        diver->etats_subi.etats = NULL;
+    }
+    if (diver->competences) {
+        for (size_t i = 0; i < diver->longueur_competences; i++) {
+            if (!diver->competences->nom) continue;
+            free(diver->competences->nom);
+            diver->competences->nom = NULL;
+        }
+        free(diver->competences);
+        diver->competences = NULL;
+    }
     free(diver);
 }

@@ -100,7 +100,7 @@ int addCreatureInBestiary(Bestiaire *modelBestiary, Bestiaire *bestiary, char *t
                     // Alloués dans applyModel
                     bestiary->creatures[index]->nom_type = NULL;
                     bestiary->creatures[index]->apparition = NULL;
-                    bestiary->creatures[index]->etats_subi = NULL;
+                    bestiary->creatures[index]->etats_subi.etats = NULL;
 
                     if (applyModel(modelBestiary->creatures[i], bestiary->creatures[index])) {
                         freeCreature(bestiary->creatures[index]);
@@ -165,7 +165,7 @@ Bestiaire *initBestiaryModel() {
             return NULL;
         }
 
-        modelBestiary->creatures[i]->etats_subi = NULL;
+        modelBestiary->creatures[i]->etats_subi.etats = NULL;
         modelBestiary->creatures[i]->nom_type = NULL;
         modelBestiary->creatures[i]->apparition->profondeurs = NULL;
         modelBestiary->creatures[i]->apparition->taux = NULL;
@@ -180,7 +180,7 @@ Bestiaire *initBestiaryModel() {
 
     for (size_t i = 0; i < count_all_unique_model; i++) {
         modelBestiary->creatures[i]->pv = modelBestiary->creatures[i]->pv_max;
-        modelBestiary->creatures[i]->est_vivant = 1;
+        // modelBestiary->creatures[i]->est_vivant = 1; // si pv > 0 alors est vivant
         modelBestiary->creatures[i]->id = 0;
     }
     
@@ -386,7 +386,7 @@ int applyModel(CreatureMarine *modelBestiary, CreatureMarine *creature) {
     creature->defense = modelBestiary->defense;
     creature->vitesse = modelBestiary->vitesse;
     // creature->effet_special = modelBestiary->effet_special;
-    creature->est_vivant = modelBestiary->est_vivant;
+    // creature->est_vivant = modelBestiary->est_vivant;
 
     creature->nom_type = malloc(sizeof(char) * (length_nom_type + 1));
     if (creature->nom_type == NULL) goto MEMORY_ERROR;
@@ -404,10 +404,8 @@ int applyModel(CreatureMarine *modelBestiary, CreatureMarine *creature) {
     creature->apparition->taux = malloc(sizeof(unsigned) * creature->apparition->longueur_taux);
     if (creature->apparition->taux == NULL) goto MEMORY_ERROR;
 
-    creature->etats_subi = malloc(sizeof(Etat));
-    if (creature->etats_subi == NULL) goto MEMORY_ERROR;
-    creature->etats_subi->etats = NULL;
-    creature->etats_subi->longueur_etats = 0;
+    creature->etats_subi.etats = NULL;
+    creature->etats_subi.longueur_etats = 0;
     
     for (size_t i = 0; i < creature->apparition->longueur_profondeurs; i++)
         creature->apparition->profondeurs[i] = modelBestiary->apparition->profondeurs[i];
@@ -424,8 +422,6 @@ MEMORY_ERROR:
         free(creature->apparition);
         creature->apparition = NULL;
     }
-    if (creature->etats_subi)
-        free(creature->etats_subi);
     free(creature->nom_type);
     creature->nom_type = NULL;
     return EXIT_FAILURE;
@@ -480,10 +476,9 @@ void freeCreature(CreatureMarine *creature) {
         creature->apparition = NULL;
     }
     
-    if (creature->etats_subi) {
-        if (creature->etats_subi->etats)
-            free(creature->etats_subi->etats);
-        free(creature->etats_subi);
+    if (creature->etats_subi.etats) {
+        free(creature->etats_subi.etats);
+        creature->etats_subi.etats = NULL;
     }
 
     free(creature);

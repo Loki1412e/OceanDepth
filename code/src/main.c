@@ -12,6 +12,8 @@ int main() {
     Bestiaire *modelBestiary, *bestiary;
     Plongeur *player = initDiver("Feur");
 
+    unsigned longueur_creatures = 3;
+
     printf("\n");
 
     modelBestiary = initBestiaryModel();
@@ -20,7 +22,7 @@ int main() {
     bestiary = malloc(sizeof(Bestiaire));
     if (!bestiary) return EXIT_FAILURE;
 
-    for (unsigned i = 0; i < 1; i++) {
+    for (unsigned i = 0; i < longueur_creatures; i++) {
         if (generateCreatureInBestiary(modelBestiary, bestiary, 0)) return EXIT_FAILURE;
     }
 
@@ -29,7 +31,7 @@ int main() {
     }
 
     // printCreatures(bestiary->creatures, bestiary->longueur_creatures, "creature");
-    // printDiver(player);
+    printDiver(player);
     
     freeBestiary(bestiary);
     freeBestiary(modelBestiary);
