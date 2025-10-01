@@ -24,9 +24,9 @@
     /* Struct */
 
     typedef struct {
-        EffetsSpeciaux **etats;
+        EffetsSpeciaux *etats;
         size_t longueur_etats;
-    } Etat;
+    } Etats;
     
 
     typedef struct {
@@ -49,8 +49,7 @@
         int vitesse;
         // On va attribuer des etats a partir de compétences ce sera mieux
         // ---> // EffetsSpeciaux effet_special; // voir EffetsSpeciaux -> a modifier mettre liste d'effets speciaux
-        Etat *etats_subi;
-        short est_vivant;
+        Etats etats_subi;
         ApparitionCreature *apparition;
     } CreatureMarine;
 
@@ -83,8 +82,8 @@
         int vitesse;
         unsigned perles; // monnaie du jeu
         unsigned niveau;
-        Etat *etats_subi;
-        Competence **competences;
+        Etats etats_subi;
+        Competence *competences;
         size_t longueur_competences;
         unsigned row_X; // 0
         unsigned col_Y; // 0
@@ -98,7 +97,7 @@
     } Case;
 
     typedef struct {
-        Case **cases;
+        Case *cases;
         size_t longueur_cases;
     } Carte;
 
