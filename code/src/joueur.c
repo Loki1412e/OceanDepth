@@ -18,6 +18,15 @@ Plongeur *initDiver(char *diver_name) {
         return NULL;
     }
 
+    diver->nom = NULL;
+    if (diver_name) {
+        size_t length = strlen(diver_name);
+        diver->nom = malloc(sizeof(char) * (length + 1));
+        diver->nom[length] = '\0';
+        if (!diver->nom) return NULL;
+        strcpy(diver->nom, diver_name);
+    }
+
     // Initialisation du Joueur
 
     if (setDiverFromConf(diver)) {
@@ -31,10 +40,8 @@ Plongeur *initDiver(char *diver_name) {
     diver->etats_subi.etats = NULL;
     diver->etats_subi.longueur_etats = 0;
 
-    size_t length = strlen(diver_name);
-    diver->nom = malloc(sizeof(char) * length);
-    if (!diver->nom) return NULL;
-    strcpy(diver->nom, diver_name);
+    diver->competences = NULL;
+    diver->longueur_competences = 0;
 
     return diver;
 }
@@ -99,10 +106,12 @@ int diverIsDead(Plongeur *diver) {
 
 void freeDiver(Plongeur *diver) {
     if (!diver) return;
-    if (diver->etats_subi.etats) {
-        free(diver->etats_subi.etats);
-        diver->etats_subi.etats = NULL;
+    
+    if (diver->nom) {
+        free(diver->nom);
+        diver->nom = NULL;
     }
+    
     if (diver->competences) {
         for (size_t i = 0; i < diver->longueur_competences; i++) {
             if (!diver->competences->nom) continue;
@@ -112,5 +121,11 @@ void freeDiver(Plongeur *diver) {
         free(diver->competences);
         diver->competences = NULL;
     }
+    
+    if (diver->etats_subi.etats) {
+        free(diver->etats_subi.etats);
+        diver->etats_subi.etats = NULL;
+    }
+    
     free(diver);
 }

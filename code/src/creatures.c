@@ -130,6 +130,25 @@ int addCreatureInBestiary(Bestiaire *modelBestiary, Bestiaire *bestiary, char *t
 }
 
 
+Bestiaire *initEmptyBestiary() {
+
+    // Allocation mémoire
+
+    Bestiaire *bestiary = malloc(sizeof(Bestiaire));
+    if (bestiary == NULL) {
+        fprintf(stderr, "Erreur: initEmptyBestiary(): Allocation mémoire bestiary\n");
+        return NULL;
+    }
+
+    // Initialisation du Bestiaire Vide
+    
+    bestiary->longueur_creatures = 0;
+    bestiary->creatures = NULL;
+    
+    return bestiary;
+}
+
+
 Bestiaire *initBestiaryModel() {
     
     unsigned count_all_unique_model = countAllUniqueModel();
@@ -139,7 +158,7 @@ Bestiaire *initBestiaryModel() {
 
     Bestiaire *modelBestiary = malloc(sizeof(Bestiaire));
     if (modelBestiary == NULL) {
-        fprintf(stderr, "Erreur: initBestiary(): Allocation mémoire modelBestiary\n");
+        fprintf(stderr, "Erreur: initBestiaryModel(): Allocation mémoire modelBestiary\n");
         return NULL;
     }
     
