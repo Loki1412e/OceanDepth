@@ -1,7 +1,8 @@
 #include "../include/creatures.h"
 
 
-Bestiaire *initBestiaryModel();
+Bestiaire *initModelBestiary();
+Bestiaire *initEmptyBestiary();
 int generateCreatureInBestiary(Bestiaire *modelBestiary, Bestiaire *bestiary, unsigned depth_level);
 int addCreatureInBestiary(Bestiaire *modelBestiary, Bestiaire *bestiary, char *type_name, unsigned depth_level);
 void freeBestiary(Bestiaire *bestiary);
@@ -149,7 +150,7 @@ Bestiaire *initEmptyBestiary() {
 }
 
 
-Bestiaire *initBestiaryModel() {
+Bestiaire *initModelBestiary() {
     
     unsigned count_all_unique_model = countAllUniqueModel();
     if (!count_all_unique_model) return NULL;
@@ -158,7 +159,7 @@ Bestiaire *initBestiaryModel() {
 
     Bestiaire *modelBestiary = malloc(sizeof(Bestiaire));
     if (modelBestiary == NULL) {
-        fprintf(stderr, "Erreur: initBestiaryModel(): Allocation mémoire modelBestiary\n");
+        fprintf(stderr, "Erreur: initModelBestiary(): Allocation mémoire modelBestiary\n");
         return NULL;
     }
     
@@ -291,7 +292,7 @@ int setBestiaryFromConf(Bestiaire *modelBestiary) {
     if (modelBestiary->longueur_creatures != length) {
         freeBestiary(modelBestiary);
         fclose(f);
-        fprintf(stderr, "Erreur: setBestiaryFromConf(): longueur_creatures (%llu) != index (%hu)\n", modelBestiary->longueur_creatures, index);
+        fprintf(stderr, "Erreur: setBestiaryFromConf(): longueur_creatures (%zu) != index (%hu)\n", modelBestiary->longueur_creatures, index);
         return EXIT_FAILURE;
     }
 
