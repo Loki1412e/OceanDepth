@@ -1,5 +1,8 @@
 .vscode/*
 
+# Nom de l'executable sans extension
+oceandepth
+
 # Prerequisites
 *.d
 
