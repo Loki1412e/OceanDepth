@@ -18,7 +18,7 @@ int main() {
 
     // Init Allocation
 
-    modelBestiary = initBestiaryModel();
+    modelBestiary = initModelBestiary();
     if (!modelBestiary) return EXIT_FAILURE;
 
     bestiary = initEmptyBestiary();
@@ -35,9 +35,7 @@ int main() {
         if (generateCreatureInBestiary(modelBestiary, bestiary, 0)) return EXIT_FAILURE;
     }
 
-    for (size_t i = 0; i < bestiary->longueur_creatures; i++) {
-        combat(bestiary->creatures[i], player);
-    }
+    combat(player, bestiary->creatures, bestiary->longueur_creatures);
 
     // printCreatures(bestiary->creatures, bestiary->longueur_creatures, "creature");
     printDiver(player);

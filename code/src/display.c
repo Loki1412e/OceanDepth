@@ -25,13 +25,13 @@ void printCreature(CreatureMarine *creature) {
 
     if (creature->apparition) {
         printf("ApparitionCreature:\n");
-        printf("  Profondeurs (%llu): ", creature->apparition->longueur_profondeurs);
+        printf("  Profondeurs (%zu): ", creature->apparition->longueur_profondeurs);
         for (size_t i = 0; i < creature->apparition->longueur_profondeurs; i++) {
             printf("%hu ", creature->apparition->profondeurs[i]);
         }
         printf("\n");
 
-        printf("  Taux (%llu): ", creature->apparition->longueur_taux);
+        printf("  Taux (%zu): ", creature->apparition->longueur_taux);
         for (size_t i = 0; i < creature->apparition->longueur_taux; i++) {
             printf("%hu ", creature->apparition->taux[i]);
         }
@@ -43,7 +43,7 @@ void printCreature(CreatureMarine *creature) {
 
 
 void printCreatures(CreatureMarine **creatures, size_t length) {
-    printf("Bestiaire (%llu):\n\n", length);
+    printf("Bestiaire (%zu):\n\n", length);
     for (size_t i = 0; i < length; i++) {
         printCreature(creatures[i]);
         printf("\n");

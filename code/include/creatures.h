@@ -3,7 +3,8 @@
 
     #include "global.h"
     
-    Bestiaire *initBestiaryModel();
+    Bestiaire *initModelBestiary();
+    Bestiaire *initEmptyBestiary();
     int generateCreatureInBestiary(Bestiaire *modelBestiary, Bestiaire *bestiary, unsigned depth_level);
     int addCreatureInBestiary(Bestiaire *modelBestiary, Bestiaire *bestiary, char *type_name, unsigned depth_level);
     void freeBestiary(Bestiaire *bestiary);
