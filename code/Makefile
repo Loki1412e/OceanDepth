@@ -13,7 +13,7 @@ clean:
 debug: CFLAGS += -DDEBUG
 debug: $(TARGET)
 
-valgrind: clean debug
+valgrind: debug
 	valgrind -v --leak-check=full --track-origins=yes ./$(TARGET)
 
 .PHONY: clean debug
