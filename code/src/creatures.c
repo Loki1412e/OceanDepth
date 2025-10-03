@@ -9,6 +9,7 @@ void freeBestiary(Bestiaire *bestiary);
 void freeCreatures(CreatureMarine **creatures, size_t length);
 void freeCreature(CreatureMarine *creature);
 
+void sortCreaturesBySpeed(CreatureMarine **creatures, size_t nb_creatures);
 int setBestiaryFromConf(Bestiaire *modelBestiary);
 unsigned *parseCreaturesApparitionConf(int index, char *line, size_t *length, char *errorOrigin, short *errorCode);
 int applyModel(CreatureMarine *model, CreatureMarine *creature);
@@ -55,6 +56,9 @@ int generateCreatureInBestiary(Bestiaire *modelBestiary, Bestiaire *bestiary, un
                     
                     // On l'ajoute dans le Bestiaire
                     if (addCreatureInBestiary(modelBestiary, bestiary, model->nom_type, depth_level)) return EXIT_FAILURE;
+
+                    // On trie le Bestiaire
+                    sortCreaturesBySpeed(bestiary->creatures, bestiary->longueur_creatures);
 
                     return EXIT_SUCCESS;
                 }
@@ -205,6 +209,21 @@ Bestiaire *initModelBestiary() {
     }
     
     return modelBestiary;
+}
+
+
+// trier par vitesse decroissant (du plus au moins rapide)
+void sortCreaturesBySpeed(CreatureMarine **creatures, size_t nb_creatures) {
+    CreatureMarine *tmp = NULL;
+    for (size_t i = 0; i < nb_creatures - 1; i++) {
+        for (size_t j = i + 1; j < nb_creatures; j++) {
+            if (creatures[i]->vitesse < creatures[j]->vitesse) {
+                tmp = creatures[i];
+                creatures[i] = creatures[j];
+                creatures[j] = tmp;
+            }
+        }
+    }
 }
 
 

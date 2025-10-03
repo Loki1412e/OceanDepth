@@ -145,6 +145,7 @@ void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_c
 
 /* ==== Boucle de combat ==== */
 
+// creatures deja sort by speed (voir creature.c -> generateCreatureInBestiary)
 int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
     
     int vivantes;
@@ -166,6 +167,16 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
             printf("\n✅ Toutes les créatures ont été vaincues !\n");
             return EXIT_SUCCESS;
         }
+
+        // Monstres autant ou plus rapides
+        for (size_t i = 0; i < nb_creatures; i++) {
+            if (creatures[i]->pv > 0 && (creatures[i]->vitesse >= joueur->vitesse)) {
+                creatureAttaqueJoueur(creatures[i], joueur);
+                if (diverIsDead(joueur)) break;
+            }
+        }
+
+        // Joueur
 
         int attaques_restantes = calculerAttaquesMaxAvecFatigue(joueur->fatigue_max, joueur->niveau_fatigue);
 
@@ -238,9 +249,9 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
         appliquerConsommationOxygeneProfondeur(joueur);
 
-        // Attaques des créatures vivantes
+        // Monstres strictement moins rapides
         for (size_t i = 0; i < nb_creatures; i++) {
-            if (creatures[i]->pv > 0) {
+            if (creatures[i]->pv > 0 && (creatures[i]->vitesse < joueur->vitesse)) {
                 creatureAttaqueJoueur(creatures[i], joueur);
                 if (diverIsDead(joueur)) break;
             }
@@ -248,7 +259,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
     }
 
     printf("\n☠️  Vous êtes mort... GAME OVER\n");
-    return EXIT_FAILURE;
+    return EXIT_SUCCESS;
 }
 
 
