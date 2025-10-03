@@ -4,7 +4,6 @@
     #include "global.h"
 
     Plongeur *initDiver(char *diver_name);
-    int diverIsDead(Plongeur *diver);
     void freeDiver(Plongeur *diver);
 
 #endif
