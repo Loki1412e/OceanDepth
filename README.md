@@ -38,7 +38,6 @@ GROUPE-02/
 │       
 ├───code/
 │   │   Makefile
-│   │   oceandepth.exe
 │   │   
 │   ├───config/
 │   │       creatures.conf
