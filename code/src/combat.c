@@ -13,6 +13,7 @@ int appliquerConsommationOxygeneProfondeur(Plongeur *joueur);
 void joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature);
 void creatureAttaqueJoueur(CreatureMarine *creature, Plongeur *joueur);
 // Affichage
+int afficherEtatOxygene(Plongeur *joueur);
 void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures, int attaques_restantes);
 
 
@@ -80,15 +81,6 @@ int appliquerConsommationOxygeneProfondeur(Plongeur *joueur) {
     joueur->niveau_oxygene -= perte;
     if (joueur->niveau_oxygene < 0) joueur->niveau_oxygene = 0;
 
-    if (joueur->niveau_oxygene <= 10)
-        printf("⚠️  Alerte critique : oxygène bas (%d%%) !\n", joueur->niveau_oxygene);
-
-    if (joueur->niveau_oxygene == 0) {
-        perte = joueur->pv_max * 0.05; // 5% de max pv = max 20 tours : mort.
-        joueur->pv -= perte;
-        printf("⛔ Vous suffoquez ! -%d PV\n", perte);
-    }
-
     return perte;
 }
 
@@ -121,6 +113,23 @@ void creatureAttaqueJoueur(CreatureMarine *creature, Plongeur *joueur) {
 
 
 /* ==== Affichage ==== */
+
+int afficherEtatOxygene(Plongeur *joueur) {
+    int perte = 0;
+    
+    int p = joueur->niveau_oxygene * 100 / joueur->niveau_oxygene_max;
+
+    if (p <= 10)
+        printf("⚠️  Alerte critique : oxygène bas (%d%%) !\n", joueur->niveau_oxygene);
+
+    if (joueur->niveau_oxygene == 0) {
+        perte = joueur->pv_max * 0.05; // 5% de max pv = max 20 tours : mort.
+        joueur->pv -= perte;
+        printf("⛔ Plus d'oxygène, vous suffoquez ! -%d PV\n", perte);
+    }
+
+    return perte;
+}
 
 void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures, int attaques_restantes) {
     printf("\n=== COMBAT SOUS-MARIN ===\n");
@@ -253,6 +262,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         }
 
         appliquerConsommationOxygeneProfondeur(joueur);
+        afficherEtatOxygene(joueur);
 
         // Monstres strictement moins rapides
         for (size_t i = 0; i < nb_creatures; i++) {
