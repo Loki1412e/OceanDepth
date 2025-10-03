@@ -153,6 +153,8 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
     int choix;
     size_t cible;
 
+    short premierTour = 1;
+
     clearConsole();
     
     while (!diverIsDead(joueur)) {
@@ -168,12 +170,15 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
             return EXIT_SUCCESS;
         }
 
-        // Monstres autant ou plus rapides
-        for (size_t i = 0; i < nb_creatures; i++) {
-            if (creatures[i]->pv > 0 && (creatures[i]->vitesse >= joueur->vitesse)) {
-                creatureAttaqueJoueur(creatures[i], joueur);
-                if (diverIsDead(joueur)) break;
+        // Monstres autant ou plus rapides LORS DU premier tour de boucle
+        if (premierTour) {
+            for (size_t i = 0; i < nb_creatures; i++) {
+                if (creatures[i]->pv > 0 && (creatures[i]->vitesse >= joueur->vitesse)) {
+                    creatureAttaqueJoueur(creatures[i], joueur);
+                    if (diverIsDead(joueur)) break;
+                }
             }
+            premierTour = 0;
         }
 
         // Joueur
@@ -251,7 +256,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
         // Monstres strictement moins rapides
         for (size_t i = 0; i < nb_creatures; i++) {
-            if (creatures[i]->pv > 0 && (creatures[i]->vitesse < joueur->vitesse)) {
+            if (creatures[i]->pv > 0) {
                 creatureAttaqueJoueur(creatures[i], joueur);
                 if (diverIsDead(joueur)) break;
             }
