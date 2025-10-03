@@ -2,7 +2,6 @@
 
 
 Plongeur *initDiver(char *diver_name);
-int diverIsDead(Plongeur *diver);
 void freeDiver(Plongeur *diver);
 
 int setDiverFromConf(Plongeur *diver);
@@ -96,11 +95,6 @@ int setDiverFromConf(Plongeur *diver) {
 
     fclose(f);
     return EXIT_SUCCESS;
-}
-
-
-int diverIsDead(Plongeur *diver) {    
-    return !(diver->pv > 0) || !(diver->niveau_oxygene > 0);
 }
 
 

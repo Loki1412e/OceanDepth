@@ -157,7 +157,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
     clearConsole();
     
-    while (!diverIsDead(joueur)) {
+    while (joueur->pv > 0) {
         
         vivantes = 0;
 
@@ -175,7 +175,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
             for (size_t i = 0; i < nb_creatures; i++) {
                 if (creatures[i]->pv > 0 && (creatures[i]->vitesse >= joueur->vitesse)) {
                     creatureAttaqueJoueur(creatures[i], joueur);
-                    if (diverIsDead(joueur)) break;
+                    if (joueur->pv <= 0) break;
                 }
             }
             premierTour = 0;
@@ -258,7 +258,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         for (size_t i = 0; i < nb_creatures; i++) {
             if (creatures[i]->pv > 0) {
                 creatureAttaqueJoueur(creatures[i], joueur);
-                if (diverIsDead(joueur)) break;
+                if (joueur->pv <= 0) break;
             }
         }
     }
