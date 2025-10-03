@@ -4,6 +4,6 @@
     #include "global.h"
     #include "joueur.h"
 
-    int combat(CreatureMarine *creature, Plongeur *joueur);
+    int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures);
 
 #endif
