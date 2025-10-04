@@ -95,7 +95,7 @@ int main() {
                 if (!actualSave->diver) break;
 
                 // Sauvegarde dans un fichier de la save actuel
-                printSave(actualSave);
+                // printSave(actualSave);
                 save(actualSave);
                 break;
 
@@ -137,7 +137,7 @@ int main() {
                 if (!actualSave) break;
 
                 // Sauvegarde dans un fichier de la save actuel
-                printSave(actualSave);
+                // printSave(actualSave);
                 save(actualSave);
                 break;
         }
@@ -148,7 +148,7 @@ int main() {
         freeSauvegardes(listSaves);
         listSaves = NULL;
 
-        // clearConsole();
+        clearConsole();
     }
 
     return EXIT_SUCCESS;
