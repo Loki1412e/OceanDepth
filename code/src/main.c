@@ -16,9 +16,10 @@ int main() {
     ListeSauvegardes *listSaves = NULL;
     Sauvegarde *actualSave = NULL;
     
-    char *buff = NULL;
+    char *strBuff = NULL;
 
-    int choice, res;
+    size_t choice;
+    int res;
 
     int attemp, maxAttemp;
 
@@ -26,7 +27,7 @@ int main() {
 
     while (runProgram) {
 
-        listSaves = preLoadListSaves("sauvegarde");
+        listSaves = preLoadListSaves(SAVE_DIR);
         if (!listSaves) return EXIT_FAILURE;
         printListSave(listSaves);
         
@@ -38,7 +39,8 @@ int main() {
 
         choice = lireEntier();
 
-        while (choice < 0 || choice > 2) {
+        // choice est unsigned donc pas de verif sur < 0
+        while (choice > 2) {
             printf("\n\nChoix invalide, choisir entre [0] et [2]\n> ");
             choice = lireEntier();
         }
@@ -51,48 +53,106 @@ int main() {
                 break;
         
             case 1:
-                actualSave = initSave();
-                
-                // Get nom valide
-                
-                printf("\nChoisir le nom de la nouvelle sauvegarde\n> ");
 
+                // Allocation mémoire
+                maxAttemp = 5;
+                attemp = 0;
+                while (!actualSave && attemp < maxAttemp) {
+                    actualSave = initSave();
+                    attemp++;
+                }
+                if (!actualSave) break;
+                
+                // Nom du fichier de sauvegarde
+                printf("\nChoisir le nom de la nouvelle sauvegarde\n> ");
                 res = EXIT_FAILURE;
                 maxAttemp = 5;
                 attemp = 0;
-                while (res != EXIT_SUCCESS || attemp > maxAttemp) {
-                    buff = lireString();
-                    if (buff) {
-                        res = setNewSaveName(actualSave, buff);
+                while (res != EXIT_SUCCESS && attemp < maxAttemp) {
+                    strBuff = lireString();
+                    if (strBuff) {
+                        res = setNewSaveName(actualSave, strBuff);
                         if (res == -1)
                             printf("Nom déjà pris.\n> ");
-                        free(buff);
+                        free(strBuff);
                     }
-                    
                     attemp++;
-                    if (attemp > maxAttemp)
-                        printf("Essaie maximum atteint (%d/%d).\n\n", attemp, maxAttemp);
                 }
+                if (res != EXIT_SUCCESS) break;
 
+                // Nom du Plongeur && init Plongeur
+                printf("\nChoisir le nom du Plongeur\n> ");
+                maxAttemp = 5;
+                attemp = 0;
+                while (!actualSave->diver && attemp < maxAttemp) {
+                    strBuff = lireString();
+                    if (strBuff) {
+                        actualSave->diver = initDiver(strBuff);
+                        free(strBuff);
+                    }
+                    attemp++;
+                }
+                if (!actualSave->diver) break;
+
+                // Sauvegarde dans un fichier de la save actuel
                 printSave(actualSave);
-
-                freeSauvegarde(actualSave);
+                save(actualSave);
                 break;
 
             case 2:
-                if (listSaves->longueur_sauvegardes == 0) {
-                    clearConsole();
-                    break;
+                if (listSaves->longueur_sauvegardes == 0) break;
+                
+                // Choix de la save
+                printf("\nChoisir la sauvegarde à charger (entre 1 et %zu)\n> ", listSaves->longueur_sauvegardes);
+                choice = 0;
+                maxAttemp = 5;
+                attemp = 0;
+                while ((choice < 1 || choice > listSaves->longueur_sauvegardes) && attemp < maxAttemp) {
+                    choice = lireEntier();
+                    if (choice < 1 || choice > listSaves->longueur_sauvegardes) {
+                        if (listSaves->longueur_sauvegardes == 1)
+                            printf("Choix invalide.\n> ");
+                        else
+                            printf("Choix invalide, choisir entre [1] et [%zu]\n> ", listSaves->longueur_sauvegardes);
+                    }
+                    attemp++;
                 }
+                if (choice < 1 || choice > listSaves->longueur_sauvegardes) break;
 
+                // Allocation mémoire && Load Save
+                maxAttemp = 5;
+                attemp = 0;
+                while (!actualSave && attemp < maxAttemp) {
+                    actualSave = loadSave(listSaves->sauvegardes[choice-1]->nom, false); // false: on veut tte la save (pas de preLoad)
+                    if (actualSave) {
+                        // Normalement sert à rien vu que deja verif car existe dans listSaves
+                        if (!actualSave->nom) {
+                            printf("Sauvegarde innexistante.\n> ");
+                            freeSauvegarde(actualSave);
+                            break;
+                        }
+                    }
+                    attemp++;
+                }
+                if (!actualSave) break;
+
+                // Sauvegarde dans un fichier de la save actuel
+                printSave(actualSave);
+                save(actualSave);
                 break;
         }
-
+        
+        freeSauvegarde(actualSave);
+        actualSave = NULL;
+        
         freeSauvegardes(listSaves);
+        listSaves = NULL;
+
+        // clearConsole();
     }
 
     return EXIT_SUCCESS;
-
+}
 
     // // Initialisation des variables
 
@@ -124,12 +184,10 @@ int main() {
 
     // // printCreatures(bestiary->creatures, bestiary->longueur_creatures, "creature");
     
-    // if (save("sauvegarde", "test", player) != EXIT_SUCCESS) return EXIT_FAILURE;
+    // if (save(SAVE_DIR, "test", player) != EXIT_SUCCESS) return EXIT_FAILURE;
     
     // printDiver(player);
     
     // freeBestiary(bestiary);
     // freeBestiary(modelBestiary);
     // freeDiver(player);
-    // return EXIT_SUCCESS;
-}

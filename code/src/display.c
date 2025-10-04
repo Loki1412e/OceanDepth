@@ -1,7 +1,7 @@
 # include "../include/display.h"
 
 // Temp
-int lireEntier();
+unsigned lireEntier();
 char *lireString();
 void clearConsole();
 
@@ -9,8 +9,10 @@ void printCreature(CreatureMarine *creature);
 void printCreatures(CreatureMarine **creatures, size_t length);
 void printBestiary(Bestiaire *bestiary);
 void printDiver(Plongeur *diver);
-void printSave(Sauvegarde *save);
+void printSaveLastRun(Sauvegarde *save);
 void printListSave(ListeSauvegardes *saves);
+
+void printSave(Sauvegarde *save);
 
 char *enumSpecialEffectToChar(EffetsSpeciaux special_effect);
 
@@ -27,11 +29,11 @@ char *enumSpecialEffectToChar(EffetsSpeciaux special_effect) {
 
 /*====== Temp ======*/
 
-int lireEntier() {
+unsigned lireEntier() {
     int choix;
     
     while (1) {
-        if (scanf("%d", &choix) == 1) break;
+        if (scanf(" %d", &choix) == 1) break;
         // nettoyage si entrée invalide
         while (getchar() != '\n'); 
         choix = 0; // force la répétition
@@ -40,7 +42,7 @@ int lireEntier() {
     
     while (getchar() != '\n');
     
-    return choix;
+    return choix < 0 ? choix * -1 : choix;
 }
 
 // il faut free la reponse.
@@ -188,7 +190,7 @@ void printDiver(Plongeur *diver) {
 }
 
 
-void printSave(Sauvegarde *save) {
+void printSaveLastRun(Sauvegarde *save) {
     size_t diff;
     
     printf("%s / ", save->nom);
@@ -209,7 +211,6 @@ void printSave(Sauvegarde *save) {
     printf("\n");
 }
 
-
 void printListSave(ListeSauvegardes *saves) {    
     if (saves->longueur_sauvegardes == 0) {
         printf("\nAucune sauvegarde pour le moment.\n\n");
@@ -220,8 +221,15 @@ void printListSave(ListeSauvegardes *saves) {
 
     for (size_t i = 0; i < saves->longueur_sauvegardes; i++) {
         printf("[%zu] - ", i+1);
-        printSave(saves->sauvegardes[i]);
+        printSaveLastRun(saves->sauvegardes[i]);
     }
     
     printf("\n");
+}
+
+
+void printSave(Sauvegarde *save) {
+    printf("\n");
+    printSaveLastRun(save);
+    printDiver(save->diver);
 }
