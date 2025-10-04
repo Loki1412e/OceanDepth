@@ -51,7 +51,6 @@ int main() {
                 break;
         
             case 1:
-
                 actualSave = initSave();
                 
                 // Get nom valide
@@ -83,8 +82,9 @@ int main() {
             case 2:
                 if (listSaves->longueur_sauvegardes == 0) {
                     clearConsole();
-                    continue;
+                    break;
                 }
+
                 break;
         }
 
