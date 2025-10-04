@@ -36,7 +36,12 @@ int setNewSaveName(Sauvegarde *save, char *save_name) {
     }
 
     // Si file existe deja on return -1
-    if (file_exists(filepath)) return -1;
+    if (file_exists(filepath)) {
+        free(filepath);
+        return -1;
+    }
+
+    free(filepath);
 
     save->nom = my_strdup(save_name);
     
@@ -123,12 +128,14 @@ Sauvegarde *loadSave(char *save_name, short preLoad) {
 
     if (!file_exists(filepath)) {
         fprintf(stderr, "load : '%s' n'existe pas\n", filepath);
+        free(filepath);
         return NULL;
     }
 
     save = initSave();
     if (!save) {
         fprintf(stderr, "load : erreur allocation save\n");
+        free(filepath);
         return NULL;
     }
 
@@ -140,12 +147,14 @@ Sauvegarde *loadSave(char *save_name, short preLoad) {
         return NULL;
     }
 
+    // On a plus besoin de filepath
+    free(filepath);
+
     // On attribu le nom de la save
     save->nom = my_strdup(save_name);
     if (!save->nom) {
         fprintf(stderr, "Erreur allocation nom\n");
         fclose(file);
-        free(filepath);
         freeSauvegarde(save);
         return NULL;
     }
@@ -156,7 +165,6 @@ Sauvegarde *loadSave(char *save_name, short preLoad) {
     if (loadInfo(save, file) != EXIT_SUCCESS) {
         fprintf(stderr, "Erreur chargement info\n");
         fclose(file);
-        free(filepath);
         freeSauvegarde(save);
         return NULL;
     }
@@ -164,7 +172,6 @@ Sauvegarde *loadSave(char *save_name, short preLoad) {
     // Si preLoad = True alors on s'arrete à loadInfo()
     if (preLoad) {
         fclose(file);
-        free(filepath);
         return save;
     }
 
@@ -172,7 +179,6 @@ Sauvegarde *loadSave(char *save_name, short preLoad) {
     if (!save->diver) {
         fprintf(stderr, "Erreur chargement Plongeur\n");
         fclose(file);
-        free(filepath);
         freeSauvegarde(save);
         return NULL;
     }
@@ -180,7 +186,6 @@ Sauvegarde *loadSave(char *save_name, short preLoad) {
     // free
 
     fclose(file);
-    free(filepath);
 
     return save;
 }
