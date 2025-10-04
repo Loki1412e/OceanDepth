@@ -29,7 +29,7 @@ int setNewSaveName(Sauvegarde *save, char *save_name) {
         return EXIT_FAILURE;
     }
     
-    char *filepath = build_filepath("sauvegarde", save_name);
+    char *filepath = build_filepath(SAVE_DIR, save_name);
     if (!filepath) {
         fprintf(stderr, "setNewSaveName : erreur allocation filepath\n");
         return EXIT_FAILURE;
@@ -120,15 +120,9 @@ Sauvegarde *loadSave(char *save_name, short preLoad) {
 
     Sauvegarde *save = NULL;
 
-    char *filepath = build_filepath("sauvegarde", save_name);
+    char *filepath = build_filepath(SAVE_DIR, save_name);
     if (!filepath) {
         fprintf(stderr, "load : erreur allocation filepath\n");
-        return NULL;
-    }
-
-    if (!file_exists(filepath)) {
-        fprintf(stderr, "load : '%s' n'existe pas\n", filepath);
-        free(filepath);
         return NULL;
     }
 
@@ -137,6 +131,13 @@ Sauvegarde *loadSave(char *save_name, short preLoad) {
         fprintf(stderr, "load : erreur allocation save\n");
         free(filepath);
         return NULL;
+    }
+
+    // Si fichier existe pas on renvoie une save init -> NULL (save->nom = NULL)
+    if (!file_exists(filepath)) {
+        // fprintf(stderr, "load : '%s' n'existe pas\n", filepath);
+        free(filepath);
+        return save;
     }
 
     FILE *file = fopen(filepath, "rb");
@@ -330,7 +331,7 @@ Plongeur *loadDiver(FILE *file) {
 
 int save(Sauvegarde *save) {
     if (!save) {
-        fprintf(stderr, "save : paramètre invalide\n");
+        fprintf(stderr, "save : Paramètre invalide\n");
         return EXIT_FAILURE;
     }
 
@@ -359,7 +360,7 @@ int save(Sauvegarde *save) {
     }
 
 
-    // Save && free
+    // Save final && free
 
     if (finalizeSave(tmpSave) != EXIT_SUCCESS) {
         fprintf(stderr, "save : Erreur finalisation sauvegarde\n");

@@ -4,7 +4,7 @@
     #include "global.h"
     
     // Temp
-    int lireEntier();
+    unsigned lireEntier();
     char *lireString();
     void clearConsole();
 
@@ -12,7 +12,9 @@
     void printCreatures(CreatureMarine **creatures, size_t length);
     void printBestiary(Bestiaire *bestiary);
     void printDiver(Plongeur *diver);
-    void printSave(Sauvegarde *save);
+    void printSaveLastRun(Sauvegarde *save);
     void printListSave(ListeSauvegardes *saves);
+
+    void printSave(Sauvegarde *save);
 
 #endif
