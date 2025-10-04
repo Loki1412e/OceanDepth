@@ -17,33 +17,6 @@ int afficherEtatOxygene(Plongeur *joueur);
 void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures, int attaques_restantes);
 
 
-/*====== Temp ======*/
-
-int lireEntier() {
-    int choix;
-    
-    while (1) {
-        if (scanf("%d", &choix) == 1) break;
-        // nettoyage si entrée invalide
-        while (getchar() != '\n'); 
-        choix = 0; // force la répétition
-        printf("Entrée invalide, veuillez taper un nombre.\n> ");
-    }
-    
-    while (getchar() != '\n');
-    
-    return choix;
-}
-
-void clearConsole() {
-    #ifdef _WIN32
-        system("cls");      // Windows
-    #else
-        system("clear");    // Linux + macOS
-    #endif
-}
-
-
 /*====== Utils ======*/
 
 int augmenterFatigue(Plongeur *joueur, int gain) {
