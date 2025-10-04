@@ -1,20 +1,20 @@
 #include "../include/repertoire.h"
 
-int file_exists(const char *path);
-int mkdir_p(const char *path);
+int file_exists(char *path);
+int mkdir_p(char *path);
 char *build_filepath(char *dir, char *filename);
 
 #ifndef _WIN32
-    int mkdirUnix(const char *path, int mode);
+    int mkdirUnix(char *path, int mode);
 #else
-    int mkdirWin(const char *path);
+    int mkdirWin(char *path);
 #endif
 
-size_t count_all_files_in_folder(const char *path);
-char **list_files(const char *path, size_t *len);
+size_t count_all_files_in_folder(char *path);
+char **list_files(char *path, size_t *len);
 
 
-int file_exists(const char *path) {
+int file_exists(char *path) {
 #ifdef _WIN32
     return (_access(path, 0) == 0);
 #else
@@ -23,7 +23,7 @@ int file_exists(const char *path) {
 }
 
 #ifndef _WIN32
-int mkdirUnix(const char *path, int mode) {
+int mkdirUnix(char *path, int mode) {
     if (mkdir(path, mode) == -1) {
         if (errno != EEXIST) {
             perror("mkdirLinux");
@@ -33,7 +33,7 @@ int mkdirUnix(const char *path, int mode) {
     return EXIT_SUCCESS;
 }
 #else
-int mkdirWin(const char *path) {
+int mkdirWin(char *path) {
     if (_mkdir(path) == -1) {
         if (errno != EEXIST) {
             perror("mkdirWin");
@@ -44,7 +44,7 @@ int mkdirWin(const char *path) {
 }
 #endif
 
-int mkdir_p(const char *path) {
+int mkdir_p(char *path) {
     int res;
     size_t len = strlen(path);
     char *tmp = NULL;
@@ -120,7 +120,7 @@ char *build_filepath(char *dir, char *filename) {
 }
 
 
-size_t count_all_files_in_folder(const char *path) {
+size_t count_all_files_in_folder(char *path) {
     size_t len = 0;
 
 #ifdef _WIN32
@@ -136,7 +136,7 @@ size_t count_all_files_in_folder(const char *path) {
     }
 
     do {
-        const char *name = find_data.cFileName;
+        char *name = find_data.cFileName;
         if (strcmp(name, ".") != 0 && strcmp(name, "..") != 0) {
             len++;
         }
@@ -153,7 +153,7 @@ size_t count_all_files_in_folder(const char *path) {
 
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
-        const char *name = entry->d_name;
+        char *name = entry->d_name;
         if (strcmp(name, ".") != 0 && strcmp(name, "..") != 0) {
             len++;
         }
@@ -167,7 +167,7 @@ size_t count_all_files_in_folder(const char *path) {
 
 
 // size_t *len -> va contenir la longueur du tableau
-char **list_files(const char *path, size_t *len) {
+char **list_files(char *path, size_t *len) {
     if (!path) {
         fprintf(stderr, "list_files(): Argument invalide\n");
         return NULL;
