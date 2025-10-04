@@ -113,7 +113,6 @@ Sauvegarde *loadSave(char *save_name, short preLoad) {
         return NULL;
     }
 
-    size_t len_name = strlen(save_name);
     Sauvegarde *save = NULL;
 
     char *filepath = build_filepath("sauvegarde", save_name);
