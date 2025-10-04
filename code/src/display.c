@@ -1,12 +1,103 @@
 # include "../include/display.h"
 
+// Temp
+int lireEntier();
+char *lireString();
+void clearConsole();
 
 void printCreature(CreatureMarine *creature);
 void printCreatures(CreatureMarine **creatures, size_t length);
 void printBestiary(Bestiaire *bestiary);
 void printDiver(Plongeur *diver);
+void printSave(Sauvegarde *save);
+void printListSave(ListeSauvegardes *saves);
 
 char *enumSpecialEffectToChar(EffetsSpeciaux special_effect);
+
+
+char *enumSpecialEffectToChar(EffetsSpeciaux special_effect) {
+    switch (special_effect) {
+        case PARALYSIE: return "PARALYSIE";
+        case POISON: return "POISON";
+        case SAIGNEMENT: return "SAIGNEMENT";
+        default: return "AUCUN";
+    }
+}
+
+
+/*====== Temp ======*/
+
+int lireEntier() {
+    int choix;
+    
+    while (1) {
+        if (scanf("%d", &choix) == 1) break;
+        // nettoyage si entrée invalide
+        while (getchar() != '\n'); 
+        choix = 0; // force la répétition
+        printf("Entrée invalide, veuillez taper un nombre.\n> ");
+    }
+    
+    while (getchar() != '\n');
+    
+    return choix;
+}
+
+// il faut free la reponse.
+char *lireString() {
+
+    char *buff = NULL;
+    size_t len_buff = 0;
+
+    int valid = 0;
+    
+    buff = malloc(sizeof(char) * 512);
+    if (!buff) return NULL;
+
+    while (!valid) {
+
+        if (scanf(" %511s", buff) != 1) { // 511 + 1 ('\0')
+            printf("Erreur de lecture. Merci de réécrire\n> ");
+            continue;
+        }
+
+        len_buff = strlen(buff);
+
+        if (len_buff > 500) {
+            printf("Trop long (max 500 caractères).\n> ");
+            continue;
+        }
+
+        valid = 1;
+
+        for (size_t i = 0; i < len_buff; i++) {
+            if ((buff[i] < 'A' || buff[i] > 'Z') &&
+                (buff[i] < 'a' || buff[i] > 'z') &&
+                (buff[i] < '0' || buff[i] > '9') &&
+                buff[i] != '-' &&
+                buff[i] != '_'
+            ) {
+                printf("Caractère invalide : '%c'\n> ", buff[i]);
+                valid = 0;
+                break;
+            }
+        }
+
+        while (getchar() != '\n');
+    }
+    
+    return buff;
+}
+
+void clearConsole() {
+    #ifdef _WIN32
+        system("cls");      // Windows
+    #else
+        system("clear");    // Linux + macOS
+    #endif
+}
+
+/*==================*/
 
 
 void printCreature(CreatureMarine *creature) {
@@ -65,16 +156,6 @@ void printBestiary(Bestiaire *bestiary) {
 }
 
 
-char *enumSpecialEffectToChar(EffetsSpeciaux special_effect) {
-    switch (special_effect) {
-        case PARALYSIE: return "PARALYSIE";
-        case POISON: return "POISON";
-        case SAIGNEMENT: return "SAIGNEMENT";
-        default: return "AUCUN";
-    }
-}
-
-
 void printDiver(Plongeur *diver) {
     if (!diver) {
         printf("NULL Plongeur pointer\n");
@@ -104,4 +185,43 @@ void printDiver(Plongeur *diver) {
     }
 
     printf("====================================\n\n");
+}
+
+
+void printSave(Sauvegarde *save) {
+    size_t diff;
+    
+    printf("%s / ", save->nom);
+    diff = difftime(time(NULL), (time_t) save->derniere_modification);
+        
+    if (diff < 60)
+        printf("%zus", diff);
+        
+    else if (diff < 3600)
+        printf("%zumin", diff / 60);
+        
+    else if (diff < 86400)
+        printf("%zuh", diff / 3600);
+        
+    else
+        printf("%zuj", diff / 86400);
+    
+    printf("\n");
+}
+
+
+void printListSave(ListeSauvegardes *saves) {    
+    if (saves->longueur_sauvegardes == 0) {
+        printf("\nAucune sauvegarde pour le moment.\n\n");
+        return;
+    }
+
+    printf("\nListe des sauvegardes:\n");
+
+    for (size_t i = 0; i < saves->longueur_sauvegardes; i++) {
+        printf("[%zu] - ", i+1);
+        printSave(saves->sauvegardes[i]);
+    }
+    
+    printf("\n");
 }

@@ -2,11 +2,13 @@
 
 
 Plongeur *initDiver(char *diver_name);
+void freeDiverContent(Plongeur *diver);
 void freeDiver(Plongeur *diver);
 
 int setDiverFromConf(Plongeur *diver);
 
 
+// Pour init un plongeur sans nom -> initDiver(NULL)
 Plongeur *initDiver(char *diver_name) {
     
     // Allocation mémoire
@@ -19,11 +21,8 @@ Plongeur *initDiver(char *diver_name) {
 
     diver->nom = NULL;
     if (diver_name) {
-        size_t length = strlen(diver_name);
-        diver->nom = malloc(sizeof(char) * (length + 1));
-        diver->nom[length] = '\0';
+        diver->nom = my_strdup(diver_name);
         if (!diver->nom) return NULL;
-        strcpy(diver->nom, diver_name);
     }
 
     // Initialisation du Joueur
@@ -98,7 +97,7 @@ int setDiverFromConf(Plongeur *diver) {
 }
 
 
-void freeDiver(Plongeur *diver) {
+void freeDiverContent(Plongeur *diver) {
     if (!diver) return;
     
     if (diver->nom) {
@@ -108,9 +107,9 @@ void freeDiver(Plongeur *diver) {
     
     if (diver->competences) {
         for (size_t i = 0; i < diver->longueur_competences; i++) {
-            if (!diver->competences->nom) continue;
-            free(diver->competences->nom);
-            diver->competences->nom = NULL;
+            if (!diver->competences[i].nom) continue;
+            free(diver->competences[i].nom);
+            diver->competences[i].nom = NULL;
         }
         free(diver->competences);
         diver->competences = NULL;
@@ -120,6 +119,10 @@ void freeDiver(Plongeur *diver) {
         free(diver->etats_subi.etats);
         diver->etats_subi.etats = NULL;
     }
-    
+}
+
+void freeDiver(Plongeur *diver) {
+    if (!diver) return;
+    freeDiverContent(diver);
     free(diver);
 }

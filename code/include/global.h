@@ -4,9 +4,34 @@
     /* Include */
 
     #include <stdio.h>
+    #include <errno.h>
     #include <stdlib.h>
     #include <string.h>
+    #include <time.h>
     #include "random.h"
+    #include "repertoire.h"
+    #include "utils.h"
+
+    #ifdef _WIN32
+        #include <windows.h>
+        #include <direct.h>
+        #include <io.h>
+        #define PATH_SEPARATOR '\\'
+    #else
+        #include <unistd.h>
+        #include <dirent.h>
+        #include <sys/stat.h>
+        #include <sys/types.h>
+        #define PATH_SEPARATOR '/'
+    #endif
+
+
+    /* Define */
+
+    #define false 0
+    #define true 1
+
+    #define SAVE_DIR "sauvegarde"
 
 
     /* Enum */
@@ -83,7 +108,7 @@
         unsigned perles; // monnaie du jeu
         unsigned niveau;
         Etats etats_subi;
-        Competence *competences;
+        Competence *competences; // tableau de competences (pas sur de le garder)
         size_t longueur_competences;
         unsigned row_X; // 0
         unsigned col_Y; // 0
@@ -100,5 +125,16 @@
         Case *cases;
         size_t longueur_cases;
     } Carte;
+
+    typedef struct {
+        char *nom;
+        size_t derniere_modification; // time(null) -> en secondes
+        Plongeur *diver;
+    } Sauvegarde;
+
+    typedef struct {
+        Sauvegarde **sauvegardes;
+        size_t longueur_sauvegardes;
+    } ListeSauvegardes;
 
 #endif
