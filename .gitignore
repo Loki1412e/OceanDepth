@@ -5,6 +5,7 @@ code/bin/save/*
 oceandepth
 
 # *.png
+code/assets/*
 
 # Prerequisites
 *.d
