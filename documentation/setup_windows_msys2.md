@@ -56,6 +56,6 @@ Si les 2 fonctionnent c'est bon 👌
 Depuis le dossier racine du projet :
 
 ```bash
-cd .\code\
-cls && make debug && cd bin/ && ./oceandepth.exe && cd ..
+cd ./code/
+cls && make debug && cd output/ && ./oceandepth.exe && cd ..
 ```
