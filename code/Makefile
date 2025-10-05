@@ -4,19 +4,22 @@ TARGET = oceandepth
 SRCDIR = src
 OUTDIR = bin
 SOURCES = $(wildcard ./$(SRCDIR)/*.c)
-RESOURCES = rc/icon.o
-ICON = assets/logo/icon64x64.ico
-RCFILE = rc/icon.rc
 
 # Détection Windows (MSYS2) / Linux / macOS
 ifeq ($(OS),Windows_NT)
     SDL_CFLAGS = -IC:/msys64/mingw64/include/SDL2
     SDL_LDFLAGS = -LC:/msys64/mingw64/lib -lSDL2main -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf
     PROD_FLAGS = -mwindows
+    RESOURCES = rc/icon.o
+    ICON = assets/logo/icon64x64.ico
+    RCFILE = rc/icon.rc
 else
     SDL_CFLAGS = $(shell sdl2-config --cflags)
     SDL_LDFLAGS = $(shell sdl2-config --libs) -lSDL2_image -lSDL2_mixer -lSDL2_ttf
     PROD_FLAGS =
+    RESOURCES =
+    ICON =
+    RCFILE =
 endif
 
 .PHONY: all clean debug valgrind prod
