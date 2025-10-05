@@ -2,6 +2,7 @@
 
 code/output/save/*
 code/output/assets/*
+!code/output/assets/README.md
 
 # Nom de l'executable sans extension
 oceandepth
