@@ -23,7 +23,7 @@ sudo apt update -y && sudo apt upgrade -y
 sudo apt install gcc make
 ```
 
-### Pour finir il faut télécharger les assets dans le dossier ./assets/  ([télécharger via GoogleDrive](https://drive.google.com/drive/folders/1PaWy5Z0gs6dmZUdHXEOvd_NeacdMIMX7?usp=drive_link))
+### Pour finir il faut télécharger les assets dans le dossier ./code/assets/  ([télécharger via GoogleDrive](https://drive.google.com/drive/folders/1PaWy5Z0gs6dmZUdHXEOvd_NeacdMIMX7?usp=drive_link))
 
 ## 🚀 Lancer le projet
 
