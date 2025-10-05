@@ -29,7 +29,7 @@ Depuis le dossier racine du projet :
 
 ```bash
 cd .\code\
-clear && make clean && make debug && .\oceandepth.exe
+cls && make debug && cd bin/ && ./oceandepth.exe && cd ..
 ```
 
 ## 📖 Description
