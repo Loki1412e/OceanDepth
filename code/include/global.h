@@ -8,15 +8,14 @@
     #include <stdlib.h>
     #include <string.h>
     #include <time.h>
-    #include "random.h"
-    #include "repertoire.h"
-    #include "utils.h"
 
     #ifdef _WIN32
         #include <windows.h>
         #include <direct.h>
         #include <io.h>
         #define PATH_SEPARATOR '\\'
+        
+        #define SDL_MAIN_HANDLED
     #else
         #include <unistd.h>
         #include <dirent.h>
@@ -24,6 +23,15 @@
         #include <sys/types.h>
         #define PATH_SEPARATOR '/'
     #endif
+
+    #include <SDL2/SDL.h>
+    #include <SDL2/SDL_image.h>
+    #include <SDL2/SDL_mixer.h>
+    #include <SDL2/SDL_ttf.h>
+
+    #include "random.h"
+    #include "repertoire.h"
+    #include "utils.h"
 
 
     /* Define */

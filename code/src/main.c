@@ -26,6 +26,10 @@ size_t saveChoice(ListeSauvegardes *listSaves){
 
 int main() {
 
+#ifdef _WIN32
+    SDL_SetMainReady();
+#endif
+
     seed_random();
 
     /*===== Init var ====*/
