@@ -170,6 +170,11 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         afficherInterface(joueur, creatures, nb_creatures, attaques_restantes);
 
         while (attaques_restantes > 0) {
+
+            if (vivantes == 0) {
+                printf("\n✅ Toutes les créatures ont été vaincues !\n");
+                return EXIT_SUCCESS;
+            }
             
             choix = lireEntier();
             while (choix < 1 || choix > 4) {

@@ -15,7 +15,6 @@ A executer dans le terminal MSYS2 :
 pacman -Syu
 ```
 
-
 ## Etape 3 - Installation de GCC et Make
 
 Toujours dans le terminal MSYS2, installez les paquets nécessaires :
@@ -29,12 +28,12 @@ pacman -S mingw-w64-x86_64-gcc make
 En faisant cela toutes les commandes utilisables via MSYS2 seront disponibles partout dans l'environement 
 
 - Lancer `Modifier les variables d'environement` :
-![`setup_1.png`](./src/setup_1.png)
+![`setup_1.png`](./src/setup/setup_1.png)
 
 - Aller dans [`Variables d'environement...` -> `Variables système` : `Path`] et ajouter les 2 chemins :
     - `C:\msys64\usr\bin`
     - `C:\msys64\mingw64\bin`
-![`setup_2.png`](./src/setup_2.png)
+![`setup_2.png`](./src/setup/setup_2.png)
 
 ## Etape 4 - Vérification de l’installation
 
@@ -58,5 +57,5 @@ Depuis le dossier racine du projet :
 
 ```bash
 cd .\code\
-clear && make clean && make debug && .\oceandepth.exe
+cls && make debug && cd bin/ && ./oceandepth.exe && cd ..
 ```

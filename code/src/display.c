@@ -229,7 +229,6 @@ void printListSave(ListeSauvegardes *saves) {
 
 
 void printSave(Sauvegarde *save) {
-    printf("\n");
     printSaveLastRun(save);
     printDiver(save->diver);
 }

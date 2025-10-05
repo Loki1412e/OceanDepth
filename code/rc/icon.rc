@@ -1,0 +1,2 @@
+// windres rc/icon.rc -o rc/icon.o
+1 ICON "../assets/logo/icon64x64.ico"

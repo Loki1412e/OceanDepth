@@ -3,15 +3,27 @@
 Projet OceanDepth 2025 de l’ESGI pour les étudiants de 3ᵉ année (3ESGI IABD CL B ALT RO) — Groupe 2  
 Membres : FUGON Sofiane, HADDAD Thinina, JAIEL FERRO Milhane
 
+## ⚠️ Setup ⚠️
 
-## ⚠️ Configuration de l'environement de travail ⚠️
+### Configuration de l'environement de travail
 
 Prérequis :
 
 - GCC
 - Make
 
+**Windows**
+
 Voici comment configurer l'environement sous windows : [`setup_windows_msys2.md`](./documentation/setup_windows_msys2.md)
+
+**Linux**
+
+```bash
+sudo apt update -y && sudo apt upgrade -y
+sudo apt install gcc make
+```
+
+### Pour finir il faut télécharger les assets dans le dossier ./assets/  ([télécharger via GoogleDrive](https://drive.google.com/drive/folders/1PaWy5Z0gs6dmZUdHXEOvd_NeacdMIMX7?usp=drive_link))
 
 ## 🚀 Lancer le projet
 
@@ -19,7 +31,7 @@ Depuis le dossier racine du projet :
 
 ```bash
 cd .\code\
-clear && make clean && make debug && .\oceandepth.exe
+cls && make debug && cd bin/ && ./oceandepth.exe && cd ..
 ```
 
 ## 📖 Description
