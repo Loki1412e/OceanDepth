@@ -24,7 +24,22 @@ size_t saveChoice(ListeSauvegardes *listSaves){
 }
 
 
-void saveSwitchProgram(size_t choice, int *runProgram, ListeSauvegardes *listSaves, Sauvegarde *actualSave) {
+int saveSwitchProgram(size_t choice, int *runProgram, ListeSauvegardes *listSaves, Sauvegarde *actualSave) {
+
+    /*===== Creation dossier sauvegarde (si necessaire) ====*/
+    if (mkdir_p(SAVE_DIR) == EXIT_FAILURE) {
+        fprintf(stderr, "Erreur lors de la création du dossier de sauvegarde.\n");
+        *runProgram = false;
+        return EXIT_FAILURE;
+    }
+
+    // Init sauvegardes
+    listSaves = preLoadListSaves(SAVE_DIR);
+    if (!listSaves) {
+        *runProgram = false;
+        fprintf(stderr, "Erreur lors du chargement des sauvegardes.\n");
+        return EXIT_FAILURE;
+    }    
 
     int maxAttemp, attemp;
     int res;
@@ -32,13 +47,38 @@ void saveSwitchProgram(size_t choice, int *runProgram, ListeSauvegardes *listSav
 
     switch (choice) {
 
-        /*-- Quitter le programme --*/
+        /*-- Continuer la partie --*/
         case 0:
-            *runProgram = false;
+            if (listSaves->longueur_sauvegardes == 0) break;
+                
+            // Allocation mémoire && Load Save
+            maxAttemp = 5;
+            attemp = 0;
+            while (!actualSave && attemp < maxAttemp) {
+                actualSave = loadSave(listSaves->sauvegardes[0]->nom, false); // false: on veut tte la save (pas de preLoad)
+                if (actualSave) {
+                    // Normalement sert à rien vu que deja verif car existe dans listSaves
+                    if (!actualSave->nom) {
+                        printf("Sauvegarde innexistante.\n> ");
+                        freeSauvegarde(actualSave);
+                        break;
+                    }
+                }
+                attemp++;
+            }
+            if (!actualSave) break;
+                    
+            // Lancer le jeu
+            res = runGame(actualSave);
+            if (res == -1) *runProgram = false;
+
+            // Sauvegarde dans un fichier de la save actuel
+            // printSave(actualSave);
+            save(actualSave);
             break;
 
 
-        /*-- Nouvelle Sauvegarde --*/
+        /*-- Nouvelle Partie --*/
         case 1:
             // Allocation mémoire
             maxAttemp = 5;
@@ -153,6 +193,12 @@ void saveSwitchProgram(size_t choice, int *runProgram, ListeSauvegardes *listSav
                 attemp++;
             }
             break;
+
+        
+        /*-- Quitter le programme --*/
+        case 4:
+            *runProgram = false;
+            break;
     }
     
     freeSauvegarde(actualSave);
@@ -160,6 +206,8 @@ void saveSwitchProgram(size_t choice, int *runProgram, ListeSauvegardes *listSav
     
     freeSauvegardes(listSaves);
     listSaves = NULL;
+
+    return EXIT_SUCCESS;
 }
 
 
@@ -202,34 +250,21 @@ int main() {
     size_t menu_size = 0;
     size_t selected = 0;
 
-    /*===== Creation dossier sauvegarde (si necessaire) ====*/
-    if (mkdir_p(SAVE_DIR) == EXIT_FAILURE) {
-        fprintf(stderr, "Erreur lors de la création du dossier de sauvegarde.\n");
-        quitSDL(gWindow, gRenderer);
-        return EXIT_FAILURE;
-    }
-
     /*===== Boucle principale ====*/
 
     while (runProgram) {
 
         ////////////////////////////////////
 
-        // Init sauvegardes
-        listSaves = preLoadListSaves(SAVE_DIR);
-        if (!listSaves) {
-            quitSDL(gWindow, gRenderer);
-            return EXIT_FAILURE;
-        }
-
         // Init options menu
         char *menu_options[] = {
-            "Quitter",                  // 0
-            "Nouvelle Sauvegarde",      // 1
+            "Continuer la partie",      // 0
+            "Nouvelle partie",          // 1
             "Charger une sauvegarde",   // 2
-            "Supprimer une sauvegarde"  // 3
+            "Supprimer une sauvegarde", // 3
+            "Quitter"                   // 4
         };
-        menu_size = 4;
+        menu_size = 5;
 
         // Gérer les événements SDL (fermeture fenêtre)
         while (SDL_PollEvent(&event)) {
@@ -249,7 +284,7 @@ int main() {
                         break;
                     
                     case SDLK_RETURN:
-                        selected = 0; // juste pour tester
+                        selected = 4; // juste pour tester
                         saveSwitchProgram(selected, &runProgram, listSaves, actualSave);
                         break;
                 }

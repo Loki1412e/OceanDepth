@@ -81,10 +81,11 @@ void quitSDL(SDL_Window* window, SDL_Renderer* renderer) {
 }
 
 
-TTF_Font* loadFont(const char* fontPath, int fontSize) {
+TTF_Font *loadFont(const char* fontPath, int fontSize) {
     TTF_Font* font = TTF_OpenFont(fontPath, fontSize);
     if (!font) {
         fprintf(stderr, "Erreur chargement police (%s): %s\n", fontPath, TTF_GetError());
+        return NULL;
     }
     return font;
 }
@@ -102,6 +103,10 @@ void renderMenu(SDL_Renderer* renderer, TTF_Font* font, char** options, size_t n
     SDL_Color colorNormal = {255, 255, 255, 255};  // blanc
     SDL_Color colorSelected = {255, 255, 0, 255};  // jaune
 
+    // Récupère la taille de la fenêtre pour centrer
+    int windowW, windowH;
+    SDL_GetRendererOutputSize(renderer, &windowW, &windowH);
+
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // fond noir
     SDL_RenderClear(renderer);
 
@@ -112,15 +117,20 @@ void renderMenu(SDL_Renderer* renderer, TTF_Font* font, char** options, size_t n
             SDL_Log("Erreur TTF_RenderText_Solid : %s", TTF_GetError());
             continue;
         }
+
         SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
         if (!texture) {
             SDL_Log("Erreur SDL_CreateTextureFromSurface : %s", SDL_GetError());
             SDL_FreeSurface(surface);
             continue;
         }
-        SDL_Rect dstRect = {50, 50 + (int)i * 40, surface->w, surface->h};
-        SDL_FreeSurface(surface);
 
+        // Centre horizontalement
+        int x = (windowW - surface->w) / 2;
+        int y = (windowH / 2 - (int)nbOptions * 20) + (int)i * 40; // centré verticalement aussi
+        SDL_Rect dstRect = {x, y, surface->w, surface->h};
+
+        SDL_FreeSurface(surface);
         SDL_RenderCopy(renderer, texture, NULL, &dstRect);
         SDL_DestroyTexture(texture);
     }
