@@ -20,7 +20,7 @@ pacman -Syu
 Toujours dans le terminal MSYS2, installez les paquets nécessaires :
 
 ```bash
-pacman -S mingw-w64-x86_64-gcc make mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-SDL2_mixer mingw-w64-x86_64-SDL2_ttf
+pacman -S mingw-w64-x86_64-gcc make
 ```
 
 ## Etape 4 - Mise en place dans variable d'environement

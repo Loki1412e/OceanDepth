@@ -14,8 +14,6 @@
         #include <direct.h>
         #include <io.h>
         #define PATH_SEPARATOR '\\'
-        
-        #define SDL_MAIN_HANDLED
     #else
         #include <unistd.h>
         #include <dirent.h>
@@ -23,13 +21,7 @@
         #include <sys/types.h>
         #define PATH_SEPARATOR '/'
     #endif
-
-    #include <SDL2/SDL.h>
-    #include <SDL2/SDL_image.h>
-    #include <SDL2/SDL_mixer.h>
-    #include <SDL2/SDL_ttf.h>
-
-    #include "sdl.h"
+    
     #include "random.h"
     #include "repertoire.h"
     #include "utils.h"
