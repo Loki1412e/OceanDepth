@@ -42,6 +42,12 @@ int main() {
 
     int attemp, maxAttemp;
 
+    /*===== Creation dossier sauvegarde (si necessaire) ====*/
+    if (mkdir_p(SAVE_DIR) == EXIT_FAILURE) {
+        fprintf(stderr, "Erreur lors de la création du dossier de sauvegarde.\n");
+        return EXIT_FAILURE;
+    }
+
     /*===== Boucle principale ====*/
 
     while (runProgram) {
