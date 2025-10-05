@@ -11,7 +11,7 @@ Prérequis :
 - GCC
 - Make
 
-Voici comment configurer l'environement sous windows : [`setup_windows.md`](./documentation/setup_windows.md)
+Voici comment configurer l'environement sous windows : [`setup_windows_msys2.md`](./documentation/setup_windows_msys2.md)
 
 ## 🚀 Lancer le projet
 
@@ -73,7 +73,7 @@ GROUPE-02/
 │           utils.c
 │
 └───documentation/
-    │   setup_windows.md
+    │   setup_windows_msys2.md
     │
     ├───consignes/
     │       2025 - OceanDepth.md
