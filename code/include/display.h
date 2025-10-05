@@ -4,7 +4,7 @@
     #include "global.h"
     
     // Temp
-    unsigned lireEntier();
+    size_t lireEntier();
     char *lireString();
     void clearConsole();
 

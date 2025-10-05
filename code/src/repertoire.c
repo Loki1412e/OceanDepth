@@ -13,6 +13,32 @@ char *build_filepath(char *dir, char *filename);
 size_t count_all_files_in_folder(char *path);
 char **list_files(char *path, size_t *len);
 
+int remove_file(char *path);
+
+
+// Fonctions
+
+
+int remove_file(char *path) {
+    if (!path) {
+        fprintf(stderr, "removeFile(): Argument invalide\n");
+        return EXIT_FAILURE;
+    }
+
+    if (!file_exists(path)) {
+        fprintf(stderr, "removeFile(): Le fichier '%s' n'existe pas\n", path);
+        return EXIT_FAILURE;
+    }
+
+    if (remove(path) != 0) {
+        perror("removeFile(): Erreur suppression fichier");
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
+}
+
+
 
 int file_exists(char *path) {
 #ifdef _WIN32

@@ -1,7 +1,7 @@
 # include "../include/display.h"
 
 // Temp
-unsigned lireEntier();
+size_t lireEntier();
 char *lireString();
 void clearConsole();
 
@@ -29,20 +29,20 @@ char *enumSpecialEffectToChar(EffetsSpeciaux special_effect) {
 
 /*====== Temp ======*/
 
-unsigned lireEntier() {
-    int choix;
+size_t lireEntier() {
+    size_t choix;
     
     while (1) {
-        if (scanf(" %d", &choix) == 1) break;
+        if (scanf(" %zu", &choix) == 1) break;
         // nettoyage si entrée invalide
         while (getchar() != '\n'); 
         choix = 0; // force la répétition
-        printf("Entrée invalide, veuillez taper un nombre.\n> ");
+        printf("Entrée invalide, veuillez taper un nombre positif.\n> ");
     }
     
     while (getchar() != '\n');
     
-    return choix < 0 ? choix * -1 : choix;
+    return choix;
 }
 
 // il faut free la reponse.

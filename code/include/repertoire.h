@@ -8,5 +8,6 @@
     int file_exists(char *path);
     size_t count_all_files_in_folder(char *path);
     char **list_files(char *path, size_t *len);
+    int remove_file(char *path);
 
 #endif
