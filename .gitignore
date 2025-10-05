@@ -1,11 +1,10 @@
 .vscode/*
-code/bin/save/*
+
+code/output/save/*
+code/output/assets/*
 
 # Nom de l'executable sans extension
 oceandepth
-
-# *.png
-code/assets/*
 
 # Prerequisites
 *.d

@@ -30,8 +30,8 @@ sudo apt install gcc make
 Depuis le dossier racine du projet :
 
 ```bash
-cd .\code\
-cls && make debug && cd bin/ && ./oceandepth.exe && cd ..
+cd ./code/
+cls && make debug && cd output/ && ./oceandepth.exe && cd ..
 ```
 
 ## 📖 Description
