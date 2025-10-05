@@ -297,8 +297,6 @@ int main() {
             }
         }
 
-        // renderBlackScreen(gRenderer);
-
         renderMenu(gRenderer, font, menu_options, menu_size, selected);
 
         ////////////////////////////////////

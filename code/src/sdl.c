@@ -116,14 +116,34 @@ void renderBlackScreen(SDL_Renderer* renderer) {
 void renderMenu(SDL_Renderer* renderer, TTF_Font* font, char** options, size_t nbOptions, size_t selected) {
     SDL_Color colorNormal = {255, 255, 255, 255};  // blanc
     SDL_Color colorSelected = {255, 255, 0, 255};  // jaune
+    SDL_Color colorTitle = {0, 200, 255, 255};     // bleu clair pour le titre
 
-    // Récupère la taille de la fenêtre pour centrer
+    // Taille de la fenêtre
     int windowW, windowH;
     SDL_GetRendererOutputSize(renderer, &windowW, &windowH);
 
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // fond noir
+    // Fond noir
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
+    // --- Titre ---
+    TTF_Font* fontTitle = TTF_OpenFont("../assets/fonts/Lato/Lato-Bold.ttf", 48); // police plus grande
+    if (fontTitle) {
+        SDL_Surface* titleSurface = TTF_RenderText_Solid(fontTitle, "Ocean Depth", colorTitle);
+        if (titleSurface) {
+            SDL_Texture* titleTexture = SDL_CreateTextureFromSurface(renderer, titleSurface);
+            int titleX = (windowW - titleSurface->w) / 2;
+            int titleY = 50; // marge du haut
+            SDL_Rect titleRect = {titleX, titleY, titleSurface->w, titleSurface->h};
+            SDL_RenderCopy(renderer, titleTexture, NULL, &titleRect);
+            SDL_FreeSurface(titleSurface);
+            SDL_DestroyTexture(titleTexture);
+        }
+        TTF_CloseFont(fontTitle);
+    }
+
+    // --- Menu ---
+    int startY = windowH / 2 - (int)nbOptions * 20 + 50; // décalage sous le titre
     for (size_t i = 0; i < nbOptions; i++) {
         SDL_Color color = (i == selected) ? colorSelected : colorNormal;
         SDL_Surface* surface = TTF_RenderText_Solid(font, options[i], color);
@@ -139,9 +159,8 @@ void renderMenu(SDL_Renderer* renderer, TTF_Font* font, char** options, size_t n
             continue;
         }
 
-        // Centre horizontalement
         int x = (windowW - surface->w) / 2;
-        int y = (windowH / 2 - (int)nbOptions * 20) + (int)i * 40; // centré verticalement aussi
+        int y = startY + (int)i * 40; // espacement vertical
         SDL_Rect dstRect = {x, y, surface->w, surface->h};
 
         SDL_FreeSurface(surface);
