@@ -40,7 +40,7 @@
     #define false 0
     #define true 1
 
-    #define SAVE_DIR "sauvegarde"
+    #define SAVE_DIR "save"
 
 
     /* Enum */
