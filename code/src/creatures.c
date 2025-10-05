@@ -6,6 +6,7 @@ Bestiaire *initEmptyBestiary();
 int generateCreatureInBestiary(Bestiaire *modelBestiary, Bestiaire *bestiary, unsigned depth_level);
 int addCreatureInBestiary(Bestiaire *modelBestiary, Bestiaire *bestiary, char *type_name, unsigned depth_level);
 void freeBestiary(Bestiaire *bestiary);
+void freeBestiaryContent(Bestiaire *bestiary);
 void freeCreatures(CreatureMarine **creatures, size_t length);
 void freeCreature(CreatureMarine *creature);
 
@@ -532,9 +533,16 @@ void freeCreatures(CreatureMarine **creatures, size_t length) {
     creatures = NULL;
 }
 
-void freeBestiary(Bestiaire *bestiary) {
+void freeBestiaryContent(Bestiaire *bestiary) {
     if (!bestiary) return;
     freeCreatures(bestiary->creatures, bestiary->longueur_creatures);
+    bestiary->creatures = NULL;
+    bestiary->longueur_creatures = 0;
+}
+
+void freeBestiary(Bestiaire *bestiary) {
+    if (!bestiary) return;
+    freeBestiaryContent(bestiary);
     free(bestiary);
     bestiary = NULL;
 }
