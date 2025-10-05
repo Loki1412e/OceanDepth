@@ -573,6 +573,17 @@ int finalizeSave(SaveTmpFile *save) {
     }
     save->file = NULL;
 
+    // Si existe deja on supprime
+    if (file_exists(save->final_filepath)) {
+        // Si le fichier existe, on essaie de le supprimer
+        if (remove(save->final_filepath) != 0) {
+            perror("finalizeSave remove");
+            freeSaveTmpFile(save);
+            return EXIT_FAILURE;
+        }
+    }
+
+    // Renommer le fichier temporaire en fichier final
     if (rename(save->tmp_filepath, save->final_filepath) != 0) {
         perror("finalizeSave rename");
         remove(save->tmp_filepath);
