@@ -19,7 +19,7 @@ int initSDL(SDL_Window** window, SDL_Renderer** renderer) {
     }
 
     *window = SDL_CreateWindow(
-        "SDL2 Noir + Console",
+        "Ocean Depth 🤿🪙🐙",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
         640, 480, 0
