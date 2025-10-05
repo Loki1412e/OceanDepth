@@ -84,11 +84,13 @@ int main() {
 
         switch (choice) {
 
+            /*-- Quitter le programme --*/
             case 0:
                 runProgram = false;
                 break;
         
 
+            /*-- Nouvelle Sauvegarde --*/
             case 1:
                 // Allocation mémoire
                 maxAttemp = 5;
@@ -143,6 +145,7 @@ int main() {
                 break;
 
 
+            /*-- Charger une Sauvegarde --*/
             case 2:
                 if (listSaves->longueur_sauvegardes == 0) break;
                 
@@ -177,6 +180,7 @@ int main() {
                 break;
 
 
+            /*-- Supprimer une Sauvegarde --*/
             case 3:
                 if (listSaves->longueur_sauvegardes == 0) break;
 
