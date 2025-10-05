@@ -10,6 +10,7 @@ $(TARGET): $(SOURCES)
 clean:
 	rm -f $(TARGET)
 
+debug: clean
 debug: CFLAGS += -DDEBUG
 debug: $(TARGET)
 
