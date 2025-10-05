@@ -1,20 +1,39 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -g -std=c99
+CFLAGS = -Wall -Wextra -g
 TARGET = oceandepth
 SRCDIR = src
-SOURCES = $(wildcard $(SRCDIR)/*.c)
+OUTDIR = bin
+SOURCES = $(wildcard ./$(SRCDIR)/*.c)
 
-$(TARGET): $(SOURCES)
-	$(CC) $(CFLAGS) $(SOURCES) -o $(TARGET)
+# Détection Windows (MSYS2) / Linux / macOS
+ifeq ($(OS),Windows_NT)
+    RESOURCES = rc/icon.o
+    ICON = assets/logo/icon64x64.ico
+    RCFILE = rc/icon.rc
+else
+    RESOURCES =
+    ICON =
+    RCFILE =
+endif
+
+.PHONY: all clean debug valgrind prod
+
+all: $(OUTDIR)/$(TARGET)
+
+$(OUTDIR)/$(TARGET): $(SOURCES) $(RESOURCES)
+	@mkdir -p $(OUTDIR)
+	$(CC) $(SOURCES) $(RESOURCES) -o $(OUTDIR)/$(TARGET) $(CFLAGS)
+
+$(RESOURCES): $(RCFILE) $(ICON)
+ifeq ($(OS),Windows_NT)
+	windres $(RCFILE) -o $(RESOURCES)
+endif
 
 clean:
-	rm -f $(TARGET)
+	rm -f $(OUTDIR)/$(TARGET) $(RESOURCES)
 
-debug: clean
 debug: CFLAGS += -DDEBUG
-debug: $(TARGET)
+debug: $(OUTDIR)/$(TARGET)
 
 valgrind: debug
-	valgrind -v --leak-check=full --track-origins=yes ./$(TARGET)
-
-.PHONY: clean debug
+	cd bin/ && valgrind -v --leak-check=full --track-origins=yes ./$(TARGET) && cd ..

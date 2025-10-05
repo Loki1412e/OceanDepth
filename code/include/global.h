@@ -8,9 +8,6 @@
     #include <stdlib.h>
     #include <string.h>
     #include <time.h>
-    #include "random.h"
-    #include "repertoire.h"
-    #include "utils.h"
 
     #ifdef _WIN32
         #include <windows.h>
@@ -24,6 +21,10 @@
         #include <sys/types.h>
         #define PATH_SEPARATOR '/'
     #endif
+    
+    #include "random.h"
+    #include "repertoire.h"
+    #include "utils.h"
 
 
     /* Define */
@@ -31,7 +32,7 @@
     #define false 0
     #define true 1
 
-    #define SAVE_DIR "sauvegarde"
+    #define SAVE_DIR "save"
 
 
     /* Enum */

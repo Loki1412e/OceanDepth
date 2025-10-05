@@ -31,7 +31,6 @@ Légende :
 
 IMPORTANT:
 - creatures.c -> ne gere pas les effects que les creatures peuvent mettre ni leur compétences (voir struct mais en comm pour le moment)
-- revoir l'affichage des info lors d'un combat 
 
 1 - ITEMS ??
 
@@ -40,3 +39,5 @@ IMPORTANT:
 
 
 3 - CARTES : thinina
+
+4 - Interface graphique via `lib` : sofiane
