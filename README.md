@@ -10,7 +10,6 @@ Prérequis :
 
 - GCC
 - Make
-- SDL2
 
 ### Windows
 
@@ -20,7 +19,7 @@ Voici comment configurer l'environement sous windows : [`setup_windows_msys2.md`
 
 ```bash
 sudo apt update -y && sudo apt upgrade -y
-sudo apt install gcc make libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev -y
+sudo apt install gcc make
 ```
 
 ## 🚀 Lancer le projet

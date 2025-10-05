@@ -1,5 +1,5 @@
 .vscode/*
-code/sauvegarde/*
+code/bin/save/*
 
 # Nom de l'executable sans extension
 oceandepth

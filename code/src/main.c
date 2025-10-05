@@ -24,22 +24,8 @@ size_t saveChoice(ListeSauvegardes *listSaves){
 }
 
 
-int saveSwitchProgram(size_t choice, int *runProgram, ListeSauvegardes *listSaves, Sauvegarde *actualSave) {
-
-    /*===== Creation dossier sauvegarde (si necessaire) ====*/
-    if (mkdir_p(SAVE_DIR) == EXIT_FAILURE) {
-        fprintf(stderr, "Erreur lors de la création du dossier de sauvegarde.\n");
-        *runProgram = false;
-        return EXIT_FAILURE;
-    }
-
-    // Init sauvegardes
-    listSaves = preLoadListSaves(SAVE_DIR);
-    if (!listSaves) {
-        *runProgram = false;
-        fprintf(stderr, "Erreur lors du chargement des sauvegardes.\n");
-        return EXIT_FAILURE;
-    }    
+int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves, Sauvegarde *actualSave) {
+    if (!runProgram || !listSaves) return EXIT_FAILURE;
 
     int maxAttemp, attemp;
     int res;
@@ -203,9 +189,6 @@ int saveSwitchProgram(size_t choice, int *runProgram, ListeSauvegardes *listSave
     
     freeSauvegarde(actualSave);
     actualSave = NULL;
-    
-    freeSauvegardes(listSaves);
-    listSaves = NULL;
 
     return EXIT_SUCCESS;
 }
@@ -214,35 +197,7 @@ int saveSwitchProgram(size_t choice, int *runProgram, ListeSauvegardes *listSave
 
 int main() {
 
-#ifdef _WIN32
-    SDL_SetMainReady();
-#endif
-
     seed_random();
-
-    /*===== Init SDL ====*/
-
-    SDL_Window* gWindow = NULL;
-    SDL_Renderer* gRenderer = NULL;
-
-    SDL_Event event;
-    
-    if (initSDL(&gWindow, &gRenderer) != EXIT_SUCCESS) {
-        fprintf(stderr, "Erreur lors de l'initialisation de SDL.\n");
-        return EXIT_FAILURE;
-    }
-    
-    if (setWindowIcon(gWindow, "../assets/logo/icon64x64.ico") != EXIT_SUCCESS) {
-        fprintf(stderr, "Erreur lors du chargement de l'icône.\n");
-        quitSDL(gWindow, gRenderer);
-        return EXIT_FAILURE;
-    }
-
-    TTF_Font* font = loadFont("../assets/fonts/Lato/Lato-Regular.ttf", 24);
-    if (!font) {
-        quitSDL(gWindow, gRenderer);
-        return EXIT_FAILURE;
-    }
 
     /*===== Init var ====*/
 
@@ -253,57 +208,76 @@ int main() {
     
     /*-------------*/
 
-    size_t menu_size = 0;
-    size_t selected = 0;
+    int maxAttemp, attemp;
+
+    size_t menu_size, selected;
+
+    /*===== Creation dossier sauvegarde (si necessaire) ====*/
+    if (mkdir_p(SAVE_DIR) == EXIT_FAILURE) {
+        fprintf(stderr, "Erreur lors de la création du dossier de sauvegarde.\n");
+        return EXIT_FAILURE;
+    }
 
     /*===== Boucle principale ====*/
 
     while (runProgram) {
 
-        ////////////////////////////////////
+        clearConsole();
 
-        // Init options menu
-        char *menu_options[] = {
-            "Continuer la partie",      // 0
-            "Nouvelle partie",          // 1
-            "Charger une sauvegarde",   // 2
-            "Supprimer une sauvegarde", // 3
-            "Quitter"                   // 4
-        };
-        menu_size = 5;
-
-        // Gérer les événements SDL (fermeture fenêtre)
-        while (SDL_PollEvent(&event)) {
-            
-            if (event.type == SDL_QUIT)
-                runProgram = false;
-            
-            else if (event.type == SDL_KEYDOWN) {
-                switch (event.key.keysym.sym) {
-                    
-                    case SDLK_UP:
-                        selected = (selected == 0) ? menu_size - 1 : selected - 1;
-                        break;
-                    
-                    case SDLK_DOWN:
-                        selected = (selected == menu_size - 1) ? 0 : selected + 1;
-                        break;
-                    
-                    case SDLK_RETURN:
-                        selected = 4; // juste pour tester
-                        saveSwitchProgram(selected, &runProgram, listSaves, actualSave);
-                        break;
-                }
-            }
+        /*---- Init Sauvegardes ----*/
+        listSaves = preLoadListSaves(SAVE_DIR);
+        if (!listSaves) {
+            runProgram = false;
+            fprintf(stderr, "Erreur lors du chargement des sauvegardes.\n");
+            return EXIT_FAILURE;
         }
 
-        renderMenu(gRenderer, font, menu_options, menu_size, selected);
+        /*---- Print Menu ----*/
+        printf("=== Ocean Depth ===\n\n");
 
-        ////////////////////////////////////
+        if (listSaves->longueur_sauvegardes == 0) {
+            printf("\
+[0] - Nouvelle partie\n\
+[1] - Quitter\n\
+> ");
+            menu_size = 2;
+        }
+
+        else {
+            printf("\
+[0] - Continuer la partie ('%s')\n\
+[1] - Nouvelle partie\n\
+[2] - Charger une sauvegarde\n\
+[3] - Supprimer une sauvegarde\n\
+[4] - Quitter\n\
+> ", listSaves->sauvegardes[0]->nom);
+            menu_size = 5;
+        }
+
+        // Lecture du choix
+        maxAttemp = 5;
+        attemp = 0;
+        selected = menu_size;
+        while (selected >= menu_size && attemp++ < maxAttemp) {
+            selected = lireEntier();
+            if (selected >= menu_size)
+                printf("Choix invalide, choisir entre [0] et [%zu]\n> ", menu_size - 1);
+        }
+        if (selected >= menu_size) continue;
+
+        // Si pas de save: 0 = 1 -> Nouvelle Partie / 1 = 4 -> Quitter
+        if (listSaves->longueur_sauvegardes == 0)
+            selected = selected == 0 ? 1 : 4;
+        
+
+        /*---- On applique le choix ----*/
+        switchMenu(selected, &runProgram, listSaves, actualSave);
+
+
+        /*---- Free Sauvegardes ----*/
+        freeSauvegardes(listSaves);
+        listSaves = NULL;
     }
-
-    TTF_CloseFont(font);
-    quitSDL(gWindow, gRenderer);
 
     return EXIT_SUCCESS;
 }
