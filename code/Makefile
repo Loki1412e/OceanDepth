@@ -32,9 +32,8 @@ endif
 clean:
 	rm -f $(OUTDIR)/$(TARGET) $(RESOURCES)
 
-debug: clean
 debug: CFLAGS += -DDEBUG
 debug: $(OUTDIR)/$(TARGET)
 
 valgrind: debug
-	valgrind -v --leak-check=full --track-origins=yes ./$(OUTDIR)/$(TARGET)
+	cd bin/ && valgrind -v --leak-check=full --track-origins=yes ./$(TARGET) && cd ..
