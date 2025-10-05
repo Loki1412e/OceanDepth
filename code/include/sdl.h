@@ -6,6 +6,7 @@
     int initSDL(SDL_Window** window, SDL_Renderer** renderer);
     void quitSDL(SDL_Window* window, SDL_Renderer* renderer);
 
+    int setWindowIcon(SDL_Window* window, const char* iconPath);
     TTF_Font* loadFont(const char* fontPath, int fontSize);
 
     void renderBlackScreen(SDL_Renderer* renderer);
