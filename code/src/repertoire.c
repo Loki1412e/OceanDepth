@@ -157,7 +157,7 @@ size_t count_all_files_in_folder(char *path) {
 
     HANDLE hFind = FindFirstFileA(search_path, &find_data);
     if (hFind == INVALID_HANDLE_VALUE) {
-        fprinf(stderr, "Erreur FindFirstFileA pour le path: %s\n", path);
+        fprintf(stderr, "Erreur FindFirstFileA pour le path: %s\n", path);
         return 0;
     }
 
