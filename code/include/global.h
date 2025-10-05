@@ -29,6 +29,7 @@
     #include <SDL2/SDL_mixer.h>
     #include <SDL2/SDL_ttf.h>
 
+    #include "sdl.h"
     #include "random.h"
     #include "repertoire.h"
     #include "utils.h"

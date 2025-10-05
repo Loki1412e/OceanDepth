@@ -32,6 +32,13 @@ int main() {
 
     seed_random();
 
+    /*===== Init SDL ====*/
+    
+    if (initSDL() != EXIT_SUCCESS) {
+        fprintf(stderr, "Erreur lors de l'initialisation de SDL.\n");
+        return EXIT_FAILURE;
+    }
+
     /*===== Init var ====*/
 
     int runProgram = true;
@@ -49,6 +56,7 @@ int main() {
     /*===== Creation dossier sauvegarde (si necessaire) ====*/
     if (mkdir_p(SAVE_DIR) == EXIT_FAILURE) {
         fprintf(stderr, "Erreur lors de la création du dossier de sauvegarde.\n");
+        quitSDL();
         return EXIT_FAILURE;
     }
 
@@ -59,11 +67,15 @@ int main() {
         clearConsole();
 
         listSaves = preLoadListSaves(SAVE_DIR);
-        if (!listSaves) return EXIT_FAILURE;
+        if (!listSaves) {
+            quitSDL();
+            return EXIT_FAILURE;
+        }
         printListSave(listSaves);
 
         strBuff = my_strdup(listSaves->longueur_sauvegardes == 1 ? "la" : "une");
         if (!strBuff) {
+            quitSDL();
             freeSauvegardes(listSaves);
             return EXIT_FAILURE;
         }
@@ -221,5 +233,7 @@ int main() {
     
     printf("\n\nA bientot :)\n\n");
 
+    quitSDL();
+    
     return EXIT_SUCCESS;
 }
