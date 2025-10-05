@@ -3,6 +3,27 @@
 #include "../include/sauvegarde.h"
 #include "../include/jeu.h"
 
+
+// Choix de la save si il y en a plusieurs
+size_t saveChoice(ListeSauvegardes *listSaves){
+    
+    if (listSaves->longueur_sauvegardes == 1) return 0;
+
+    printf("\nChoisir la sauvegarde à charger (entre 0 et %zu)\n> ", listSaves->longueur_sauvegardes - 1);
+    size_t choice = listSaves->longueur_sauvegardes;
+    int maxAttemp = 5;
+    int attemp = 0;
+    while (choice >= listSaves->longueur_sauvegardes && attemp < maxAttemp) {
+        choice = lireEntier();
+        if (choice >= listSaves->longueur_sauvegardes)
+            printf("Choix invalide, choisir entre [0] et [%zu]\n> ", listSaves->longueur_sauvegardes - 1);
+        attemp++;
+    }
+    
+    return choice;
+}
+
+
 int main() {
 
     seed_random();
@@ -30,18 +51,28 @@ int main() {
         listSaves = preLoadListSaves(SAVE_DIR);
         if (!listSaves) return EXIT_FAILURE;
         printListSave(listSaves);
+
+        strBuff = my_strdup(listSaves->longueur_sauvegardes == 1 ? "la" : "une");
+        if (!strBuff) {
+            freeSauvegardes(listSaves);
+            return EXIT_FAILURE;
+        }
         
         printf("\n\
 [0] - Quitter le programme\n\
 [1] - Nouvelle Sauvegarde\n\
-[2] - Charger une Sauvegarde\n\
-> ");
+[2] - Charger %s Sauvegarde\n\
+[3] - Supprimer %s Sauvegarde\n\
+> ", strBuff, strBuff);
+        
+        free(strBuff);
+        strBuff = NULL;
 
         choice = lireEntier();
 
         // choice est unsigned donc pas de verif sur < 0
-        while (choice > 2) {
-            printf("\n\nChoix invalide, choisir entre [0] et [2]\n> ");
+        while (choice > 3) {
+            printf("\n\nChoix invalide, choisir entre [0] et [3]\n> ");
             choice = lireEntier();
         }
 
@@ -51,8 +82,8 @@ int main() {
                 runProgram = false;
                 break;
         
-            case 1:
 
+            case 1:
                 // Allocation mémoire
                 maxAttemp = 5;
                 attemp = 0;
@@ -74,7 +105,9 @@ int main() {
                         if (res == -1)
                             printf("Nom déjà pris.\n> ");
                         free(strBuff);
+                        strBuff = NULL;
                     }
+                    else printf("Erreur lors de la création de la sauvegarde.\n> ");
                     attemp++;
                 }
                 if (res != EXIT_SUCCESS) break;
@@ -88,6 +121,7 @@ int main() {
                     if (strBuff) {
                         actualSave->diver = initDiver(strBuff);
                         free(strBuff);
+                        strBuff = NULL;
                     }
                     attemp++;
                 }
@@ -102,26 +136,14 @@ int main() {
                 save(actualSave);
                 break;
 
+
             case 2:
                 if (listSaves->longueur_sauvegardes == 0) break;
                 
                 // Choix de la save si il y en a plusieurs
-                if (listSaves->longueur_sauvegardes > 1) {
-                    printf("\nChoisir la sauvegarde à charger (entre 0 et %zu)\n> ", listSaves->longueur_sauvegardes - 1);
-                    choice = listSaves->longueur_sauvegardes;
-                    maxAttemp = 5;
-                    attemp = 0;
-                    while (choice >= listSaves->longueur_sauvegardes && attemp < maxAttemp) {
-                        choice = lireEntier();
-                        if (choice >= listSaves->longueur_sauvegardes)
-                            printf("Choix invalide, choisir entre [0] et [%zu]\n> ", listSaves->longueur_sauvegardes - 1);
-                        attemp++;
-                    }
-                    if (choice >= listSaves->longueur_sauvegardes) break;
-                }
-
-                else choice = 0;
-
+                choice = saveChoice(listSaves);
+                if (choice >= listSaves->longueur_sauvegardes) break;
+                
                 // Allocation mémoire && Load Save
                 maxAttemp = 5;
                 attemp = 0;
@@ -146,6 +168,32 @@ int main() {
                 // Sauvegarde dans un fichier de la save actuel
                 // printSave(actualSave);
                 save(actualSave);
+                break;
+
+
+            case 3:
+                if (listSaves->longueur_sauvegardes == 0) break;
+
+                // Choix de la save si il y en a plusieurs
+                choice = saveChoice(listSaves);
+                if (choice >= listSaves->longueur_sauvegardes) break;
+
+                // Suppression du fichier
+                res = EXIT_FAILURE;
+                maxAttemp = 5;
+                attemp = 0;
+                while (res != EXIT_SUCCESS && attemp < maxAttemp) {
+                    strBuff = build_filepath(SAVE_DIR, listSaves->sauvegardes[choice]->nom);
+                    if (strBuff) {
+                        res = remove_file(strBuff);
+                        if (res != EXIT_SUCCESS)
+                            printf("Erreur lors de la suppression du fichier.\n> ");
+                        free(strBuff);
+                        strBuff = NULL;
+                    }
+                    else printf("Erreur lors de la suppression du fichier.\n> ");
+                    attemp++;
+                }
                 break;
         }
         
