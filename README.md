@@ -11,14 +11,15 @@ Prérequis :
 - GCC
 - Make
 
-Voici comment configurer l'environement sous windows : [`setup_windows.md`](./documentation/setup_windows.md)
+Voici comment configurer l'environement sous windows : [`setup_windows_msys2.md`](./documentation/setup_windows_msys2.md)
 
 ## 🚀 Lancer le projet
 
 Depuis le dossier racine du projet :
 
 ```bash
-clear && cd .\code\ && make clean && make debug && .\oceandepth.exe && cd ..
+cd .\code\
+clear && make clean && make debug && .\oceandepth.exe
 ```
 
 ## 📖 Description
@@ -26,41 +27,53 @@ clear && cd .\code\ && make clean && make debug && .\oceandepth.exe && cd ..
 OceanDepth est un jeu d’aventure textuel en C où l’on incarne un plongeur explorant les abysses.  
 Objectif : survivre, combattre des créatures marines et découvrir des trésors enfouis.
 
-## 📂 Structure du projet
+## 📂 Structure / Rendu du projet
 
 ```
 GROUPE-02/
 │   .gitignore
+│   identifiants.txt
+│   PROGRESSION.md
 │   README.md
-│   
+│
 ├───code/
-│   │   conf
 │   │   Makefile
-│   │   oceandepth.exe
+│   │
+│   ├───config/
+│   │       creatures.conf
+│   │       plongeur.conf
 │   │
 │   ├───include/
 │   │       carte.h
 │   │       combat.h
 │   │       creatures.h
+│   │       display.h
 │   │       global.h
 │   │       inventaire.h
+│   │       jeu.h
 │   │       joueur.h
+│   │       random.h
+│   │       repertoire.h
 │   │       sauvegarde.h
+│   │       utils.h
 │   │
-│   ├───saves/
+│   ├───sauvegarde/
 │   └───src/
 │           carte.c
 │           combat.c
 │           creatures.c
+│           display.c
 │           inventaire.c
+│           jeu.c
 │           joueur.c
 │           main.c
+│           random.c
+│           repertoire.c
 │           sauvegarde.c
+│           utils.c
 │
 └───documentation/
-    │   identifiants.txt
-    │   PROGRESSION.md
-    │   setup_windows.md
+    │   setup_windows_msys2.md
     │
     ├───consignes/
     │       2025 - OceanDepth.md

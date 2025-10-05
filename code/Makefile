@@ -10,7 +10,11 @@ $(TARGET): $(SOURCES)
 clean:
 	rm -f $(TARGET)
 
+debug: clean
 debug: CFLAGS += -DDEBUG
 debug: $(TARGET)
+
+valgrind: debug
+	valgrind -v --leak-check=full --track-origins=yes ./$(TARGET)
 
 .PHONY: clean debug
