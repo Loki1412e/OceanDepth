@@ -15,13 +15,12 @@ A executer dans le terminal MSYS2 :
 pacman -Syu
 ```
 
-
 ## Etape 3 - Installation de GCC et Make
 
 Toujours dans le terminal MSYS2, installez les paquets nécessaires :
 
 ```bash
-pacman -S mingw-w64-x86_64-gcc make
+pacman -S mingw-w64-x86_64-gcc make mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-SDL2_mixer mingw-w64-x86_64-SDL2_ttf
 ```
 
 ## Etape 4 - Mise en place dans variable d'environement
