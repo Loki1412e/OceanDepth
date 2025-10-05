@@ -35,10 +35,10 @@ GROUPE-02/
 │   identifiants.txt
 │   PROGRESSION.md
 │   README.md
-│       
+│
 ├───code/
 │   │   Makefile
-│   │   
+│   │
 │   ├───config/
 │   │       creatures.conf
 │   │       plongeur.conf
@@ -50,21 +50,27 @@ GROUPE-02/
 │   │       display.h
 │   │       global.h
 │   │       inventaire.h
+│   │       jeu.h
 │   │       joueur.h
 │   │       random.h
+│   │       repertoire.h
 │   │       sauvegarde.h
+│   │       utils.h
 │   │
-│   ├───saves/
+│   ├───sauvegarde/
 │   └───src/
 │           carte.c
 │           combat.c
 │           creatures.c
 │           display.c
 │           inventaire.c
+│           jeu.c
 │           joueur.c
 │           main.c
 │           random.c
+│           repertoire.c
 │           sauvegarde.c
+│           utils.c
 │
 └───documentation/
     │   setup_windows.md
@@ -78,19 +84,3 @@ GROUPE-02/
             setup_1.png
             setup_2.png
 ```
-
-# Etat Actuel
-
-// a faire :
-
-IMPORTANT:
-- creatures.c -> ne gere pas les effects que les creatures peuvent mettre ni leur compétences (voir struct mais en comm pour le moment)
-- revoir l'affichage des info lors d'un combat 
-
-1 - ITEMS
-
-
-2 - EFFETS : Gestion des effets -> boucle combat / 2 types attaques
-
-
-3 - CARTES : thinina
