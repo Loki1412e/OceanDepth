@@ -42,7 +42,7 @@ int main() {
 
     int attemp, maxAttemp;
 
-    /*===== Boucle principale ====*/    
+    /*===== Boucle principale ====*/
 
     while (runProgram) {
 
@@ -209,41 +209,3 @@ int main() {
 
     return EXIT_SUCCESS;
 }
-
-    // // Initialisation des variables
-
-    // Bestiaire *modelBestiary = NULL, *bestiary = NULL;
-    // Plongeur *player = NULL;
-
-    // unsigned longueur_creatures = 3;
-
-    // // Init Allocation
-
-    // modelBestiary = initModelBestiary();
-    // if (!modelBestiary) return EXIT_FAILURE;
-
-    // bestiary = initEmptyBestiary();
-    // if (!bestiary) return EXIT_FAILURE;
-    
-    // player = initDiver("Feur");
-    // if (!player) return EXIT_FAILURE;
-
-    // // Main
-
-    // printf("\n");
-
-    // for (unsigned i = 0; i < longueur_creatures; i++) {
-    //     if (generateCreatureInBestiary(modelBestiary, bestiary, 0)) return EXIT_FAILURE;
-    // }
-
-    // // combat(player, bestiary->creatures, bestiary->longueur_creatures);
-
-    // // printCreatures(bestiary->creatures, bestiary->longueur_creatures, "creature");
-    
-    // if (save(SAVE_DIR, "test", player) != EXIT_SUCCESS) return EXIT_FAILURE;
-    
-    // printDiver(player);
-    
-    // freeBestiary(bestiary);
-    // freeBestiary(modelBestiary);
-    // freeDiver(player);

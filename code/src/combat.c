@@ -32,11 +32,11 @@ int diminuerFatigue(Plongeur *joueur, int perte) {
 }
 
 int calculerAttaquesMaxAvecFatigue(int fatigue_max, int fatigue) {
-    int p = fatigue * 100 / fatigue_max; // to percent
+    int p = fatigue * 100 / fatigue_max; // en %
     if (p <= 20) return 3;
     if (p <= 60) return 2;
     if (p <=99) return 1;
-    return 0;
+    return random_int(0, 1); // 50% de chance d'avoir 0 ou 1 attaque
 }
 
 int calculerDegats(int attaque_min, int attaque_max, int defense) {
