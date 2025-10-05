@@ -3,6 +3,7 @@
 int initSDL(SDL_Window** window, SDL_Renderer** renderer);
 void quitSDL(SDL_Window* window, SDL_Renderer* renderer);
 
+int setWindowIcon(SDL_Window* window, const char* iconPath);
 TTF_Font* loadFont(const char* fontPath, int fontSize);
 
 void renderBlackScreen(SDL_Renderer* renderer);
@@ -19,7 +20,7 @@ int initSDL(SDL_Window** window, SDL_Renderer** renderer) {
     }
 
     *window = SDL_CreateWindow(
-        "Ocean Depth 🤿🪙🐙",
+        "🐙 Ocean Depth 🤿",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
         640, 480, 0
@@ -81,6 +82,18 @@ void quitSDL(SDL_Window* window, SDL_Renderer* renderer) {
 }
 
 
+int setWindowIcon(SDL_Window* window, const char* iconPath) {
+    SDL_Surface* iconSurface = IMG_Load(iconPath);
+    if (!iconSurface) {
+        fprintf(stderr, "Erreur IMG_Load (icône): %s\n", IMG_GetError());
+        return EXIT_FAILURE;
+    }
+
+    SDL_SetWindowIcon(window, iconSurface); // Définit l'icône de la fenêtre
+    SDL_FreeSurface(iconSurface); // Libère la surface de l'icône après l'utilisation
+    return EXIT_SUCCESS;
+}
+
 TTF_Font *loadFont(const char* fontPath, int fontSize) {
     TTF_Font* font = TTF_OpenFont(fontPath, fontSize);
     if (!font) {
@@ -89,6 +102,7 @@ TTF_Font *loadFont(const char* fontPath, int fontSize) {
     }
     return font;
 }
+
 
 
 void renderBlackScreen(SDL_Renderer* renderer) {
