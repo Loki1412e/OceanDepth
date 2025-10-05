@@ -3,7 +3,7 @@
 ## Installer SDL2 et ses extensions
 
 ```bash
-sudo apt update && sudo apt upgrade
+sudo apt update -y && sudo apt upgrade -y
 sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev -y
 ```
 
