@@ -2,7 +2,11 @@ CC = gcc
 CFLAGS = -Wall -Wextra -g
 TARGET = oceandepth
 SRCDIR = src
-SOURCES = $(wildcard $(SRCDIR)/*.c)
+OUTDIR = bin
+SOURCES = $(wildcard ./$(SRCDIR)/*.c)
+RESOURCES = rc/icon.o
+ICON = assets/logo/icon64x64.ico
+RCFILE = rc/icon.rc
 
 # Détection Windows (MSYS2) / Linux / macOS
 ifeq ($(OS),Windows_NT)
@@ -17,20 +21,33 @@ endif
 
 .PHONY: all clean debug valgrind prod
 
-all: $(TARGET)
+# La cible principale, compilation de l'exécutable
+all: $(OUTDIR)/$(TARGET)
 
-$(TARGET): $(SOURCES)
-	$(CC) $(CFLAGS) $(SDL_CFLAGS) $(SOURCES) $(SDL_LDFLAGS) -o $(TARGET)
+# Compilation de l'exécutable final, après que les ressources aient été compilées
+$(OUTDIR)/$(TARGET): $(SOURCES) $(RESOURCES)
+	@mkdir -p $(OUTDIR)
+	$(CC) $(SOURCES) $(RESOURCES) -o $(OUTDIR)/$(TARGET) $(CFLAGS) $(SDL_CFLAGS) $(SDL_LDFLAGS)
 
+# Règle pour compiler le fichier RC en fichier objet .o sous Windows
+$(RESOURCES): $(RCFILE) $(ICON)
+ifeq ($(OS),Windows_NT)
+	windres $(RCFILE) -o $(RESOURCES)
+endif
+
+# Suppression des fichiers générés
 clean:
-	rm -f $(TARGET)
+	rm -f $(OUTDIR)/$(TARGET) $(RESOURCES)
 
+# Compilation avec le flag DEBUG
 debug: clean
 debug: CFLAGS += -DDEBUG
-debug: $(TARGET)
+debug: $(OUTDIR)/$(TARGET)
 
+# Utilisation de Valgrind pour vérifier les fuites mémoire
 valgrind: debug
-	valgrind -v --leak-check=full --track-origins=yes ./$(TARGET)
+	valgrind -v --leak-check=full --track-origins=yes ./$(OUTDIR)/$(TARGET)
 
-prod: clean
-	$(CC) $(CFLAGS) $(SDL_CFLAGS) $(SOURCES) $(SDL_LDFLAGS) $(PROD_FLAGS) -o $(TARGET)
+# Compilation pour la version de production
+prod: clean $(RESOURCES)
+	$(CC) $(SOURCES) $(RESOURCES) -o $(OUTDIR)/$(TARGET) $(CFLAGS) $(SDL_CFLAGS) $(SDL_LDFLAGS) $(PROD_FLAGS)

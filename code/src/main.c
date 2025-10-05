@@ -232,13 +232,13 @@ int main() {
         return EXIT_FAILURE;
     }
 
-    if (setWindowIcon(gWindow, "assets/icon.png") != EXIT_SUCCESS) {
+    if (setWindowIcon(gWindow, "../assets/logo/icon64x64.png") != EXIT_SUCCESS) {
         fprintf(stderr, "Erreur lors du chargement de l'icône.\n");
         quitSDL(gWindow, gRenderer);
         return EXIT_FAILURE;
     }
 
-    TTF_Font* font = loadFont("assets/fonts/Lato/Lato-Regular.ttf", 24);
+    TTF_Font* font = loadFont("../assets/fonts/Lato/Lato-Regular.ttf", 24);
     if (!font) {
         quitSDL(gWindow, gRenderer);
         return EXIT_FAILURE;
