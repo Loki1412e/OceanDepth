@@ -220,7 +220,7 @@ void printListSave(ListeSauvegardes *saves) {
     printf("\nListe des sauvegardes:\n");
 
     for (size_t i = 0; i < saves->longueur_sauvegardes; i++) {
-        printf("[%zu] - ", i+1);
+        printf("[%zu] - ", i);
         printSaveLastRun(saves->sauvegardes[i]);
     }
     
