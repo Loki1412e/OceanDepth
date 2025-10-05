@@ -231,8 +231,8 @@ int main() {
         fprintf(stderr, "Erreur lors de l'initialisation de SDL.\n");
         return EXIT_FAILURE;
     }
-
-    if (setWindowIcon(gWindow, "../assets/logo/icon64x64.png") != EXIT_SUCCESS) {
+    
+    if (setWindowIcon(gWindow, "../assets/logo/icon64x64.ico") != EXIT_SUCCESS) {
         fprintf(stderr, "Erreur lors du chargement de l'icône.\n");
         quitSDL(gWindow, gRenderer);
         return EXIT_FAILURE;
