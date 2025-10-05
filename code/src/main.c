@@ -1,9 +1,7 @@
 #include "../include/global.h"
-#include "../include/creatures.h"
-#include "../include/joueur.h"
 #include "../include/display.h"
-#include "../include/combat.h"
 #include "../include/sauvegarde.h"
+#include "../include/jeu.h"
 
 int main() {
 
@@ -27,6 +25,8 @@ int main() {
 
     while (runProgram) {
 
+        clearConsole();
+
         listSaves = preLoadListSaves(SAVE_DIR);
         if (!listSaves) return EXIT_FAILURE;
         printListSave(listSaves);
@@ -48,7 +48,6 @@ int main() {
         switch (choice) {
 
             case 0:
-                printf("\nA bientot :)\n");
                 runProgram = false;
                 break;
         
@@ -94,6 +93,10 @@ int main() {
                 }
                 if (!actualSave->diver) break;
 
+                // Lancer le jeu
+                res = runGame(actualSave);
+                if (res == -1) runProgram = false;
+
                 // Sauvegarde dans un fichier de la save actuel
                 // printSave(actualSave);
                 save(actualSave);
@@ -102,28 +105,28 @@ int main() {
             case 2:
                 if (listSaves->longueur_sauvegardes == 0) break;
                 
-                // Choix de la save
-                printf("\nChoisir la sauvegarde à charger (entre 1 et %zu)\n> ", listSaves->longueur_sauvegardes);
-                choice = 0;
-                maxAttemp = 5;
-                attemp = 0;
-                while ((choice < 1 || choice > listSaves->longueur_sauvegardes) && attemp < maxAttemp) {
-                    choice = lireEntier();
-                    if (choice < 1 || choice > listSaves->longueur_sauvegardes) {
-                        if (listSaves->longueur_sauvegardes == 1)
-                            printf("Choix invalide.\n> ");
-                        else
-                            printf("Choix invalide, choisir entre [1] et [%zu]\n> ", listSaves->longueur_sauvegardes);
+                // Choix de la save si il y en a plusieurs
+                if (listSaves->longueur_sauvegardes > 1) {
+                    printf("\nChoisir la sauvegarde à charger (entre 0 et %zu)\n> ", listSaves->longueur_sauvegardes - 1);
+                    choice = listSaves->longueur_sauvegardes;
+                    maxAttemp = 5;
+                    attemp = 0;
+                    while (choice >= listSaves->longueur_sauvegardes && attemp < maxAttemp) {
+                        choice = lireEntier();
+                        if (choice >= listSaves->longueur_sauvegardes)
+                            printf("Choix invalide, choisir entre [0] et [%zu]\n> ", listSaves->longueur_sauvegardes - 1);
+                        attemp++;
                     }
-                    attemp++;
+                    if (choice >= listSaves->longueur_sauvegardes) break;
                 }
-                if (choice < 1 || choice > listSaves->longueur_sauvegardes) break;
+
+                else choice = 0;
 
                 // Allocation mémoire && Load Save
                 maxAttemp = 5;
                 attemp = 0;
                 while (!actualSave && attemp < maxAttemp) {
-                    actualSave = loadSave(listSaves->sauvegardes[choice-1]->nom, false); // false: on veut tte la save (pas de preLoad)
+                    actualSave = loadSave(listSaves->sauvegardes[choice]->nom, false); // false: on veut tte la save (pas de preLoad)
                     if (actualSave) {
                         // Normalement sert à rien vu que deja verif car existe dans listSaves
                         if (!actualSave->nom) {
@@ -136,6 +139,10 @@ int main() {
                 }
                 if (!actualSave) break;
 
+                // Lancer le jeu
+                res = runGame(actualSave);
+                if (res == -1) runProgram = false;
+
                 // Sauvegarde dans un fichier de la save actuel
                 // printSave(actualSave);
                 save(actualSave);
@@ -147,9 +154,10 @@ int main() {
         
         freeSauvegardes(listSaves);
         listSaves = NULL;
-
-        clearConsole();
     }
+
+    
+    printf("\n\nA bientot :)\n\n");
 
     return EXIT_SUCCESS;
 }
