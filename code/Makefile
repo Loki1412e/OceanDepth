@@ -2,13 +2,13 @@ CC = gcc
 CFLAGS = -Wall -Wextra -g
 TARGET = oceandepth
 SRCDIR = src
-OUTDIR = bin
+OUTDIR = output
 SOURCES = $(wildcard ./$(SRCDIR)/*.c)
 
 # Détection Windows (MSYS2) / Linux / macOS
 ifeq ($(OS),Windows_NT)
     RESOURCES = rc/icon.o
-    ICON = assets/logo/icon64x64.ico
+    ICON = ./$(OUTDIR)/assets/logo/icon64x64.ico
     RCFILE = rc/icon.rc
 else
     RESOURCES =
@@ -36,4 +36,4 @@ debug: CFLAGS += -DDEBUG
 debug: $(OUTDIR)/$(TARGET)
 
 valgrind: debug
-	cd bin/ && valgrind -v --leak-check=full --track-origins=yes ./$(TARGET) && cd ..
+	cd $(OUTDIR) && valgrind -v --leak-check=full --track-origins=yes ./$(TARGET) && cd ..
