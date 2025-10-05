@@ -9,7 +9,7 @@ size_t saveChoice(ListeSauvegardes *listSaves){
     
     if (listSaves->longueur_sauvegardes == 1) return 0;
 
-    printf("\nChoisir la sauvegarde à charger (entre 0 et %zu)\n> ", listSaves->longueur_sauvegardes - 1);
+    printf("Choisir la sauvegarde (entre 0 et %zu)\n> ", listSaves->longueur_sauvegardes - 1);
     size_t choice = listSaves->longueur_sauvegardes;
     int maxAttemp = 5;
     int attemp = 0;
@@ -122,6 +122,9 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves, Sauv
         /*-- Charger une Sauvegarde --*/
         case 2:
             if (listSaves->longueur_sauvegardes == 0) break;
+
+            // Affichage des saves
+            printListSave(listSaves);
                 
             // Choix de la save si il y en a plusieurs
             choice = saveChoice(listSaves);
@@ -157,6 +160,9 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves, Sauv
         /*-- Supprimer une Sauvegarde --*/
         case 3:
             if (listSaves->longueur_sauvegardes == 0) break;
+
+            // Affichage des saves
+            printListSave(listSaves);
 
             // Choix de la save si il y en a plusieurs
             choice = saveChoice(listSaves);
@@ -243,6 +249,16 @@ int main() {
             menu_size = 2;
         }
 
+        else if (listSaves->longueur_sauvegardes == 1) {
+            printf("\
+[0] - Continuer la partie ('%s')\n\
+[1] - Nouvelle partie\n\
+[2] - Supprimer la sauvegarde\n\
+[3] - Quitter\n\
+> ", listSaves->sauvegardes[0]->nom);
+            menu_size = 4;
+        }
+
         else {
             printf("\
 [0] - Continuer la partie ('%s')\n\
@@ -268,6 +284,9 @@ int main() {
         // Si pas de save: 0 = 1 -> Nouvelle Partie / 1 = 4 -> Quitter
         if (listSaves->longueur_sauvegardes == 0)
             selected = selected == 0 ? 1 : 4;
+        // Si une seule save: 0 = 0 -> Continuer / 1 = 1 -> Nouvelle Partie / 2 = 3 -> Supprimer / 3 = 4 -> Quitter
+        else if (listSaves->longueur_sauvegardes == 1)
+            selected = selected == 2 ? 3 : (selected == 3 ? 4 : selected);
         
 
         /*---- On applique le choix ----*/
