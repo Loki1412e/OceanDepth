@@ -29,6 +29,9 @@ ifeq ($(OS),Windows_NT)
 	windres $(RCFILE) -o $(RESOURCES)
 endif
 
+run: all
+	cd $(OUTDIR) && ./$(TARGET) && cd ..
+
 clean:
 	rm -f $(OUTDIR)/$(TARGET) $(RESOURCES)
 
