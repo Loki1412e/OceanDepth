@@ -5,7 +5,7 @@ SRCDIR = src
 OUTDIR = output
 SOURCES = $(wildcard ./$(SRCDIR)/*.c)
 
-# Détection Windows (MSYS2) / Linux / macOS
+# Détection Windows (MSYS2) / Linux
 ifeq ($(OS),Windows_NT)
     RESOURCES = rc/icon.o
     ICON = ./$(OUTDIR)/assets/logo/icon64x64.ico
