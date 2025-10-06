@@ -30,9 +30,9 @@ RCFILE              = rc/icon.rc
 ICONRES             = rc/icon.o
 
 # --- Cibles principales ---
-.PHONY: all linux_x86_64 linux_arm64 win64 winarm64 clean debug prod valgrind
+.PHONY: all linux_x86_64 linux_arm64 win_x86_64 winarm64 clean debug prod valgrind
 
-all: linux_x86_64 linux_arm64 win64 winarm64
+all: linux_x86_64 linux_arm64 win_x86_64 winarm64
 
 linux_x86_64:
 	@echo "🐧 Compilation Linux x86_64..."
@@ -45,8 +45,8 @@ linux_arm64:
 	$(CC_LIN_ARM64) $(SOURCES) -o $(OUTDIR)/$(TARGET_LINUX_arm64) $(CFLAGS)
 
 # --- Compilation Windows x86_64 avec icône ---
-win64: $(ICONRES)
-	@echo "💠 Compilation Windows 64-bit avec icône..."
+win_x86_64: $(ICONRES)
+	@echo "💠 Compilation Windows x86_64 avec icône..."
 	@mkdir -p $(OUTDIR)
 	$(CC_WIN_X86_64) $(SOURCES) $(ICONRES) -o $(OUTDIR)/$(TARGET_WIN64) $(CFLAGS)
 
