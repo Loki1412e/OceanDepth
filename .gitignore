@@ -6,6 +6,8 @@ code/output/assets/*
 
 # Nom de l'executable sans extension
 oceandepth
+*_arm64
+*_x86_64
 
 # Prerequisites
 *.d

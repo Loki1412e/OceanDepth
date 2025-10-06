@@ -20,7 +20,7 @@ Voici comment configurer l'environement sous windows : [`setup_windows_msys2.md`
 
 ```bash
 sudo apt update -y && sudo apt upgrade -y
-sudo apt install gcc make
+sudo apt install build-essential gcc-aarch64-linux-gnu mingw-w64 valgrind -y
 ```
 
 ### Pour finir il faut télécharger les assets dans le dossier ./code/assets/  ([télécharger via GoogleDrive](https://drive.google.com/drive/folders/1PaWy5Z0gs6dmZUdHXEOvd_NeacdMIMX7?usp=drive_link))
