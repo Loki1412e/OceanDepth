@@ -233,8 +233,8 @@ int setBestiaryFromConf(Bestiaire *modelBestiary) {
     if (f == NULL) return EXIT_FAILURE;
 
     char line[256];
-    unsigned length = 0, index;
-    unsigned len;
+    size_t length = 0, index = 0;
+    size_t len;
 
     short errorCode = 0;
 
@@ -312,7 +312,7 @@ int setBestiaryFromConf(Bestiaire *modelBestiary) {
     if (modelBestiary->longueur_creatures != length) {
         freeBestiary(modelBestiary);
         fclose(f);
-        fprintf(stderr, "Erreur: setBestiaryFromConf(): longueur_creatures (%zu) != index (%hu)\n", modelBestiary->longueur_creatures, index);
+        fprintf(stderr, "Erreur: setBestiaryFromConf(): longueur_creatures (%zu) != length (%zu)\n", modelBestiary->longueur_creatures, length);
         return EXIT_FAILURE;
     }
 
