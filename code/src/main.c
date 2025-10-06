@@ -95,7 +95,7 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
                 attemp++;
             }
             if (res != EXIT_SUCCESS) break;
-                
+
             // Nom du Plongeur && init Plongeur
             printf("\nChoisir le nom du Plongeur\n> ");
             maxAttemp = 5;
@@ -111,7 +111,7 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
                 }
                 else fprintf(stderr, "Erreur de lecture du nom\n> ");
                 attemp++;
-            }
+            }            
             if (!actualSave->diver) break;
 
             printf("\nBienvenue %s !\n", actualSave->diver->nom);

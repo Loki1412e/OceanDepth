@@ -57,5 +57,12 @@ Depuis le dossier racine du projet :
 
 ```bash
 cd ./code/
-cls && make debug && cd output/ && ./oceandepth.exe && cd ..
+make run
+```
+
+Lancer en mode debug :
+
+```bash
+cd ./code/
+make clean && make debug && make run
 ```
