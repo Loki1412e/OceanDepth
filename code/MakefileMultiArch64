@@ -7,7 +7,6 @@
 CC_LIN_X86_64	= gcc
 CC_LIN_ARM64	= aarch64-linux-gnu-gcc
 CC_WIN_X86_64	= x86_64-w64-mingw32-gcc
-CC_WIN_ARM64	= aarch64-w64-mingw32-gcc
 WINDRES			= x86_64-w64-mingw32-windres
 
 CFLAGS        = -Wall -Wextra -O2 -std=c99
@@ -22,17 +21,15 @@ SOURCES       = $(wildcard $(SRCDIR)/*.c)
 TARGET_LINUX_x86_64 = $(TARGET)_linux_x86_64
 TARGET_LINUX_arm64  = $(TARGET)_linux_arm64
 
-# --- Plateforme Windows ---
+# --- Plateforme Windows x86-64 ---
 TARGET_WIN64        = $(TARGET)_win_x68_64.exe
-TARGET_WINARM64     = $(TARGET)_win_arm64.exe
-# --- Ressources Windows x86_64 ---
 RCFILE              = rc/icon.rc
 ICONRES             = rc/icon.o
 
 # --- Cibles principales ---
-.PHONY: all linux_x86_64 linux_arm64 win_x86_64 winarm64 clean debug prod valgrind
+.PHONY: all linux_x86_64 linux_arm64 win_x86_64 clean debug prod valgrind
 
-all: linux_x86_64 linux_arm64 win_x86_64 winarm64
+all: linux_x86_64 linux_arm64 win_x86_64
 
 linux_x86_64:
 	@echo "🐧 Compilation Linux x86_64..."
@@ -46,15 +43,9 @@ linux_arm64:
 
 # --- Compilation Windows x86_64 avec icône ---
 win_x86_64: $(ICONRES)
-	@echo "💠 Compilation Windows x86_64 avec icône..."
+	@echo "💠 Compilation Windows x86-64 avec icône..."
 	@mkdir -p $(OUTDIR)
 	$(CC_WIN_X86_64) $(SOURCES) $(ICONRES) -o $(OUTDIR)/$(TARGET_WIN64) $(CFLAGS)
-
-# --- Compilation Windows ARM64 (sans icône) ---
-winarm64:
-	@echo "📱 Compilation Windows ARM64 (sans icône)..."
-	@mkdir -p $(OUTDIR)
-	$(CC_WIN_ARM64) $(SOURCES) -o $(OUTDIR)/$(TARGET_WINARM64) $(CFLAGS)
 
 # --- Compilation du fichier .rc en .o ---
 $(ICONRES): $(RCFILE)
