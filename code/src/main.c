@@ -24,8 +24,10 @@ size_t saveChoice(ListeSauvegardes *listSaves){
 }
 
 
-int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves, Sauvegarde *actualSave) {
+int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
     if (!runProgram || !listSaves) return EXIT_FAILURE;
+    
+    Sauvegarde *actualSave = NULL;
 
     int maxAttemp, attemp;
     int res;
@@ -73,7 +75,7 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves, Sauv
                 actualSave = initSave();
                 attemp++;
             }
-            if (!actualSave) break;     
+            if (!actualSave) break;
 
             // Nom du fichier de sauvegarde
             printf("\nChoisir le nom de la nouvelle sauvegarde\n> ");
@@ -89,7 +91,7 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves, Sauv
                     free(strBuff);
                     strBuff = NULL;
                 }
-                else printf("Erreur lors de la création de la sauvegarde.\n> ");
+                else fprintf(stderr, "Erreur lors de la création de la sauvegarde.\n> ");
                 attemp++;
             }
             if (res != EXIT_SUCCESS) break;
@@ -102,12 +104,17 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves, Sauv
                 strBuff = lireString();
                 if (strBuff) {
                     actualSave->diver = initDiver(strBuff);
+                    if (!actualSave->diver)
+                        fprintf(stderr, "Erreur lors de la création du Plongeur.\n> ");
                     free(strBuff);
                     strBuff = NULL;
                 }
+                else fprintf(stderr, "Erreur de lecture du nom\n> ");
                 attemp++;
             }
             if (!actualSave->diver) break;
+
+            printf("\nBienvenue %s !\n", actualSave->diver->nom);
 
             // Lancer le jeu
             res = runGame(actualSave);
@@ -194,7 +201,6 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves, Sauv
     }
     
     freeSauvegarde(actualSave);
-    actualSave = NULL;
 
     return EXIT_SUCCESS;
 }
@@ -210,7 +216,6 @@ int main() {
     int runProgram = true;
 
     ListeSauvegardes *listSaves = NULL;
-    Sauvegarde *actualSave = NULL;
     
     /*-------------*/
 
@@ -290,7 +295,7 @@ int main() {
         
 
         /*---- On applique le choix ----*/
-        switchMenu(selected, &runProgram, listSaves, actualSave);
+        switchMenu(selected, &runProgram, listSaves);
 
 
         /*---- Free Sauvegardes ----*/
