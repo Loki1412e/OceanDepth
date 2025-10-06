@@ -6,19 +6,27 @@
 CC          = gcc
 CC_ARM64    = aarch64-linux-gnu-gcc
 CC_WIN64    = x86_64-w64-mingw32-gcc
+WINDRES		= x86_64-w64-mingw32-windres
+
 CFLAGS      = -Wall -Wextra -O2 -std=c99
 
-TARGET      		= oceandepth
-TARGET_LINUX_x86_64 = $(TARGET)_linux_x86_64
-TARGET_LINUX_arm64	= $(TARGET)_linux_arm64
-TARGET_LINUX_win64	= $(TARGET)_win64.exe
-
+TARGET		= oceandepth
 SRCDIR      = src
 OUTDIR      = output
+
 SOURCES     = $(wildcard $(SRCDIR)/*.c)
 
+# --- Plateforme Linux ---
+TARGET_LINUX_x86_64 = $(TARGET)_linux_x86_64
+TARGET_LINUX_arm64  = $(TARGET)_linux_arm64
+
+# --- Plateforme Windows ---
+TARGET_WIN64        = $(TARGET)_win64.exe
+RCFILE              = rc/icon.rc
+ICONRES             = rc/icon.o
+
 # --- Cibles principales ---
-.PHONY: all linux_x86_64 linux_arm64 win64 clean debug valgrind prod
+.PHONY: all linux_x86_64 linux_arm64 win64 clean debug prod valgrind
 
 all: linux_x86_64 linux_arm64 win64
 
@@ -32,27 +40,29 @@ linux_arm64:
 	@mkdir -p $(OUTDIR)
 	$(CC_ARM64) $(SOURCES) -o $(OUTDIR)/$(TARGET_LINUX_arm64) $(CFLAGS)
 
-win64:
-	@echo "💠 Compilation Windows 64-bit..."
+# --- Compilation Windows avec icône ---
+win64: $(ICONRES)
+	@echo "💠 Compilation Windows 64-bit avec icône..."
 	@mkdir -p $(OUTDIR)
-	$(CC_WIN64) $(SOURCES) -o $(OUTDIR)/$(TARGET_LINUX_win64) $(CFLAGS)
+	$(CC_WIN64) $(SOURCES) $(ICONRES) -o $(OUTDIR)/$(TARGET_WIN64) $(CFLAGS)
 
-# --- Make et Run ---
-run: linux_x86_64
-	cd $(OUTDIR) && ./$(TARGET_LINUX_x86_64) && cd ..
-
-# --- Version Debug ---
-debug: CFLAGS += -g -DDEBUG
-debug: clean all
+# --- Compilation du fichier .rc en .o ---
+$(ICONRES): $(RCFILE)
+	@echo "🎨 Génération de la ressource icône..."
+	$(WINDRES) $< -O coff -o $@
 
 # --- Nettoyage ---
 clean:
-	rm -f $(OUTDIR)/$(TARGET)_*
+	rm -f $(OUTDIR)/$(TARGET)_* $(ICONRES)
 
-# --- Test Valgrind ---
+# --- Debug (inclut debug symbols et flag DEBUG) ---
+debug: CFLAGS += -g -DDEBUG
+debug: clean all
+
+# --- Valgrind ---
 valgrind: debug
-	cd $(OUTDIR) && valgrind -v --leak-check=full --track-origins=yes ./$(TARGET)_linux && cd ..
+	cd $(OUTDIR) && valgrind -v --leak-check=full --track-origins=yes ./$(TARGET)_linux_x86_64 && cd ..
 
-# --- Version Production (optimisée) ---
+# --- Production (optimisation -O3 sans debug) ---
 prod: CFLAGS += -O3 -DNDEBUG
 prod: clean all
