@@ -1,0 +1,58 @@
+# --- OceanDepth Makefile (multi-arch 64-bit) ---
+
+# make -f MakefileMultiArch64
+# ne peux etre executé que sous linux x86_64 (pas arm64)
+
+CC          = gcc
+CC_ARM64    = aarch64-linux-gnu-gcc
+CC_WIN64    = x86_64-w64-mingw32-gcc
+CFLAGS      = -Wall -Wextra -O2 -std=c99
+
+TARGET      		= oceandepth
+TARGET_LINUX_x86_64 = $(TARGET)_linux_x86_64
+TARGET_LINUX_arm64	= $(TARGET)_linux_arm64
+TARGET_LINUX_win64	= $(TARGET)_win64.exe
+
+SRCDIR      = src
+OUTDIR      = output
+SOURCES     = $(wildcard $(SRCDIR)/*.c)
+
+# --- Cibles principales ---
+.PHONY: all linux_x86_64 linux_arm64 win64 clean debug valgrind prod
+
+all: linux_x86_64 linux_arm64 win64
+
+linux_x86_64:
+	@echo "🐧 Compilation Linux x86_64..."
+	@mkdir -p $(OUTDIR)
+	$(CC) $(SOURCES) -o $(OUTDIR)/$(TARGET_LINUX_x86_64) $(CFLAGS)
+
+linux_arm64:
+	@echo "🐠 Compilation Linux arm64..."
+	@mkdir -p $(OUTDIR)
+	$(CC_ARM64) $(SOURCES) -o $(OUTDIR)/$(TARGET_LINUX_arm64) $(CFLAGS)
+
+win64:
+	@echo "💠 Compilation Windows 64-bit..."
+	@mkdir -p $(OUTDIR)
+	$(CC_WIN64) $(SOURCES) -o $(OUTDIR)/$(TARGET_LINUX_win64) $(CFLAGS)
+
+# --- Make et Run ---
+run: linux_x86_64
+	cd $(OUTDIR) && ./$(TARGET_LINUX_x86_64) && cd ..
+
+# --- Version Debug ---
+debug: CFLAGS += -g -DDEBUG
+debug: clean all
+
+# --- Nettoyage ---
+clean:
+	rm -f $(OUTDIR)/$(TARGET)_*
+
+# --- Test Valgrind ---
+valgrind: debug
+	cd $(OUTDIR) && valgrind -v --leak-check=full --track-origins=yes ./$(TARGET)_linux && cd ..
+
+# --- Version Production (optimisée) ---
+prod: CFLAGS += -O3 -DNDEBUG
+prod: clean all
