@@ -1,8 +1,9 @@
 # --- OceanDepth Makefile (multi-arch 64-bit) ---
 
+# Ne peut être exécuté que sous linux x86_64 (pas arm64)
+
 # sudo apt install build-essential gcc-aarch64-linux-gnu mingw-w64 valgrind -y
 # make -f MakefileMultiArch64
-# ne peut être exécuté que sous linux x86_64 (pas arm64)
 
 CC_LIN_X86_64	= gcc
 CC_LIN_ARM64	= aarch64-linux-gnu-gcc
