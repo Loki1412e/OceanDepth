@@ -109,3 +109,67 @@ void freeZones(ZoneSuivantes *zones) {
     free(zones->zones);
     free(zones);
 }
+
+ConfigZone zoneConfigs[ZONE_UNKNOWN]; // tableau global
+
+int setZonesFromConf(const char *fichier) {
+    FILE *f = fopen(fichier, "r");
+    if (!f) {
+        fprintf(stderr, "Erreur : impossible d’ouvrir %s\n", fichier);
+        return EXIT_FAILURE;
+    }
+
+    char line[256];
+    char currentSection[32] = {0};
+    ConfigZone z = {0};
+
+    while (fgets(line, sizeof(line), f)) {
+        // Ignore les lignes vides ou commentaires
+        if (line[0] == '#' || line[0] == '\n') continue;
+
+        // Nouvelle section : [REEF], [EPAVE], ...
+        if (line[0] == '[') {
+            // Si on a déjà une section en cours, on la sauvegarde
+            if (currentSection[0] != '\0') {
+                if (strcmp(currentSection, "REEF") == 0) zoneConfigs[ZONE_REEF] = z;
+                else if (strcmp(currentSection, "EPAVE") == 0) zoneConfigs[ZONE_EPAVE] = z;
+                else if (strcmp(currentSection, "GROTTE") == 0) zoneConfigs[ZONE_GROTTE] = z;
+                else if (strcmp(currentSection, "ABYSSALE") == 0) zoneConfigs[ZONE_ABYSSALE] = z;
+            }
+
+            // Nouvelle section → reset config temporaire
+            memset(&z, 0, sizeof(ConfigZone));
+            sscanf(line, "[%31[^]]]", currentSection);
+            continue;
+        }
+
+        // Lecture clé=valeur
+        if (strncmp(line, "temperature_base=", 17) == 0)
+            z.temperature_base = atoi(line + 17);
+        else if (strncmp(line, "temperature_variation=", 22) == 0)
+            z.temperature_variation = atoi(line + 22);
+        else if (strncmp(line, "courant_min=", 12) == 0)
+            z.courant_min = atoi(line + 12);
+        else if (strncmp(line, "courant_max=", 12) == 0)
+            z.courant_max = atoi(line + 12);
+        else if (strncmp(line, "luminosite_base=", 16) == 0)
+            z.luminosite_base = atoi(line + 16);
+        else if (strncmp(line, "pression_base=", 14) == 0)
+            z.pression_base = atoi(line + 14);
+        else if (strncmp(line, "proba_tresor=", 13) == 0)
+            z.proba_tresor = atoi(line + 13);
+        else if (strncmp(line, "proba_sur=", 10) == 0)
+            z.proba_sur = atoi(line + 10);
+    }
+
+    // Sauvegarde de la dernière section lue
+    if (currentSection[0] != '\0') {
+        if (strcmp(currentSection, "REEF") == 0) zoneConfigs[ZONE_REEF] = z;
+        else if (strcmp(currentSection, "EPAVE") == 0) zoneConfigs[ZONE_EPAVE] = z;
+        else if (strcmp(currentSection, "GROTTE") == 0) zoneConfigs[ZONE_GROTTE] = z;
+        else if (strcmp(currentSection, "ABYSSALE") == 0) zoneConfigs[ZONE_ABYSSALE] = z;
+    }
+
+    fclose(f);
+    return EXIT_SUCCESS;
+}

@@ -32,25 +32,42 @@ int runGame(Sauvegarde *actualSave) {
 
     /*===== Boucle principale ====*/
 
-    printSave(actualSave);
-    printf("'%s' entre dans les profondeurs maritimes.\n", diver->nom);
+/*===== Boucle principale ====*/
 
-    while (runProgram) {
+printSave(actualSave);
+printf("'%s' entre dans les profondeurs maritimes.\n", diver->nom);
 
-        // TEMP / TEST
+// Initialisation de la zone de départ
+Zone *zoneActuelle = initZoneBase(0);
 
-        size_t longueur_creatures = 2;
+while (runProgram) {
 
-        for (size_t i = 0; i < longueur_creatures; i++) {
-            if (generateCreatureInBestiary(modalBestiary, bestiary, 0)) return EXIT_FAILURE;
-        }
-        
-        combat(diver, bestiary->creatures, bestiary->longueur_creatures);
+    // Génération des zones suivantes
+    ZoneSuivantes *suiv = initZonesSuivantes(zoneActuelle, modalBestiary);
+    afficherZones(suiv);
+    Zone *choisie = choisirZoneSuivante(suiv);
 
-        freeBestiaryContent(bestiary);
+    printf("\nVous plongez vers : %s (%dm)\n", choisie->nom, choisie->profondeur);
 
-        runProgram = false;
+    // Trésor et repos
+    if (choisie->tresor) printf("💎 Vous trouvez un trésor !\n");
+    if (!choisie->sur) {
+        // Combat avec les créatures de la zone
+        combat(diver, choisie->creatures, choisie->nbCreatures);
+    } else {
+        printf("Vous vous reposez dans une zone sûre.\n");
     }
+
+    freeZone(zoneActuelle);
+    zoneActuelle = choisie;
+    free(suiv);
+
+    // Condition d'arrêt possible
+    if (diver->pv <= 0) runProgram = false;
+}
+
+// Libération finale
+freeZone(zoneActuelle);
 
     /*===== free && return ====*/
     
