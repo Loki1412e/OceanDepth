@@ -50,7 +50,7 @@ int appliquerConsommationOxygeneProfondeur(Plongeur *joueur) {
     
     int perte;
     
-    perte = random_int(2, 5) * (joueur->row_X + 1); // niveau de profondeur, ptet trop violent ???
+    perte = random_int(2, 5) * (joueur->profondeur); // niveau de profondeur, ptet trop violent ???
     joueur->niveau_oxygene -= perte;
     if (joueur->niveau_oxygene < 0) joueur->niveau_oxygene = 0;
 

@@ -173,7 +173,7 @@ void printDiver(Plongeur *diver) {
     printf("\n====================================\n");
     printf("PLONGEUR: %s\n", diver->nom ? diver->nom : "(Sans nom)");
     printf("------------------------------------\n");
-    printf("Profondeur: -%d\n", (diver->row_X + 1) * 50);
+    printf("Profondeur: -%d\n", (diver->profondeur) * 50);
     printf("PV: %d / %d\n", diver->pv, diver->pv_max);
     printf("Oxygène: %d / %d\n", diver->niveau_oxygene, diver->niveau_oxygene_max);
     printf("Fatigue: %d / %d\n", diver->niveau_fatigue, diver->fatigue_max);

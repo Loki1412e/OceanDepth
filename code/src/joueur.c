@@ -36,7 +36,7 @@ Plongeur *initDiver(char *diver_name) {
     diver->niveau_oxygene = diver->niveau_oxygene_max;
 
     diver->etats_subi.etats = NULL;
-    diver->etats_subi.longueur_etats = 0;
+    diver->etats_subi.longueur = 0;
 
     diver->competences = NULL;
     diver->longueur_competences = 0;
@@ -79,17 +79,14 @@ int setDiverFromConf(Plongeur *diver) {
         else if (strncmp(line, "vitesse=", 8) == 0)
             diver->vitesse = atoi(line + 8);
         
-        else if (strncmp(line, "niveau=", 6) == 0)
-            diver->niveau = atoi(line + 6);
+        else if (strncmp(line, "niveau=", 7) == 0)
+            diver->niveau = atoi(line + 7);
         
-        else if (strncmp(line, "perles=", 6) == 0)
-            diver->perles = atoi(line + 6);
+        else if (strncmp(line, "perles=", 7) == 0)
+            diver->perles = atoi(line + 7);
         
-        else if (strncmp(line, "row_X=", 6) == 0)
-            diver->row_X = atoi(line + 6);
-        
-        else if (strncmp(line, "col_Y=", 6) == 0)
-            diver->col_Y = atoi(line + 6);
+        else if (strncmp(line, "profondeur=", 11) == 0)
+            diver->profondeur = atoi(line + 11);
     }
 
     fclose(f);

@@ -95,8 +95,7 @@
         ListeEtat etats_subi;
         Competence *competences; // tableau de competences (pas sur de le garder)
         size_t longueur_competences;
-        unsigned row_X; // 0
-        unsigned col_Y; // 0
+        int profondeur;
     } Plongeur;
 
     typedef struct {
