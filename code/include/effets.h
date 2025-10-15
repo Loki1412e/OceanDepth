@@ -37,6 +37,9 @@
 
     /* Prototype */
 
+    char *enumSpecialEffectToChar(EffetsSpeciaux type);
+    EffetsSpeciaux *charToEnumSpecialEffect(char *type);
+
     int calculerDefenseEffet(int defenseBase, ListeEtat *etats);
     int calculerDegatsInfligesEffet(ListeEtat *etatsCible, int degatsBase);
     int calculerDegatsSubiDebutTourEffet(ListeEtat *etats, int *pv, int maxPv, int defense);

@@ -3,6 +3,30 @@
 void freeListeEtat(ListeEtat *listeEtat);
 
 
+char *enumSpecialEffectToChar(EffetsSpeciaux type) {
+    switch (type) {
+        case BENEDICTION_OCEAN: return "BENEDICTION_OCEAN";
+        case MALEDICTION_OCEAN: return "MALEDICTION_OCEAN";
+        case SAIGNEMENT: return "SAIGNEMENT";
+        case PARALYSIE: return "PARALYSIE";
+        case ETREINTE: return "ETREINTE";
+        case PRECISION_REDUITE: return "PRECISION_REDUITE";
+        case DEFENSE_AUGMENTEE: return "DEFENSE_AUGMENTEE";
+        case VOIX_DU_COURANT: return "VOIX_DU_COURANT";
+    }
+    return "AUCUN";
+}
+
+
+EffetsSpeciaux *charToEnumSpecialEffect(char *type) {
+    for (size_t effet = 0; effet < LENGTH_EffetsSpeciaux; effet++) {
+        if (strcmp(type, enumSpecialEffectToChar((EffetsSpeciaux) effet)) == 0)
+            return (EffetsSpeciaux) effet;
+    }
+    return AUCUN;
+}
+
+
 ListeEtat *initEmptyListeEtat() {
     ListeEtat *listeEtat = malloc(sizeof(ListeEtat));
     if (!listeEtat) return NULL;
