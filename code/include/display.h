@@ -2,6 +2,7 @@
 #define _DISPLAY_H_
 
     #include "global.h"
+    #include "effets.h"
     
     // Temp
     size_t lireEntier();
