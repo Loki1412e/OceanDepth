@@ -118,11 +118,7 @@ void freeDiverContent(Plongeur *diver) {
         diver->nom = NULL;
     }
     
-    if (diver->etats_subi.etats) {
-        free(diver->etats_subi.etats);
-        diver->etats_subi.etats = NULL;
-        diver->etats_subi.longueur = 0;
-    }
+    freeListeEtat(&diver->etats_subi);
     
     if (diver->competences) {
         for (size_t i = 0; i < diver->longueur_competences; i++) {

@@ -2,6 +2,7 @@
 #define _CREATURES_H_
 
     #include "global.h"
+    #include "effets.h"
     
     Bestiaire *initmodalBestiary();
     Bestiaire *initEmptyBestiary();

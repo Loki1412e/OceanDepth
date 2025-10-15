@@ -17,7 +17,6 @@ char *enumSpecialEffectToChar(EffetsSpeciaux type) {
     }
 }
 
-
 EffetsSpeciaux charToEnumSpecialEffect(char *type) {
     for (size_t effet = 0; effet < LENGTH_EffetsSpeciaux; effet++) {
         if (strcmp(type, enumSpecialEffectToChar((EffetsSpeciaux) effet)) == 0)
@@ -212,9 +211,8 @@ void decrementerDureesEtNettoyer(ListeEtat *listeEtat, int estFinDeTourCombat, i
 
 
 void freeListeEtat(ListeEtat *listeEtat) {
-    if (listeEtat) {
-        free(listeEtat->etats);
-        listeEtat->etats = NULL;
-        listeEtat->longueur = 0;
-    }
+    if (!listeEtat) return;
+    free(listeEtat->etats);
+    listeEtat->etats = NULL;
+    listeEtat->longueur = 0;
 }
