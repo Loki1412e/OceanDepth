@@ -55,7 +55,7 @@ Plongeur *initDiver(char *diver_name) {
 
     diver->pv = diver->pv_max;
     diver->niveau_oxygene = diver->niveau_oxygene_max;
-    diver->niveau_fatigue = diver->fatigue_max;
+    diver->niveau_fatigue = 0;
 
     return diver;
 }
