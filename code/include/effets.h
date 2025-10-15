@@ -3,40 +3,6 @@
 
     #include "global.h"
 
-    /* Enum */
-
-    typedef enum {
-        AUCUN,
-        BENEDICTION_OCEAN,
-        MALEDICTION_OCEAN,
-        SAIGNEMENT,
-        PARALYSIE,
-        ETREINTE,
-        PRECISION_REDUITE,
-        DEFENSE_AUGMENTEE,
-        VOIX_DU_COURANT,
-        // Suite ...
-        LENGTH_EffetsSpeciaux
-    } EffetsSpeciaux;
-
-
-    /* Struct */
-
-    typedef struct {
-        EffetsSpeciaux effet;
-        int estPermanent;
-        int duree_zone;
-        int duree_combat;
-    } Etat;
-
-    typedef struct {
-        Etat *etats;
-        size_t longueur;
-    } ListeEtat;
-
-
-    /* Prototype */
-
     char *enumSpecialEffectToChar(EffetsSpeciaux type);
     EffetsSpeciaux *charToEnumSpecialEffect(char *type);
 
