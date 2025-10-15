@@ -17,7 +17,7 @@ int runGame(Sauvegarde *actualSave) {
 
     /*===== Init Allocation ====*/
 
-    modalBestiary = initModelBestiary();
+    modalBestiary = initmodalBestiary();
     if (!modalBestiary) {
         printf("Erreur lors du chargement du bestiaire modèle.\n");
         return EXIT_FAILURE;
