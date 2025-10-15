@@ -26,7 +26,6 @@ EffetsSpeciaux charToEnumSpecialEffect(char *type) {
     return AUCUN;
 }
 
-
 ListeEtat *initEmptyListeEtat() {
     ListeEtat *listeEtat = malloc(sizeof(ListeEtat));
     if (!listeEtat) return NULL;
@@ -47,7 +46,7 @@ int ajouterEffet(ListeEtat *listeEtat, EffetsSpeciaux type, int dureeCombat, int
             listeEtat->etats[i].duree_combat = dureeCombat;
             listeEtat->etats[i].duree_zone = dureeZone;
             listeEtat->etats[i].estPermanent = estPermanent;
-            printf("Effet %d rafraîchi.\n", type);
+            printf("Effet [%s] (%d) rafraîchi.\n", enumSpecialEffectToChar(type), type);
             return EXIT_SUCCESS;
         }
     }
@@ -71,6 +70,12 @@ int ajouterEffet(ListeEtat *listeEtat, EffetsSpeciaux type, int dureeCombat, int
     };
     
     listeEtat->etats[listeEtat->longueur - 1] = nouvelEtat;
+
+    printf("\n\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n");
+
+    printf("indice = %zu\neffet = %s (%d)\nestPermanent = %d\nduree_zone = %d\nduree_combat = %d\n", listeEtat->longueur - 1, enumSpecialEffectToChar(listeEtat->etats[listeEtat->longueur - 1].effet), listeEtat->etats[listeEtat->longueur - 1].effet, listeEtat->etats[listeEtat->longueur - 1].estPermanent, listeEtat->etats[listeEtat->longueur - 1].duree_zone, listeEtat->etats[listeEtat->longueur - 1].duree_combat);
+
+    printf("\n\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n");
 
     return EXIT_SUCCESS;
 }
