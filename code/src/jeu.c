@@ -5,7 +5,7 @@
 int runGame(Sauvegarde *actualSave) {
     if (!actualSave || !actualSave->diver) return EXIT_FAILURE;
 
-    clearConsole();
+    printf("\n\n\n");//clearConsole();
 
     /*===== Init var ====*/
 
@@ -44,6 +44,8 @@ int runGame(Sauvegarde *actualSave) {
         for (size_t i = 0; i < longueur_creatures; i++) {
             if (generateCreatureInBestiary(modalBestiary, bestiary, 0)) return EXIT_FAILURE;
         }
+
+        diver->profondeur = 1;
         
         combat(diver, bestiary->creatures, bestiary->longueur_creatures);
 

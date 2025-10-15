@@ -233,7 +233,7 @@ int main() {
 
     while (runProgram) {
 
-        clearConsole();
+        printf("\n\n\n");//clearConsole();
 
         /*---- Init Sauvegardes ----*/
         listSaves = preLoadListSaves(SAVE_DIR);
