@@ -13,12 +13,12 @@ char *enumSpecialEffectToChar(EffetsSpeciaux type) {
         case PRECISION_REDUITE: return "PRECISION_REDUITE";
         case DEFENSE_AUGMENTEE: return "DEFENSE_AUGMENTEE";
         case VOIX_DU_COURANT: return "VOIX_DU_COURANT";
+        default: return "AUCUN";
     }
-    return "AUCUN";
 }
 
 
-EffetsSpeciaux *charToEnumSpecialEffect(char *type) {
+EffetsSpeciaux charToEnumSpecialEffect(char *type) {
     for (size_t effet = 0; effet < LENGTH_EffetsSpeciaux; effet++) {
         if (strcmp(type, enumSpecialEffectToChar((EffetsSpeciaux) effet)) == 0)
             return (EffetsSpeciaux) effet;
@@ -48,7 +48,7 @@ int ajouterEffet(ListeEtat *listeEtat, EffetsSpeciaux type, int dureeCombat, int
             listeEtat->etats[i].duree_zone = dureeZone;
             listeEtat->etats[i].estPermanent = estPermanent;
             printf("Effet %d rafraîchi.\n", type);
-            return;
+            return EXIT_SUCCESS;
         }
     }
 
@@ -77,16 +77,25 @@ int ajouterEffet(ListeEtat *listeEtat, EffetsSpeciaux type, int dureeCombat, int
 
 
 int peutAttaquer(ListeEtat *listeEtat) {
+    int res = true;
     for (size_t i = 0; i < listeEtat->longueur; i++) {
         switch (listeEtat->etats[i].effet) {
+            
             case PARALYSIE:
                 printf("[PARALYSIE] vous empeche d'attaquer\n");
+                res = false;
+                break;
+
             case ETREINTE:
                 printf("[ETREINTE] vous empeche d'attaquer\n");
-                return false;
+                res = false;
+                break;
+            
+            default:
+                break;
         }
     }
-    return true;
+    return res;
 }
 
 int calculerDefenseEffet(int defenseBase, ListeEtat *etats) {
@@ -98,6 +107,9 @@ int calculerDefenseEffet(int defenseBase, ListeEtat *etats) {
                 defenseFinal *= 1.5;
                 printf("[DEFENSE_AUGMENTEE] s'applique\n");
                 break;
+
+            default:
+                break;
         }
     }
     return defenseFinal;
@@ -106,7 +118,7 @@ int calculerDefenseEffet(int defenseBase, ListeEtat *etats) {
 int calculerDegatsInfligesEffet(ListeEtat *etatsCible, int degatsBase) {
     int degatsFinaux = degatsBase;
     for (size_t i = 0; i < etatsCible->longueur; i++) {
-        switch(etatsCible->etats[i].effet) {
+        switch (etatsCible->etats[i].effet) {
             
             case BENEDICTION_OCEAN:
                 degatsFinaux *= 0.9;
@@ -116,6 +128,9 @@ int calculerDegatsInfligesEffet(ListeEtat *etatsCible, int degatsBase) {
             case MALEDICTION_OCEAN:
                 degatsFinaux *= 1.1;
                 printf("[MALEDICTION_OCEAN] s'applique\n");
+                break;
+            
+            default:
                 break;
         }
     }
@@ -127,7 +142,7 @@ int calculerDegatsSubiDebutTourEffet(ListeEtat *etats, int *pv, int maxPv, int d
     int degatsFinaux = 0;
     printf("\n");
     for (size_t i = 0; i < etats->longueur; i++) {
-        switch(etats->etats[i].effet) {
+        switch (etats->etats[i].effet) {
             
             case ETREINTE:
                 degats = (maxPv + defense) * 0.8; // 2% des (PV max + défense)
@@ -139,6 +154,9 @@ int calculerDegatsSubiDebutTourEffet(ListeEtat *etats, int *pv, int maxPv, int d
                 degats = maxPv * 0.05;
                 *pv -= degats; // Passe outre la défense donc on enleve les pv directement -> pv -= 5% des PV max
                 printf("L'effet [SAIGNEMENT] vous inflige des dégats\n");
+                break;
+            
+            default:
                 break;
         }
     }
@@ -157,7 +175,7 @@ void decrementerDureesEtNettoyer(ListeEtat *listeEtat, int estFinDeTourCombat, i
     }
     listeEtatTemp->longueur = listeEtat->longueur;
 
-    for (int i = 0; i < listeEtat->longueur; i++) {
+    for (size_t i = 0; i < listeEtat->longueur; i++) {
         etat_a_nettoyer[i] = 0;
         
         Etat *etat = &listeEtat->etats[i];
@@ -181,7 +199,7 @@ void decrementerDureesEtNettoyer(ListeEtat *listeEtat, int estFinDeTourCombat, i
         return;
     }
 
-    for (int i = 0, j = 0; i < listeEtat->longueur || j < listeEtatTemp->longueur; i++) {
+    for (size_t i = 0, j = 0; i < listeEtat->longueur || j < listeEtatTemp->longueur; i++) {
         if (etat_a_nettoyer[i])
             printf("L'effet %d a expiré et a été supprimé.\n", listeEtat->etats[i].effet);
         else
