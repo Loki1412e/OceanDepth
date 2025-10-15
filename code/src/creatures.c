@@ -107,6 +107,7 @@ int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, char *t
                     bestiary->creatures[index]->nom_type = NULL;
                     bestiary->creatures[index]->apparition = NULL;
                     bestiary->creatures[index]->etats_subi.etats = NULL;
+                    bestiary->creatures[index]->etats_subi.longueur = 0;
 
                     if (applyModel(modalBestiary->creatures[i], bestiary->creatures[index])) {
                         freeCreature(bestiary->creatures[index]);
@@ -191,6 +192,7 @@ Bestiaire *initmodalBestiary() {
         }
 
         modalBestiary->creatures[i]->etats_subi.etats = NULL;
+        modalBestiary->creatures[i]->etats_subi.longueur = 0;
         modalBestiary->creatures[i]->nom_type = NULL;
         modalBestiary->creatures[i]->apparition->profondeurs = NULL;
         modalBestiary->creatures[i]->apparition->taux = NULL;
