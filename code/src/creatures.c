@@ -1,34 +1,34 @@
 #include "../include/creatures.h"
 
 
-Bestiaire *initModelBestiary();
+Bestiaire *initmodalBestiary();
 Bestiaire *initEmptyBestiary();
-int generateCreatureInBestiary(Bestiaire *modelBestiary, Bestiaire *bestiary, unsigned depth_level);
-int addCreatureInBestiary(Bestiaire *modelBestiary, Bestiaire *bestiary, char *type_name, unsigned depth_level);
+int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, unsigned depth_level);
+int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, char *type_name, unsigned depth_level);
 void freeBestiary(Bestiaire *bestiary);
 void freeBestiaryContent(Bestiaire *bestiary);
 void freeCreatures(CreatureMarine **creatures, size_t length);
 void freeCreature(CreatureMarine *creature);
 
 void sortCreaturesBySpeed(CreatureMarine **creatures, size_t nb_creatures);
-int setBestiaryFromConf(Bestiaire *modelBestiary);
+int setBestiaryFromConf(Bestiaire *modalBestiary);
 unsigned *parseCreaturesApparitionConf(int index, char *line, size_t *length, char *errorOrigin, short *errorCode);
 int applyModel(CreatureMarine *model, CreatureMarine *creature);
 int countAllUniqueModel();
 // EffetsSpeciaux charSpecialEffectToEnum(char *special_effect);
 
 
-int generateCreatureInBestiary(Bestiaire *modelBestiary, Bestiaire *bestiary, unsigned depth_level) {
-    if (!modelBestiary || modelBestiary->longueur_creatures == 0 || !bestiary) {
-        fprintf(stderr, "Erreur: generateCreatureInBestiary(): modelBestiary ou modelBestiary->longueur_creatures ou bestiary n'est pas défini.");
+int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, unsigned depth_level) {
+    if (!modalBestiary || modalBestiary->longueur_creatures == 0 || !bestiary) {
+        fprintf(stderr, "Erreur: generateCreatureInBestiary(): modalBestiary ou modalBestiary->longueur_creatures ou bestiary n'est pas défini.");
         return EXIT_FAILURE;
     }
 
     unsigned total = 0;
 
     // Calcul du poids total (somme des taux_apparition valides)
-    for (size_t i = 0; i < modelBestiary->longueur_creatures; i++) {
-        CreatureMarine *model = modelBestiary->creatures[i];
+    for (size_t i = 0; i < modalBestiary->longueur_creatures; i++) {
+        CreatureMarine *model = modalBestiary->creatures[i];
         if (!model || !model->apparition) continue;
 
         for (size_t j = 0; j < model->apparition->longueur_profondeurs; j++) {
@@ -46,8 +46,8 @@ int generateCreatureInBestiary(Bestiaire *modelBestiary, Bestiaire *bestiary, un
     unsigned tirage = random_int(0, total - 1); // de 0 à total - 1 = total options
     unsigned cumul = 0;
 
-    for (size_t i = 0; i < modelBestiary->longueur_creatures; i++) {
-        CreatureMarine *model = modelBestiary->creatures[i];
+    for (size_t i = 0; i < modalBestiary->longueur_creatures; i++) {
+        CreatureMarine *model = modalBestiary->creatures[i];
         if (!model || !model->apparition) continue;
 
         for (size_t j = 0; j < model->apparition->longueur_profondeurs; j++) {
@@ -56,7 +56,7 @@ int generateCreatureInBestiary(Bestiaire *modelBestiary, Bestiaire *bestiary, un
                 if (tirage < cumul) {
                     
                     // On l'ajoute dans le Bestiaire
-                    if (addCreatureInBestiary(modelBestiary, bestiary, model->nom_type, depth_level)) return EXIT_FAILURE;
+                    if (addCreatureInBestiary(modalBestiary, bestiary, model->nom_type, depth_level)) return EXIT_FAILURE;
 
                     // On trie le Bestiaire
                     sortCreaturesBySpeed(bestiary->creatures, bestiary->longueur_creatures);
@@ -72,16 +72,16 @@ int generateCreatureInBestiary(Bestiaire *modelBestiary, Bestiaire *bestiary, un
 }
 
 
-int addCreatureInBestiary(Bestiaire *modelBestiary, Bestiaire *bestiary, char *type_name, unsigned depth_level) {
+int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, char *type_name, unsigned depth_level) {
 
     short existInModel = 0;
     CreatureMarine **tmp = NULL;
     unsigned index, max_id;
 
-    for (size_t i = 0; i < modelBestiary->longueur_creatures; i++) {
-        if (strcmp(modelBestiary->creatures[i]->nom_type, type_name) == 0) {
-            for (size_t j = 0; j < modelBestiary->creatures[i]->apparition->longueur_profondeurs; j++) {
-                if (modelBestiary->creatures[i]->apparition->profondeurs[j] <= depth_level) {
+    for (size_t i = 0; i < modalBestiary->longueur_creatures; i++) {
+        if (strcmp(modalBestiary->creatures[i]->nom_type, type_name) == 0) {
+            for (size_t j = 0; j < modalBestiary->creatures[i]->apparition->longueur_profondeurs; j++) {
+                if (modalBestiary->creatures[i]->apparition->profondeurs[j] <= depth_level) {
                     
                     existInModel = 1;
 
@@ -108,7 +108,7 @@ int addCreatureInBestiary(Bestiaire *modelBestiary, Bestiaire *bestiary, char *t
                     bestiary->creatures[index]->apparition = NULL;
                     bestiary->creatures[index]->etats_subi.etats = NULL;
 
-                    if (applyModel(modelBestiary->creatures[i], bestiary->creatures[index])) {
+                    if (applyModel(modalBestiary->creatures[i], bestiary->creatures[index])) {
                         freeCreature(bestiary->creatures[index]);
                         bestiary->creatures[index] = NULL;
                         bestiary->longueur_creatures--;
@@ -155,61 +155,61 @@ Bestiaire *initEmptyBestiary() {
 }
 
 
-Bestiaire *initModelBestiary() {
+Bestiaire *initmodalBestiary() {
     
     unsigned count_all_unique_model = countAllUniqueModel();
     if (!count_all_unique_model) return NULL;
 
     // Allocation mémoire
 
-    Bestiaire *modelBestiary = malloc(sizeof(Bestiaire));
-    if (modelBestiary == NULL) {
-        fprintf(stderr, "Erreur: initModelBestiary(): Allocation mémoire modelBestiary\n");
+    Bestiaire *modalBestiary = malloc(sizeof(Bestiaire));
+    if (modalBestiary == NULL) {
+        fprintf(stderr, "Erreur: initmodalBestiary(): Allocation mémoire modalBestiary\n");
         return NULL;
     }
     
-    modelBestiary->longueur_creatures = count_all_unique_model;
-    modelBestiary->creatures = malloc(sizeof(CreatureMarine*) * count_all_unique_model);
+    modalBestiary->longueur_creatures = count_all_unique_model;
+    modalBestiary->creatures = malloc(sizeof(CreatureMarine*) * count_all_unique_model);
     
     for (size_t i = 0; i < count_all_unique_model; i++) {
         
-        modelBestiary->creatures[i] = malloc(sizeof(CreatureMarine));
-        if (modelBestiary->creatures[i] == NULL) {
-            modelBestiary->longueur_creatures = i;
-            freeBestiary(modelBestiary);
-            fprintf(stderr, "Erreur: initBestiary(): Allocation mémoire modelBestiary->creatures\n");
+        modalBestiary->creatures[i] = malloc(sizeof(CreatureMarine));
+        if (modalBestiary->creatures[i] == NULL) {
+            modalBestiary->longueur_creatures = i;
+            freeBestiary(modalBestiary);
+            fprintf(stderr, "Erreur: initBestiary(): Allocation mémoire modalBestiary->creatures\n");
             return NULL;
         }
 
-        modelBestiary->creatures[i]->apparition = malloc(sizeof(ApparitionCreature));
-        if (modelBestiary->creatures[i]->apparition == NULL) {
-            free(modelBestiary->creatures[i]);
-            modelBestiary->longueur_creatures = i;
-            freeBestiary(modelBestiary);
-            fprintf(stderr, "Erreur: initBestiary(): Allocation mémoire modelBestiary->creatures\n");
+        modalBestiary->creatures[i]->apparition = malloc(sizeof(ApparitionCreature));
+        if (modalBestiary->creatures[i]->apparition == NULL) {
+            free(modalBestiary->creatures[i]);
+            modalBestiary->longueur_creatures = i;
+            freeBestiary(modalBestiary);
+            fprintf(stderr, "Erreur: initBestiary(): Allocation mémoire modalBestiary->creatures\n");
             return NULL;
         }
 
-        modelBestiary->creatures[i]->etats_subi.etats = NULL;
-        modelBestiary->creatures[i]->nom_type = NULL;
-        modelBestiary->creatures[i]->apparition->profondeurs = NULL;
-        modelBestiary->creatures[i]->apparition->taux = NULL;
+        modalBestiary->creatures[i]->etats_subi.etats = NULL;
+        modalBestiary->creatures[i]->nom_type = NULL;
+        modalBestiary->creatures[i]->apparition->profondeurs = NULL;
+        modalBestiary->creatures[i]->apparition->taux = NULL;
     }
 
     // Initialisation du Bestiaire Model
     
-    if (setBestiaryFromConf(modelBestiary)) {
-        freeBestiary(modelBestiary);
+    if (setBestiaryFromConf(modalBestiary)) {
+        freeBestiary(modalBestiary);
         return NULL;
     }
 
     for (size_t i = 0; i < count_all_unique_model; i++) {
-        modelBestiary->creatures[i]->pv = modelBestiary->creatures[i]->pv_max;
-        // modelBestiary->creatures[i]->est_vivant = 1; // si pv > 0 alors est vivant
-        modelBestiary->creatures[i]->id = 0;
+        modalBestiary->creatures[i]->pv = modalBestiary->creatures[i]->pv_max;
+        // modalBestiary->creatures[i]->est_vivant = 1; // si pv > 0 alors est vivant
+        modalBestiary->creatures[i]->id = 0;
     }
     
-    return modelBestiary;
+    return modalBestiary;
 }
 
 
@@ -228,7 +228,7 @@ void sortCreaturesBySpeed(CreatureMarine **creatures, size_t nb_creatures) {
 }
 
 
-int setBestiaryFromConf(Bestiaire *modelBestiary) {
+int setBestiaryFromConf(Bestiaire *modalBestiary) {
     FILE *f = fopen("config/creatures.conf", "r");
     if (f == NULL) return EXIT_FAILURE;
 
@@ -247,49 +247,49 @@ int setBestiaryFromConf(Bestiaire *modelBestiary) {
             line[strcspn(line, "\n")] = 0; // retirer le \n
             len = strlen(line + 9);
             
-            modelBestiary->creatures[index]->nom_type = malloc(sizeof(char) * len + 1);
+            modalBestiary->creatures[index]->nom_type = malloc(sizeof(char) * len + 1);
             
-            if (!modelBestiary->creatures[index]->nom_type) {
+            if (!modalBestiary->creatures[index]->nom_type) {
                 fprintf(stderr, "Erreur: setBestiaryFromConf(): Allocation nom_type\n");
-                freeBestiary(modelBestiary);
+                freeBestiary(modalBestiary);
                 fclose(f);
                 return EXIT_FAILURE;
             }
 
-            strcpy(modelBestiary->creatures[index]->nom_type, line + 9); // on saute "nom_type="
+            strcpy(modalBestiary->creatures[index]->nom_type, line + 9); // on saute "nom_type="
         }
 
         else if (strncmp(line, "pv_min=", 7) == 0)
-            modelBestiary->creatures[index]->pv_min = atoi(line + 7);
+            modalBestiary->creatures[index]->pv_min = atoi(line + 7);
         
         else if (strncmp(line, "pv_max=", 7) == 0)
-            modelBestiary->creatures[index]->pv_max = atoi(line + 7);
+            modalBestiary->creatures[index]->pv_max = atoi(line + 7);
 
         else if (strncmp(line, "attaque_minimale=", 17) == 0)
-            modelBestiary->creatures[index]->attaque_min = atoi(line + 17);
+            modalBestiary->creatures[index]->attaque_min = atoi(line + 17);
         
         else if (strncmp(line, "attaque_maximale=", 17) == 0)
-            modelBestiary->creatures[index]->attaque_max = atoi(line + 17);
+            modalBestiary->creatures[index]->attaque_max = atoi(line + 17);
         
         else if (strncmp(line, "defense=", 8) == 0)
-            modelBestiary->creatures[index]->defense = atoi(line + 8);
+            modalBestiary->creatures[index]->defense = atoi(line + 8);
         
         else if (strncmp(line, "vitesse=", 8) == 0)
-            modelBestiary->creatures[index]->vitesse = atoi(line + 8);
+            modalBestiary->creatures[index]->vitesse = atoi(line + 8);
         
         // else if (strncmp(line, "effet_special=", 14) == 0) {
         //     line[strcspn(line, "\n")] = 0;
-        //     modelBestiary->creatures[index]->effet_special = charSpecialEffectToEnum(line + 14);
+        //     modalBestiary->creatures[index]->effet_special = charSpecialEffectToEnum(line + 14);
         // }
         
         else if (strncmp(line, "profondeur_apparition=", 22) == 0) {
             line[strcspn(line, "\n")] = 0; // Retirer \n s'il rest
-            modelBestiary->creatures[index]->apparition->profondeurs = parseCreaturesApparitionConf(index, line, &(modelBestiary->creatures[index]->apparition->longueur_profondeurs), "profondeur_apparition", &errorCode);
+            modalBestiary->creatures[index]->apparition->profondeurs = parseCreaturesApparitionConf(index, line, &(modalBestiary->creatures[index]->apparition->longueur_profondeurs), "profondeur_apparition", &errorCode);
         
             if (errorCode == -1) continue;
             
-            else if (modelBestiary->creatures[index]->apparition->profondeurs == NULL) {
-                freeBestiary(modelBestiary);
+            else if (modalBestiary->creatures[index]->apparition->profondeurs == NULL) {
+                freeBestiary(modalBestiary);
                 fclose(f);
                 return EXIT_FAILURE;         
             }
@@ -297,46 +297,46 @@ int setBestiaryFromConf(Bestiaire *modelBestiary) {
         
         else if (strncmp(line, "taux_apparition=", 16) == 0) {
             line[strcspn(line, "\n")] = 0; // Retirer \n s'il reste
-            modelBestiary->creatures[index]->apparition->taux = parseCreaturesApparitionConf(index, line, &(modelBestiary->creatures[index]->apparition->longueur_taux), "taux_apparition", &errorCode);
+            modalBestiary->creatures[index]->apparition->taux = parseCreaturesApparitionConf(index, line, &(modalBestiary->creatures[index]->apparition->longueur_taux), "taux_apparition", &errorCode);
         
             if (errorCode == -1) continue;
             
-            else if (modelBestiary->creatures[index]->apparition->taux == NULL) {
-                freeBestiary(modelBestiary);
+            else if (modalBestiary->creatures[index]->apparition->taux == NULL) {
+                freeBestiary(modalBestiary);
                 fclose(f);
                 return EXIT_FAILURE;         
             }
         }
     }
 
-    if (modelBestiary->longueur_creatures != length) {
-        freeBestiary(modelBestiary);
+    if (modalBestiary->longueur_creatures != length) {
+        freeBestiary(modalBestiary);
         fclose(f);
-        fprintf(stderr, "Erreur: setBestiaryFromConf(): longueur_creatures (%zu) != length (%zu)\n", modelBestiary->longueur_creatures, length);
+        fprintf(stderr, "Erreur: setBestiaryFromConf(): longueur_creatures (%zu) != length (%zu)\n", modalBestiary->longueur_creatures, length);
         return EXIT_FAILURE;
     }
 
-    for (size_t i = 0; i < modelBestiary->longueur_creatures; i++) {
+    for (size_t i = 0; i < modalBestiary->longueur_creatures; i++) {
         
-        if (modelBestiary->creatures[i]->apparition->longueur_taux != modelBestiary->creatures[i]->apparition->longueur_profondeurs) {
+        if (modalBestiary->creatures[i]->apparition->longueur_taux != modalBestiary->creatures[i]->apparition->longueur_profondeurs) {
             unsigned *tmp = realloc(
-                modelBestiary->creatures[i]->apparition->taux,
-                sizeof(unsigned) * modelBestiary->creatures[i]->apparition->longueur_profondeurs
+                modalBestiary->creatures[i]->apparition->taux,
+                sizeof(unsigned) * modalBestiary->creatures[i]->apparition->longueur_profondeurs
             );
             if (!tmp) {
                 fprintf(stderr, "Erreur: setBestiaryFromConf(): Realloc taux\n");
-                freeBestiary(modelBestiary);
+                freeBestiary(modalBestiary);
                 fclose(f);
                 return EXIT_FAILURE;
             }
-            modelBestiary->creatures[i]->apparition->taux = tmp;
+            modalBestiary->creatures[i]->apparition->taux = tmp;
 
-            if (modelBestiary->creatures[i]->apparition->longueur_taux < modelBestiary->creatures[i]->apparition->longueur_profondeurs) {
-                for (size_t j = (modelBestiary->creatures[i]->apparition->longueur_profondeurs - modelBestiary->creatures[i]->apparition->longueur_taux); j < modelBestiary->creatures[i]->apparition->longueur_profondeurs; j++)
-                    modelBestiary->creatures[i]->apparition->taux[j] = 0;
+            if (modalBestiary->creatures[i]->apparition->longueur_taux < modalBestiary->creatures[i]->apparition->longueur_profondeurs) {
+                for (size_t j = (modalBestiary->creatures[i]->apparition->longueur_profondeurs - modalBestiary->creatures[i]->apparition->longueur_taux); j < modalBestiary->creatures[i]->apparition->longueur_profondeurs; j++)
+                    modalBestiary->creatures[i]->apparition->taux[j] = 0;
             }
 
-            modelBestiary->creatures[i]->apparition->longueur_taux = modelBestiary->creatures[i]->apparition->longueur_profondeurs;
+            modalBestiary->creatures[i]->apparition->longueur_taux = modalBestiary->creatures[i]->apparition->longueur_profondeurs;
         }
     }
 
@@ -415,32 +415,32 @@ unsigned *parseCreaturesApparitionConf(int index, char *line, size_t *length, ch
 }
 
 
-int applyModel(CreatureMarine *modelBestiary, CreatureMarine *creature) {
-    unsigned length_nom_type = strlen(modelBestiary->nom_type);
+int applyModel(CreatureMarine *modalBestiary, CreatureMarine *creature) {
+    unsigned length_nom_type = strlen(modalBestiary->nom_type);
     
-    creature->pv_min = modelBestiary->pv_min;
-    creature->pv_max = modelBestiary->pv_max;
-    creature->pv = modelBestiary->pv;
-    creature->attaque_min = modelBestiary->attaque_min;
-    creature->attaque_max = modelBestiary->attaque_max;
-    creature->defense = modelBestiary->defense;
-    creature->vitesse = modelBestiary->vitesse;
-    // creature->effet_special = modelBestiary->effet_special;
-    // creature->est_vivant = modelBestiary->est_vivant;
+    creature->pv_min = modalBestiary->pv_min;
+    creature->pv_max = modalBestiary->pv_max;
+    creature->pv = modalBestiary->pv;
+    creature->attaque_min = modalBestiary->attaque_min;
+    creature->attaque_max = modalBestiary->attaque_max;
+    creature->defense = modalBestiary->defense;
+    creature->vitesse = modalBestiary->vitesse;
+    // creature->effet_special = modalBestiary->effet_special;
+    // creature->est_vivant = modalBestiary->est_vivant;
 
     creature->nom_type = malloc(sizeof(char) * (length_nom_type + 1));
     if (creature->nom_type == NULL) goto MEMORY_ERROR;
-    strcpy(creature->nom_type, modelBestiary->nom_type);
+    strcpy(creature->nom_type, modalBestiary->nom_type);
 
     // Ici, apparition ne doit PAS être alloué avant l'appel à applyModel.
     creature->apparition = malloc(sizeof(ApparitionCreature));
     if (creature->apparition == NULL) goto MEMORY_ERROR;
 
-    creature->apparition->longueur_profondeurs = modelBestiary->apparition->longueur_profondeurs;
+    creature->apparition->longueur_profondeurs = modalBestiary->apparition->longueur_profondeurs;
     creature->apparition->profondeurs = malloc(sizeof(unsigned) * creature->apparition->longueur_profondeurs);
     if (creature->apparition->profondeurs == NULL) goto MEMORY_ERROR;
 
-    creature->apparition->longueur_taux = modelBestiary->apparition->longueur_taux;
+    creature->apparition->longueur_taux = modalBestiary->apparition->longueur_taux;
     creature->apparition->taux = malloc(sizeof(unsigned) * creature->apparition->longueur_taux);
     if (creature->apparition->taux == NULL) goto MEMORY_ERROR;
 
@@ -448,10 +448,10 @@ int applyModel(CreatureMarine *modelBestiary, CreatureMarine *creature) {
     creature->etats_subi.longueur = 0;
     
     for (size_t i = 0; i < creature->apparition->longueur_profondeurs; i++)
-        creature->apparition->profondeurs[i] = modelBestiary->apparition->profondeurs[i];
+        creature->apparition->profondeurs[i] = modalBestiary->apparition->profondeurs[i];
     
     for (size_t i = 0; i < creature->apparition->longueur_taux; i++)
-        creature->apparition->taux[i] = modelBestiary->apparition->taux[i];
+        creature->apparition->taux[i] = modalBestiary->apparition->taux[i];
     
     return EXIT_SUCCESS;
 
