@@ -56,14 +56,12 @@ int appliquerConsommationOxygeneProfondeur(Plongeur *joueur) {
 }
 
 int creaturesVivantes(CreatureMarine **creatures, size_t nb_creatures) {
-    int vivantes = 0;
+    int nb_vivantes = 0;
     
     for (size_t i = 0; i < nb_creatures; i++)
-        if (creatures[i]->pv > 0) vivantes++;
+        if (creatures[i]->pv > 0) nb_vivantes++;
 
-    if (vivantes == 0) return true;
-
-    return false;
+    return nb_vivantes > 0;
 }
 
 // `return 0` si pas fini
