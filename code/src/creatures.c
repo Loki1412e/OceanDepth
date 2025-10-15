@@ -15,7 +15,7 @@ int setBestiaryFromConf(Bestiaire *modelBestiary);
 unsigned *parseCreaturesApparitionConf(int index, char *line, size_t *length, char *errorOrigin, short *errorCode);
 int applyModel(CreatureMarine *model, CreatureMarine *creature);
 int countAllUniqueModel();
-EffetsSpeciaux charSpecialEffectToEnum(char *special_effect);
+// EffetsSpeciaux charSpecialEffectToEnum(char *special_effect);
 
 
 int generateCreatureInBestiary(Bestiaire *modelBestiary, Bestiaire *bestiary, unsigned depth_level) {
@@ -486,12 +486,12 @@ int countAllUniqueModel() {
 }
 
 
-EffetsSpeciaux charSpecialEffectToEnum(char *special_effect) {
-    if (strcmp(special_effect, "PARALYSIE") == 0) return PARALYSIE;
-    if (strcmp(special_effect, "POISON") == 0) return POISON;
-    if (strcmp(special_effect, "SAIGNEMENT") == 0) return SAIGNEMENT;
-    return AUCUN;
-}
+// EffetsSpeciaux charSpecialEffectToEnum(char *special_effect) {
+//     if (strcmp(special_effect, "PARALYSIE") == 0) return PARALYSIE;
+//     if (strcmp(special_effect, "POISON") == 0) return POISON;
+//     if (strcmp(special_effect, "SAIGNEMENT") == 0) return SAIGNEMENT;
+//     return AUCUN;
+// }
 
 
 void freeCreature(CreatureMarine *creature) {
