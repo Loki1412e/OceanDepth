@@ -165,7 +165,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
     int choix;
     size_t cible;
 
-    printf("\nclearConsole();\n");//clearConsole();
+    clearConsole();
     
     while (finDuCombat(joueur, creatures, nb_creatures) != true) {
 
@@ -245,25 +245,25 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
                     joueurAttaqueCreature(joueur, creatures[cible-1]);
                     attaques_restantes--;
-                    printf("\nclearConsole();\n");//clearConsole();
+                    clearConsole();
                     break;
                 
                 case 2:
                     printf("→ Utilisation d’une compétence (à implémenter)\n");
                     attaques_restantes = 0;
-                    printf("\nclearConsole();\n");//clearConsole();
+                    clearConsole();
                     break;
                 
                 case 3:
                     printf("→ Utilisation d’un objet (à implémenter)\n");
-                    printf("\nclearConsole();\n");//clearConsole();
+                    clearConsole();
                     break;
                 
                 case 4:
                     printf("→ Vous terminez votre tour.\n");
                     diminuerFatigue(joueur, 1); // tmp / test
                     attaques_restantes = 0;
-                    printf("\nclearConsole();\n");//clearConsole();
+                    clearConsole();
                     break;
             }
 
