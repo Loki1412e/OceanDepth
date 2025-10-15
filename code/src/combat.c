@@ -118,9 +118,12 @@ void creatureAttaqueJoueur(CreatureMarine *creature, Plongeur *joueur) {
 
 void appliquerDegatsAvantTour(ListeEtat *etats, int *pv, int maxPv, int defense) {
     int defenseFinal = calculerDefenseEffet(defense, etats);
-    int degats = calculerDegatsSubiDebutTourEffet(etats, pv, maxPv, defense);
+    int degats = calculerDegatsSubiDebutTourEffet(etats, pv, maxPv, defenseFinal);
     // degats = calculerDegatsInfligesEffet(etats, degats);
+    
+    *pv -= degats;
     if (*pv < 0) *pv = 0;
+    
     printf("\nforce\n");
 }
 
