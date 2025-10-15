@@ -516,10 +516,7 @@ void freeCreature(CreatureMarine *creature) {
         creature->apparition = NULL;
     }
     
-    if (creature->etats_subi.etats) {
-        free(creature->etats_subi.etats);
-        creature->etats_subi.etats = NULL;
-    }
+    freeListeEtat(&creature->etats_subi);
 
     free(creature);
     creature = NULL;
