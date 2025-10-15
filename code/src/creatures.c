@@ -445,7 +445,7 @@ int applyModel(CreatureMarine *modelBestiary, CreatureMarine *creature) {
     if (creature->apparition->taux == NULL) goto MEMORY_ERROR;
 
     creature->etats_subi.etats = NULL;
-    creature->etats_subi.longueur_etats = 0;
+    creature->etats_subi.longueur = 0;
     
     for (size_t i = 0; i < creature->apparition->longueur_profondeurs; i++)
         creature->apparition->profondeurs[i] = modelBestiary->apparition->profondeurs[i];
