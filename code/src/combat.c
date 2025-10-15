@@ -48,9 +48,7 @@ int calculerDegats(int attaque_min, int attaque_max, int defense) {
 
 int appliquerConsommationOxygeneProfondeur(Plongeur *joueur) {
     
-    int perte;
-    
-    perte = random_int(2, 5) * (joueur->profondeur); // niveau de profondeur, ptet trop violent ???
+    int perte = random_int(2, 5) * (joueur->profondeur); // niveau de profondeur, ptet trop violent ???
     joueur->niveau_oxygene -= perte;
     if (joueur->niveau_oxygene < 0) joueur->niveau_oxygene = 0;
 
@@ -69,18 +67,9 @@ int creaturesVivantes(CreatureMarine **creatures, size_t nb_creatures) {
 }
 
 // `return 0` si pas fini
-// `return 1` si tout les monstres sont morts
-// `return -1` si le joueur est mort
+// `return 1` si tout les monstres sont morts ou si le joueur est mort
 int finDuCombat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
-    if (joueur->pv < 0) {
-        printf("\n☠️  Vous êtes mort... GAME OVER\n");
-        return -1;
-    }
-    if (creaturesVivantes(creatures, nb_creatures)) {
-        printf("\n✅ Toutes les créatures ont été vaincues !\n");
-        return true;
-    }
-    return false;
+    return joueur->pv <= 0 || !creaturesVivantes(creatures, nb_creatures);
 }
 
 
@@ -177,9 +166,9 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
     // short premierTour = 1;
 
-    clearConsole();
+    printf("\n\n\n");//clearConsole();
     
-    while (finDuCombat(joueur, creatures, nb_creatures) == false) {
+    while (finDuCombat(joueur, creatures, nb_creatures) != true) {
 
         // Monstres autant ou plus rapides LORS DU premier tour de boucle
         // if (premierTour) {
@@ -194,21 +183,22 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         // premierTour = 0;
         // }
 
-        if (finDuCombat(joueur, creatures, nb_creatures) != false)
-            return EXIT_SUCCESS;
+        if (finDuCombat(joueur, creatures, nb_creatures)) break;
 
         // Joueur
 
         int attaques_restantes = calculerAttaquesMaxAvecFatigue(joueur->fatigue_max, joueur->niveau_fatigue);
 
-        afficherInterface(joueur, creatures, nb_creatures, attaques_restantes);
 
+        appliquerConsommationOxygeneProfondeur(joueur);
+        afficherEtatOxygene(joueur);
         appliquerDegatsAvantTour(&joueur->etats_subi, &joueur->pv, joueur->pv_max, joueur->defense);
+
+        afficherInterface(joueur, creatures, nb_creatures, attaques_restantes);
 
         while (attaques_restantes > 0) {
 
-            if (finDuCombat(joueur, creatures, nb_creatures) != false)
-                return EXIT_SUCCESS;
+            if (finDuCombat(joueur, creatures, nb_creatures)) break;
             
             choix = lireEntier();
             while (choix < 1 || choix > 4) {
@@ -248,38 +238,32 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
                     joueurAttaqueCreature(joueur, creatures[cible-1]);
                     attaques_restantes--;
-                    clearConsole();
+                    printf("\n\n\n");//clearConsole();
                     break;
                 
                 case 2:
                     printf("→ Utilisation d’une compétence (à implémenter)\n");
                     attaques_restantes = 0;
-                    clearConsole();
+                    printf("\n\n\n");//clearConsole();
                     break;
                 
                 case 3:
                     printf("→ Utilisation d’un objet (à implémenter)\n");
-                    clearConsole();
+                    printf("\n\n\n");//clearConsole();
                     break;
                 
                 case 4:
                     printf("→ Vous terminez votre tour.\n");
                     diminuerFatigue(joueur, 1); // tmp / test
                     attaques_restantes = 0;
-                    clearConsole();
+                    printf("\n\n\n");//clearConsole();
                     break;
             }
 
             decrementerDureesEtNettoyer(&joueur->etats_subi, true, false);
 
-            if (finDuCombat(joueur, creatures, nb_creatures) != false)
-                return EXIT_SUCCESS;
-
             if (attaques_restantes > 0) afficherInterface(joueur, creatures, nb_creatures, attaques_restantes);
         }
-
-        appliquerConsommationOxygeneProfondeur(joueur);
-        afficherEtatOxygene(joueur);
 
         // Monstres strictement moins rapides
         for (size_t i = 0; i < nb_creatures; i++) {
@@ -292,5 +276,11 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         }
     }
     
+    if (!creaturesVivantes(creatures, nb_creatures))
+        printf("\n✅ Toutes les créatures ont été vaincues !\n");
+
+    if (joueur->pv <= 0)
+        printf("\n☠️  Vous êtes mort... GAME OVER\n");
+
     return EXIT_SUCCESS;
 }

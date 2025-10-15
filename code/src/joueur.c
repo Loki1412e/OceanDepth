@@ -25,6 +25,27 @@ Plongeur *initDiver(char *diver_name) {
         if (!diver->nom) return NULL;
     }
 
+    diver->pv_max = -1;
+    diver->niveau_oxygene_max = -1;
+    diver->fatigue_max = -1;
+
+    diver->attaque_max = -1;
+    diver->attaque_min = -1;
+
+    diver->defense = -1;
+    diver->vitesse = -1;
+
+    diver->perles = 0;
+    diver->niveau = 0;
+    
+    diver->etats_subi.etats = NULL;
+    diver->etats_subi.longueur = 0;
+
+    diver->competences = NULL;
+    diver->longueur_competences = 0;
+
+    diver->profondeur = -1;
+
     // Initialisation du Joueur
 
     if (setDiverFromConf(diver)) {
@@ -34,12 +55,7 @@ Plongeur *initDiver(char *diver_name) {
 
     diver->pv = diver->pv_max;
     diver->niveau_oxygene = diver->niveau_oxygene_max;
-
-    diver->etats_subi.etats = NULL;
-    diver->etats_subi.longueur = 0;
-
-    diver->competences = NULL;
-    diver->longueur_competences = 0;
+    diver->niveau_fatigue = diver->fatigue_max;
 
     return diver;
 }
