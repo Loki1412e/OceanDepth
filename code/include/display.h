@@ -13,6 +13,8 @@
     void printCreatures(CreatureMarine **creatures, size_t length);
     void printBestiary(Bestiaire *bestiary);
     void printDiver(Plongeur *diver);
+    void printListeEtat(ListeEtat etats);
+
     void printSaveLastRun(Sauvegarde *save);
     void printListSave(ListeSauvegardes *saves);
 

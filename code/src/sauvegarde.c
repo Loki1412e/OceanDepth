@@ -246,21 +246,28 @@ Plongeur *loadDiver(FILE *file) {
         return NULL;
     }
     diver->etats_subi.longueur = etats_len;
+    diver->etats_subi.etats = NULL;
 
     if (etats_len > 0) {
-        diver->etats_subi.etats = malloc(sizeof(EffetsSpeciaux) * etats_len);
+        diver->etats_subi.etats = malloc(sizeof(Etat) * etats_len);
         if (!diver->etats_subi.etats) {
             fprintf(stderr, "loadDiver malloc etats\n");
             freeDiverContent(diver);
             return NULL;
         }
-        if (fread(diver->etats_subi.etats, sizeof(EffetsSpeciaux), etats_len, file) != etats_len) {
-            perror("loadDiver fread etats");
-            freeDiverContent(diver);
-            return NULL;
+
+        for (size_t i = 0; i < etats_len; i++) {
+            // Lire Etats sans pointeurs
+            Etat tmp_etat;
+            if (fread(&tmp_etat, sizeof(Etat), 1, file) != 1) {
+                perror("loadDiver fread Competence");
+                freeDiverContent(diver);
+                return NULL;
+            }
+
+            // Copier les données
+            diver->etats_subi.etats[i] = tmp_etat;
         }
-    } else {
-        diver->etats_subi.etats = NULL;
     }
 
     // Lire competences
@@ -271,6 +278,7 @@ Plongeur *loadDiver(FILE *file) {
         return NULL;
     }
     diver->longueur_competences = comp_len;
+    diver->competences = NULL;
 
     if (comp_len > 0) {
         diver->competences = malloc(sizeof(Competence) * comp_len);
@@ -317,8 +325,6 @@ Plongeur *loadDiver(FILE *file) {
                 diver->competences[i].nom = NULL;
             }
         }
-    } else {
-        diver->competences = NULL;
     }
 
     return diver;
@@ -468,8 +474,11 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
     if (addBlock(tmpSave, &etats_len, sizeof(size_t)) != EXIT_SUCCESS)
         return EXIT_FAILURE;
     // tab états
-    if (etats_len > 0 && addBlock(tmpSave, diver->etats_subi.etats, sizeof(EffetsSpeciaux) * etats_len) != EXIT_SUCCESS)
-        return EXIT_FAILURE;
+    for (size_t i = 0; i < etats_len; i++) {
+        Etat etat_copy = diver->etats_subi.etats[i];
+        if (addBlock(tmpSave, &etat_copy, sizeof(Etat)) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+    }
 
     size_t comp_len = diver->longueur_competences;
     // taille competences

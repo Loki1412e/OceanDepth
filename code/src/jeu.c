@@ -33,7 +33,7 @@ int runGame(Sauvegarde *actualSave) {
     /*===== Boucle principale ====*/
 
     printSave(actualSave);
-    printf("'%s' entre dans les profondeurs maritimes.\n", diver->nom);
+    printf("[%s] entre dans les profondeurs maritimes.\n\n", diver->nom);
 
     while (runProgram) {
 
@@ -46,8 +46,12 @@ int runGame(Sauvegarde *actualSave) {
         }
 
         diver->profondeur = 1;
+
+        ajouterEffet(&diver->etats_subi, SAIGNEMENT, 3, 0, 0);
+        printListeEtat(diver->etats_subi);
         
-        combat(diver, bestiary->creatures, bestiary->longueur_creatures);
+        // printBestiary(bestiary);
+        // combat(diver, bestiary->creatures, bestiary->longueur_creatures);
 
         freeBestiaryContent(bestiary);
 
