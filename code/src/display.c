@@ -166,10 +166,25 @@ void printDiver(Plongeur *diver) {
     printf("Niveau: %hu\n", diver->niveau);
     printf("Perles: %hu\n", diver->perles);
 
+    if (diver->etats_subi.longueur > 0 && diver->etats_subi.etats != NULL) {
+        printf("Etats subi (%zu):\n", diver->etats_subi.longueur);
+        for (size_t i = 0; i < diver->etats_subi.longueur; i++) {
+            printf(" - %s (%d) => estPermanent=%d / duree_zone=%d / duree_combat=%d",
+                enumSpecialEffectToChar(diver->etats_subi.etats[i].effet) ? enumSpecialEffectToChar(diver->etats_subi.etats[i].effet) : "???",
+                diver->etats_subi.etats[i].effet,
+                diver->etats_subi.etats[i].estPermanent,
+                diver->etats_subi.etats[i].duree_zone,
+                diver->etats_subi.etats[i].duree_combat
+            );
+        }
+    } else {
+        printf("Etats subi: Aucun\n");
+    }
+
     if (diver->longueur_competences > 0 && diver->competences != NULL) {
         printf("Compétences (%zu):\n", diver->longueur_competences);
         for (size_t i = 0; i < diver->longueur_competences; i++) {
-            printf("  - %s\n", diver->competences[i].nom ? diver->competences[i].nom : "(Aucune)");
+            printf("  - %s\n", diver->competences[i].nom ? diver->competences[i].nom : "???");
         }
     } else {
         printf("Compétences: Aucune\n");
