@@ -57,11 +57,40 @@ int appliquerConsommationOxygeneProfondeur(Plongeur *joueur) {
     return perte;
 }
 
+int creaturesVivantes(CreatureMarine **creatures, size_t nb_creatures) {
+    int vivantes = 0;
+    
+    for (size_t i = 0; i < nb_creatures; i++)
+        if (creatures[i]->pv > 0) vivantes++;
+
+    if (vivantes == 0) return true;
+
+    return false;
+}
+
+// `return 0` si pas fini
+// `return 1` si tout les monstres sont morts
+// `return -1` si le joueur est mort
+int finDuCombat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
+    if (joueur->pv < 0) {
+        printf("\n☠️  Vous êtes mort... GAME OVER\n");
+        return -1;
+    }
+    if (creaturesVivantes(creatures, nb_creatures)) {
+        printf("\n✅ Toutes les créatures ont été vaincues !\n");
+        return true;
+    }
+    return false;
+}
+
 
 /*====== Actions ======*/
 
 void joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature) {
-    int degats = calculerDegats(joueur->attaque_min, joueur->attaque_max, creature->defense);
+    int defenseCible = calculerDefenseEffet(creature->defense, &creature->etats_subi);
+    int degats = calculerDegats(joueur->attaque_min, joueur->attaque_max, defenseCible);
+    degats = calculerDegatsInfligesEffet(&creature->etats_subi, degats);
+
     creature->pv -= degats;
     if (creature->pv < 0) creature->pv = 0;
 
@@ -77,13 +106,23 @@ void joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature) {
 }
 
 void creatureAttaqueJoueur(CreatureMarine *creature, Plongeur *joueur) {
-    int degats = calculerDegats(creature->attaque_min, creature->attaque_max, joueur->defense);
+    int defenseCible = calculerDefenseEffet(joueur->defense, &joueur->etats_subi);
+    int degats = calculerDegats(creature->attaque_min, creature->attaque_max, defenseCible);
+    degats = calculerDegatsInfligesEffet(&joueur->etats_subi, degats);
+    
     joueur->pv -= degats;
     if (joueur->pv < 0) joueur->pv = 0;
     
     printf("[%s] vous attaque → %d dégâts (PV restants: %d)\n", creature->nom_type, degats, joueur->pv);
 }
 
+void appliquerDegatsAvantTour(ListeEtat *etats, int *pv, int maxPv, int defense) {
+    int defenseFinal = calculerDefenseEffet(defense, etats);
+    int degats = calculerDegatsSubiDebutTourEffet(etats, pv, maxPv, defense);
+    // degats = calculerDegatsInfligesEffet(etats, degats);
+    if (*pv < 0) *pv = 0;
+    printf("\nforce\n");
+}
 
 /* ==== Affichage ==== */
 
@@ -130,38 +169,30 @@ void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_c
 // creatures deja sort by speed (voir creature.c -> generateCreatureInBestiary)
 int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
     
-    int vivantes;
-    
     int choix;
     size_t cible;
 
-    short premierTour = 1;
+    // short premierTour = 1;
 
     clearConsole();
     
-    while (joueur->pv > 0) {
-        
-        vivantes = 0;
-
-        for (size_t i = 0; i < nb_creatures; i++) {
-            if (creatures[i]->pv > 0) vivantes++;
-        }
-
-        if (vivantes == 0) {
-            printf("\n✅ Toutes les créatures ont été vaincues !\n");
-            return EXIT_SUCCESS;
-        }
+    while (finDuCombat(joueur, creatures, nb_creatures) == false) {
 
         // Monstres autant ou plus rapides LORS DU premier tour de boucle
-        if (premierTour) {
-            for (size_t i = 0; i < nb_creatures; i++) {
-                if (creatures[i]->pv > 0 && (creatures[i]->vitesse >= joueur->vitesse)) {
-                    creatureAttaqueJoueur(creatures[i], joueur);
-                    if (joueur->pv <= 0) break;
-                }
+        // if (premierTour) {
+        for (size_t i = 0; i < nb_creatures; i++) {
+            if (creatures[i]->pv > 0 && (creatures[i]->vitesse >= joueur->vitesse)) {
+                appliquerDegatsAvantTour(&creatures[i]->etats_subi, &creatures[i]->pv, creatures[i]->pv_max, creatures[i]->defense);
+                creatureAttaqueJoueur(creatures[i], joueur);
+                decrementerDureesEtNettoyer(&creatures[i]->etats_subi, true, false);
+                if (joueur->pv <= 0) break;
             }
-            premierTour = 0;
         }
+        // premierTour = 0;
+        // }
+
+        if (finDuCombat(joueur, creatures, nb_creatures) != false)
+            return EXIT_SUCCESS;
 
         // Joueur
 
@@ -169,12 +200,12 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
         afficherInterface(joueur, creatures, nb_creatures, attaques_restantes);
 
+        appliquerDegatsAvantTour(&joueur->etats_subi, &joueur->pv, joueur->pv_max, joueur->defense);
+
         while (attaques_restantes > 0) {
 
-            if (vivantes == 0) {
-                printf("\n✅ Toutes les créatures ont été vaincues !\n");
+            if (finDuCombat(joueur, creatures, nb_creatures) != false)
                 return EXIT_SUCCESS;
-            }
             
             choix = lireEntier();
             while (choix < 1 || choix > 4) {
@@ -236,6 +267,11 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     break;
             }
 
+            decrementerDureesEtNettoyer(&joueur->etats_subi, true, false);
+
+            if (finDuCombat(joueur, creatures, nb_creatures) != false)
+                return EXIT_SUCCESS;
+
             if (attaques_restantes > 0) afficherInterface(joueur, creatures, nb_creatures, attaques_restantes);
         }
 
@@ -245,12 +281,13 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         // Monstres strictement moins rapides
         for (size_t i = 0; i < nb_creatures; i++) {
             if (creatures[i]->pv > 0) {
+                appliquerDegatsAvantTour(&creatures[i]->etats_subi, &creatures[i]->pv, creatures[i]->pv_max, creatures[i]->defense);
                 creatureAttaqueJoueur(creatures[i], joueur);
+                decrementerDureesEtNettoyer(&creatures[i]->etats_subi, true, false);
                 if (joueur->pv <= 0) break;
             }
         }
     }
-
-    printf("\n☠️  Vous êtes mort... GAME OVER\n");
+    
     return EXIT_SUCCESS;
 }
