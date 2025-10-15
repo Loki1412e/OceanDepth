@@ -71,12 +71,6 @@ int ajouterEffet(ListeEtat *listeEtat, EffetsSpeciaux type, int dureeCombat, int
     
     listeEtat->etats[listeEtat->longueur - 1] = nouvelEtat;
 
-    printf("\n\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n");
-
-    printf("indice = %zu\neffet = %s (%d)\nestPermanent = %d\nduree_zone = %d\nduree_combat = %d\n", listeEtat->longueur - 1, enumSpecialEffectToChar(listeEtat->etats[listeEtat->longueur - 1].effet), listeEtat->etats[listeEtat->longueur - 1].effet, listeEtat->etats[listeEtat->longueur - 1].estPermanent, listeEtat->etats[listeEtat->longueur - 1].duree_zone, listeEtat->etats[listeEtat->longueur - 1].duree_combat);
-
-    printf("\n\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n");
-
     return EXIT_SUCCESS;
 }
 
@@ -87,12 +81,12 @@ int peutAttaquer(ListeEtat *listeEtat) {
         switch (listeEtat->etats[i].effet) {
             
             case PARALYSIE:
-                printf("[PARALYSIE] vous empeche d'attaquer\n");
+                printf("[PARALYSIE] empeche d'attaquer\n");
                 res = false;
                 break;
 
             case ETREINTE:
-                printf("[ETREINTE] vous empeche d'attaquer\n");
+                printf("[ETREINTE] empeche d'attaquer\n");
                 res = false;
                 break;
             
@@ -206,7 +200,7 @@ void decrementerDureesEtNettoyer(ListeEtat *listeEtat, int estFinDeTourCombat, i
 
     for (size_t i = 0, j = 0; i < listeEtat->longueur || j < listeEtatTemp->longueur; i++) {
         if (etat_a_nettoyer[i])
-            printf("L'effet %d a expiré et a été supprimé.\n", listeEtat->etats[i].effet);
+            printf("L'effet [%s] (%d) a expiré et a été supprimé.\n", enumSpecialEffectToChar(listeEtat->etats[i].effet), listeEtat->etats[i].effet);
         else
             listeEtatTemp->etats[j++] = listeEtat->etats[i];
     }
