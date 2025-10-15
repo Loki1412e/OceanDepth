@@ -170,8 +170,7 @@ Sauvegarde *loadSave(char *save_name, short preLoad) {
         return NULL;
     }
 
-    // Si preLoad = True alors on s'arrete à loadInfo()
-    if (preLoad) {
+    if (preLoad) { // Si preLoad = True alors on s'arrete à loadInfo()
         fclose(file);
         return save;
     }
@@ -246,7 +245,7 @@ Plongeur *loadDiver(FILE *file) {
         freeDiverContent(diver);
         return NULL;
     }
-    diver->etats_subi.longueur_etats = etats_len;
+    diver->etats_subi.longueur = etats_len;
 
     if (etats_len > 0) {
         diver->etats_subi.etats = malloc(sizeof(EffetsSpeciaux) * etats_len);
@@ -394,17 +393,29 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
 /*
     typedef enum {
         AUCUN,
-        PARALYSIE,
-        POISON,
+        BENEDICTION_OCEAN,
+        MALEDICTION_OCEAN,
         SAIGNEMENT,
+        PARALYSIE,
+        ETREINTE,
+        PRECISION_REDUITE,
+        DEFENSE_AUGMENTEE,
+        VOIX_DU_COURANT,
         // Suite ...
         LENGTH_EffetsSpeciaux
     } EffetsSpeciaux;
 
     typedef struct {
-        EffetsSpeciaux *etats;
-        size_t longueur_etats;
-    } Etats;
+        EffetsSpeciaux effet;
+        int estPermanent;
+        int duree_zone;
+        int duree_combat;
+    } Etat;
+
+    typedef struct {
+        Etat *etats;
+        size_t longueur;
+    } ListeEtat;
 
     typedef struct {
         char *nom;
@@ -428,11 +439,9 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
         int vitesse;
         unsigned perles; // monnaie du jeu
         unsigned niveau;
-        Etats etats_subi; // contient un tableau
+        ListeEtat etats_subi; // contient un tableau
         Competence *competences; // tableau de competences (pas sur de le garder)
         size_t longueur_competences;
-        unsigned row_X; // 0
-        unsigned col_Y; // 0
     } Plongeur;
 */
 
@@ -454,7 +463,7 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
     if (nom_len > 0 && addBlock(tmpSave, diver->nom, nom_len) != EXIT_SUCCESS)
         return EXIT_FAILURE;
 
-    size_t etats_len = diver->etats_subi.longueur_etats;
+    size_t etats_len = diver->etats_subi.longueur;
     // taille états
     if (addBlock(tmpSave, &etats_len, sizeof(size_t)) != EXIT_SUCCESS)
         return EXIT_FAILURE;
