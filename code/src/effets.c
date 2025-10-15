@@ -1,0 +1,179 @@
+#include "../include/effets.h"
+
+void freeListeEtat(ListeEtat *listeEtat);
+
+
+ListeEtat *initEmptyListeEtat() {
+    ListeEtat *listeEtat = malloc(sizeof(ListeEtat));
+    if (!listeEtat) return NULL;
+    listeEtat->etats = NULL;
+    listeEtat->longueur = 0;
+    return listeEtat;
+}
+
+// Note : La gestion de la mémoire (realloc) est simplifiée ici.
+// Vous devriez ajouter des vérifications robustes.
+int ajouterEffet(ListeEtat *listeEtat, EffetsSpeciaux type, int dureeCombat, int dureeZone, int estPermanent) {
+    if (!listeEtat) return EXIT_FAILURE;
+    if (type <= AUCUN || type >= LENGTH_EffetsSpeciaux) return EXIT_FAILURE;
+    
+    // Vérifier si l'effet existe déjà pour le rafraîchir au lieu de le dupliquer
+    for (size_t i = 0; i < listeEtat->longueur; i++) {
+        if (listeEtat->etats[i].effet == type) {
+            listeEtat->etats[i].duree_combat = dureeCombat;
+            listeEtat->etats[i].duree_zone = dureeZone;
+            listeEtat->etats[i].estPermanent = estPermanent;
+            printf("Effet %d rafraîchi.\n", type);
+            return;
+        }
+    }
+
+    // Ajouter le nouvel effet
+    // Gérer la réallocation du tableau si nécessaire
+    listeEtat->longueur++;
+    
+    listeEtat->etats = realloc(listeEtat->etats, sizeof(Etat) * listeEtat->longueur);
+    if (!listeEtat->etats) {
+        fprintf(stderr, "Erreur: ajouterEffet(): Allocation mémoire échouée\n");
+        freeListeEtat(listeEtat);
+        return EXIT_FAILURE;
+    }
+    
+    Etat nouvelEtat = {
+        .effet = type,
+        .estPermanent = estPermanent,
+        .duree_zone = dureeZone,
+        .duree_combat = dureeCombat
+    };
+    
+    listeEtat->etats[listeEtat->longueur - 1] = nouvelEtat;
+
+    return EXIT_SUCCESS;
+}
+
+
+int peutAttaquer(ListeEtat *listeEtat) {
+    for (size_t i = 0; i < listeEtat->longueur; i++) {
+        switch (listeEtat->etats[i].effet) {
+            case PARALYSIE:
+                printf("[PARALYSIE] vous empeche d'attaquer\n");
+            case ETREINTE:
+                printf("[ETREINTE] vous empeche d'attaquer\n");
+                return false;
+        }
+    }
+    return true;
+}
+
+int calculerDefenseEffet(int defenseBase, ListeEtat *etats) {
+    int defenseFinal = defenseBase;
+    for (size_t i = 0; i < etats->longueur; i++) {
+        switch (etats->etats[i].effet) {
+            
+            case DEFENSE_AUGMENTEE:
+                defenseFinal *= 1.5;
+                printf("[DEFENSE_AUGMENTEE] s'applique\n");
+                break;
+        }
+    }
+    return defenseFinal;
+}
+
+int calculerDegatsInfligesEffet(ListeEtat *etatsCible, int degatsBase) {
+    int degatsFinaux = degatsBase;
+    for (size_t i = 0; i < etatsCible->longueur; i++) {
+        switch(etatsCible->etats[i].effet) {
+            
+            case BENEDICTION_OCEAN:
+                degatsFinaux *= 0.9;
+                printf("[BENEDICTION_OCEAN] s'applique\n");
+                break;
+            
+            case MALEDICTION_OCEAN:
+                degatsFinaux *= 1.1;
+                printf("[MALEDICTION_OCEAN] s'applique\n");
+                break;
+        }
+    }
+    return degatsFinaux;
+}
+
+int calculerDegatsSubiDebutTourEffet(ListeEtat *etats, int *pv, int maxPv, int defense) {
+    int degats;
+    int degatsFinaux = 0;
+    printf("\n");
+    for (size_t i = 0; i < etats->longueur; i++) {
+        switch(etats->etats[i].effet) {
+            
+            case ETREINTE:
+                degats = (maxPv + defense) * 0.8; // 2% des (PV max + défense)
+                degatsFinaux += degats;
+                printf("L'effet [ETREINTE] vous inflige des dégats\n");
+                break;
+
+            case SAIGNEMENT:
+                degats = maxPv * 0.05;
+                *pv -= degats; // Passe outre la défense donc on enleve les pv directement -> pv -= 5% des PV max
+                printf("L'effet [SAIGNEMENT] vous inflige des dégats\n");
+                break;
+        }
+    }
+    return degatsFinaux;
+}
+
+
+void decrementerDureesEtNettoyer(ListeEtat *listeEtat, int estFinDeTourCombat, int estFinDeZone) {
+    
+    int etat_a_nettoyer[listeEtat->longueur];
+
+    ListeEtat *listeEtatTemp = initEmptyListeEtat();
+    if (!listeEtatTemp) {
+        fprintf(stderr, "Erreur: decrementerDureesEtNettoyer(): Allocation mémoire échouée\n");
+        return;
+    }
+    listeEtatTemp->longueur = listeEtat->longueur;
+
+    for (int i = 0; i < listeEtat->longueur; i++) {
+        etat_a_nettoyer[i] = 0;
+        
+        Etat *etat = &listeEtat->etats[i];
+        if (etat->estPermanent) continue;
+
+        if (estFinDeTourCombat && etat->duree_combat > 0)
+            etat->duree_combat--;
+        
+        if (estFinDeZone && etat->duree_zone > 0)
+            etat->duree_zone--;
+
+        if (etat->duree_combat == 0 && etat->duree_zone == 0) {
+            etat_a_nettoyer[i] = 1;
+            listeEtatTemp->longueur--;
+        }
+    }
+
+    listeEtatTemp->etats = malloc(sizeof(Etat) * listeEtatTemp->longueur);
+    if (!listeEtatTemp->etats) {
+        fprintf(stderr, "Erreur: decrementerDureesEtNettoyer(): Allocation mémoire échouée\n");
+        return;
+    }
+
+    for (int i = 0, j = 0; i < listeEtat->longueur || j < listeEtatTemp->longueur; i++) {
+        if (etat_a_nettoyer[i])
+            printf("L'effet %d a expiré et a été supprimé.\n", listeEtat->etats[i].effet);
+        else
+            listeEtatTemp->etats[j++] = listeEtat->etats[i];
+    }
+
+    freeListeEtat(listeEtat);
+    listeEtat->etats = listeEtatTemp->etats;
+    listeEtat->longueur = listeEtatTemp->longueur;
+}
+
+
+void freeListeEtat(ListeEtat *listeEtat) {
+    if (listeEtat) {
+        free(listeEtat->etats);
+        listeEtat->etats = NULL;
+        listeEtat->longueur = 0;
+    }
+}

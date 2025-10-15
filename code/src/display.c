@@ -17,12 +17,17 @@ void printSave(Sauvegarde *save);
 char *enumSpecialEffectToChar(EffetsSpeciaux special_effect);
 
 
-char *enumSpecialEffectToChar(EffetsSpeciaux special_effect) {
-    switch (special_effect) {
-        case PARALYSIE: return "PARALYSIE";
-        case POISON: return "POISON";
+char *enumSpecialEffectToChar(EffetsSpeciaux type) {
+    switch (type) {
+        case AUCUN: return "AUCUN";
+        case BENEDICTION_OCEAN: return "BENEDICTION_OCEAN";
+        case MALEDICTION_OCEAN: return "MALEDICTION_OCEAN";
         case SAIGNEMENT: return "SAIGNEMENT";
-        default: return "AUCUN";
+        case PARALYSIE: return "PARALYSIE";
+        case ETREINTE: return "ETREINTE";
+        case PRECISION_REDUITE: return "PRECISION_REDUITE";
+        case DEFENSE_AUGMENTEE: return "DEFENSE_AUGMENTEE";
+        case VOIX_DU_COURANT: return "VOIX_DU_COURANT";
     }
 }
 
