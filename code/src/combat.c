@@ -164,7 +164,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
     // short premierTour = 1;
 
-    printf("\n\n\n");//clearConsole();
+    printf("\nclearConsole();\n");//clearConsole();
     
     while (finDuCombat(joueur, creatures, nb_creatures) != true) {
 
@@ -236,25 +236,25 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
                     joueurAttaqueCreature(joueur, creatures[cible-1]);
                     attaques_restantes--;
-                    printf("\n\n\n");//clearConsole();
+                    printf("\nclearConsole();\n");//clearConsole();
                     break;
                 
                 case 2:
                     printf("→ Utilisation d’une compétence (à implémenter)\n");
                     attaques_restantes = 0;
-                    printf("\n\n\n");//clearConsole();
+                    printf("\nclearConsole();\n");//clearConsole();
                     break;
                 
                 case 3:
                     printf("→ Utilisation d’un objet (à implémenter)\n");
-                    printf("\n\n\n");//clearConsole();
+                    printf("\nclearConsole();\n");//clearConsole();
                     break;
                 
                 case 4:
                     printf("→ Vous terminez votre tour.\n");
                     diminuerFatigue(joueur, 1); // tmp / test
                     attaques_restantes = 0;
-                    printf("\n\n\n");//clearConsole();
+                    printf("\nclearConsole();\n");//clearConsole();
                     break;
             }
 
@@ -265,7 +265,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
         // Monstres strictement moins rapides
         for (size_t i = 0; i < nb_creatures; i++) {
-            if (creatures[i]->pv > 0) {
+            if (creatures[i]->pv > 0 && (creatures[i]->vitesse < joueur->vitesse)) {
                 appliquerDegatsAvantTour(&creatures[i]->etats_subi, &creatures[i]->pv, creatures[i]->pv_max, creatures[i]->defense);
                 creatureAttaqueJoueur(creatures[i], joueur);
                 decrementerDureesEtNettoyer(&creatures[i]->etats_subi, true, false);
