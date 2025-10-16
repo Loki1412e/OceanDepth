@@ -77,7 +77,7 @@
 
     typedef struct {
         unsigned id; // identifiant unique pour cibler
-        char *nom_type;
+        char *nom;
         int pv_min;
         int pv_max;
         int pv;

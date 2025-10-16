@@ -99,7 +99,7 @@ void printCreature(CreatureMarine *creature) {
         return;
     }
     printf("CreatureMarine ID: %u\n", creature->id);
-    printf("Nom Type: %s\n", creature->nom_type ? creature->nom_type : "(null)");
+    printf("Nom Type: %s\n", creature->nom ? creature->nom : "(null)");
     printf("PV: %d (Min: %d, Max: %d)\n", creature->pv, creature->pv_min, creature->pv_max);
     printf("Attaque: Min %d, Max %d\n", creature->attaque_min, creature->attaque_max);
     printf("Defense: %d\n", creature->defense);
