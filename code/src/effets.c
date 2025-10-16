@@ -8,6 +8,7 @@ char *enumSpecialEffectToChar(EffetsSpeciaux type) {
         case BENEDICTION_OCEAN: return "BENEDICTION_OCEAN";
         case MALEDICTION_OCEAN: return "MALEDICTION_OCEAN";
         case SAIGNEMENT: return "SAIGNEMENT";
+        case POISON: return "POISON";
         case PARALYSIE: return "PARALYSIE";
         case ETREINTE: return "ETREINTE";
         case PRECISION_REDUITE: return "PRECISION_REDUITE";
@@ -134,7 +135,8 @@ int calculerDegatsInfligesEffet(ListeEtat *etatsCible, int degatsBase) {
     return degatsFinaux;
 }
 
-int calculerDegatsSubiDebutTourEffet(ListeEtat *etats, int *pv, int maxPv, int defense) {
+// Si 
+int calculerDegatsSubiDebutTourEffet(ListeEtat *etats, int *pv, int maxPv, int defense, int *oxygene, int maxOxygene) {
     int degats;
     int degatsFinaux = 0;
     printf("\n");
@@ -148,9 +150,21 @@ int calculerDegatsSubiDebutTourEffet(ListeEtat *etats, int *pv, int maxPv, int d
                 break;
 
             case SAIGNEMENT:
+                // Passe outre la défense donc on enleve les pv directement -> pv -= 5% des PV max
                 degats = maxPv * 0.05;
-                *pv -= degats; // Passe outre la défense donc on enleve les pv directement -> pv -= 5% des PV max
-                printf("L'effet [SAIGNEMENT] vous inflige des dégats\n");
+                *pv -= degats;
+                printf("[SAIGNEMENT] -> -%d pv\n");
+                break;
+
+            case POISON:
+                // Passe outre la défense donc on enleve les pv directement -> pv -= 5% des PV max
+                degats = maxPv * 0.05;
+                *pv -= degats;
+                if (oxygene) {
+                    *oxygene -= maxOxygene * 0.05;
+                    printf("[POISON] -> -%d pv et -%d oxygene\n");
+                }
+                else printf("[POISON] -> -%d pv\n");
                 break;
             
             default:
