@@ -3,8 +3,8 @@
 
     #include "global.h"
 
-    char *enumSpecialEffectToChar(Effets type);
-    Effets charToEnumSpecialEffect(char *type);
+    char *enumEffectToChar(Effets type);
+    Effets charToEnumEffectToChar(char *type);
     
     int ajouterEffet(ListeEtat *listeEtat, Effets type, int dureeCombat, int dureeZone, int estPermanent);
     void decrementerDureesEtNettoyer(ListeEtat *listeEtat, int estFinDeTourCombat, int estFinDeZone);

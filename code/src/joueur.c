@@ -37,8 +37,8 @@ Plongeur *initDiver(char *diver_name) {
 
     diver->liste_etats = initEmptyListeEtat();
 
-    diver->competences = NULL;
-    diver->longueur_competences = 0;
+    diver->liste_competences.competences = NULL;
+    diver->liste_competences.longueur = 0;
 
     return diver;
 }
@@ -50,7 +50,7 @@ int setDiverFromConf(Plongeur *diver) {
 
     char line[256];
 
-    diver->longueur_competences = 0;
+    diver->liste_competences.longueur = 0;
 
     while (fgets(line, sizeof(line), f)) {
         
@@ -103,15 +103,15 @@ void freeDiverContent(Plongeur *diver) {
     
     freeListeEtat(&diver->liste_etats);
     
-    if (diver->competences) {
-        for (size_t i = 0; i < diver->longueur_competences; i++) {
-            if (!diver->competences[i].nom) continue;
-            free(diver->competences[i].nom);
-            diver->competences[i].nom = NULL;
+    if (diver->liste_competences.competences) {
+        for (size_t i = 0; i < diver->liste_competences.longueur; i++) {
+            if (!diver->liste_competences.competences[i].nom) continue;
+            free(diver->liste_competences.competences[i].nom);
+            diver->liste_competences.competences[i].nom = NULL;
         }
-        free(diver->competences);
-        diver->competences = NULL;
-        diver->longueur_competences = 0;
+        free(diver->liste_competences.competences);
+        diver->liste_competences.competences = NULL;
+        diver->liste_competences.longueur = 0;
     }
 }
 

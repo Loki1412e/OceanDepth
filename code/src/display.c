@@ -93,6 +93,52 @@ void clearConsole() {
 /*==================*/
 
 
+void printListeEtat(ListeEtat etats) {
+    if (etats.longueur == 0 || etats.etats == NULL) {
+        printf("Etats : Aucun\n");
+        return;
+    }
+
+    printf("Etats (%zu):\n", etats.longueur);
+    for (size_t i = 0; i < etats.longueur; i++) {
+        printf(" - %s (%d) => estPermanent=%d / duree_zone=%d / duree_combat=%d",
+            enumEffectToChar(etats.etats[i].effet) ? enumEffectToChar(etats.etats[i].effet) : "???",
+            etats.etats[i].effet,
+            etats.etats[i].estPermanent,
+            etats.etats[i].duree_zone,
+            etats.etats[i].duree_combat
+        );
+    }
+    printf("\n");
+}
+
+void printCompetence(Competence competence) {
+    printf("Nom de la compétence : %s\n", competence.nom);
+    printf("Description          : %s\n", competence.description);
+    printf("Cooldown max         : %d tours\n", competence.cooldown_max);
+    printf("Cooldown restant     : %d tours\n", competence.cooldown_restant);
+    printf("Multiplicateur dégâts: %.1fx\n", competence.multiplicateur_degats / 100.0);
+    printf("Chance d'effet       : %d%%\n", competence.chance_effet);
+    printf("Effet appliqué       : %s\n", enumEffectToChar(competence.effet));
+    printf("Durée de l'effet     : %d tours\n", competence.duree_effet);
+    printf("Effet sur soi        : %s\n", competence.sur_soi ? "Oui" : "Non");
+}
+
+void printListeCompetence(ListeCompetence competences) {
+    if (competences.longueur == 0 || competences.competences == NULL) {
+        printf("Competences : Aucune\n");
+        return;
+    }
+
+    printf("Competences (%zu):\n", competences.longueur);
+    for (size_t i = 0; i < competences.longueur; i++) {
+        printf("\n");
+        printCompetence(competences.competences[i]);
+    }
+    printf("\n");
+}
+
+
 void printCreature(CreatureMarine *creature) {
     if (!creature) {
         printf("NULL CreatureMarine pointer\n");
@@ -104,8 +150,9 @@ void printCreature(CreatureMarine *creature) {
     printf("Attaque: Min %d, Max %d\n", creature->attaque_min, creature->attaque_max);
     printf("Defense: %d\n", creature->defense);
     printf("Vitesse: %d\n", creature->vitesse);
-    // printf("Effet Special: %s\n", enumSpecialEffectToChar(creature->effet_special));
-    // printf("Est Vivant: %s\n", creature->pv > 0 ? "Oui" : "Non");
+    
+    printListeEtat(creature->liste_etats);
+    printListeCompetence(creature->liste_competences);
 
     if (creature->apparition) {
         printf("ApparitionCreature:\n");
@@ -149,26 +196,6 @@ void printBestiary(Bestiaire *bestiary) {
 }
 
 
-void printListeEtat(ListeEtat etats) {
-    if (etats.longueur == 0 || etats.etats == NULL) {
-        printf("Etats : Aucun\n");
-        return;
-    }
-
-    printf("Etats (%zu):\n", etats.longueur);
-    for (size_t i = 0; i < etats.longueur; i++) {
-        printf(" - %s (%d) => estPermanent=%d / duree_zone=%d / duree_combat=%d",
-            enumSpecialEffectToChar(etats.etats[i].effet) ? enumSpecialEffectToChar(etats.etats[i].effet) : "???",
-            etats.etats[i].effet,
-            etats.etats[i].estPermanent,
-            etats.etats[i].duree_zone,
-            etats.etats[i].duree_combat
-        );
-    }
-    printf("\n");
-}
-
-
 void printDiver(Plongeur *diver) {
     if (!diver) {
         printf("NULL Plongeur pointer\n");
@@ -189,15 +216,7 @@ void printDiver(Plongeur *diver) {
     printf("Perles: %hu\n", diver->perles);
     
     printListeEtat(diver->liste_etats);
-
-    if (diver->longueur_competences > 0 && diver->competences != NULL) {
-        printf("Compétences (%zu):\n", diver->longueur_competences);
-        for (size_t i = 0; i < diver->longueur_competences; i++) {
-            printf("  - %s\n", diver->competences[i].nom ? diver->competences[i].nom : "???");
-        }
-    } else {
-        printf("Compétences: Aucune\n");
-    }
+    printListeCompetence(diver->liste_competences);
 
     printf("====================================\n\n");
 }

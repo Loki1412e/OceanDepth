@@ -3,7 +3,7 @@
 void freeListeEtat(ListeEtat *listeEtat);
 
 
-char *enumSpecialEffectToChar(Effets type) {
+char *enumEffectToChar(Effets type) {
     switch (type) {
         case BENEDICTION_OCEAN: return "BENEDICTION_OCEAN";
         case MALEDICTION_OCEAN: return "MALEDICTION_OCEAN";
@@ -18,9 +18,9 @@ char *enumSpecialEffectToChar(Effets type) {
     }
 }
 
-Effets charToEnumSpecialEffect(char *type) {
+Effets charToEnumEffectToChar(char *type) {
     for (size_t effet = 0; effet < LENGTH_EffetsSpeciaux; effet++) {
-        if (strcmp(type, enumSpecialEffectToChar((Effets) effet)) == 0)
+        if (strcmp(type, enumEffectToChar((Effets) effet)) == 0)
             return (Effets) effet;
     }
     return AUCUN;
@@ -45,7 +45,7 @@ int ajouterEffet(ListeEtat *listeEtat, Effets type, int dureeCombat, int dureeZo
             listeEtat->etats[i].duree_combat = dureeCombat;
             listeEtat->etats[i].duree_zone = dureeZone;
             listeEtat->etats[i].estPermanent = estPermanent;
-            printf("Effet [%s] (%d) rafraîchi.\n", enumSpecialEffectToChar(type), type);
+            printf("Effet [%s] (%d) rafraîchi.\n", enumEffectToChar(type), type);
             return EXIT_SUCCESS;
         }
     }
@@ -208,7 +208,7 @@ void decrementerDureesEtNettoyer(ListeEtat *listeEtat, int estFinDeTourCombat, i
 
     for (size_t i = 0, j = 0; i < listeEtat->longueur || j < listeEtatTemp.longueur; i++) {
         if (etat_a_nettoyer[i])
-            printf("L'effet [%s] (%d) a expiré et a été supprimé.\n", enumSpecialEffectToChar(listeEtat->etats[i].effet), listeEtat->etats[i].effet);
+            printf("L'effet [%s] (%d) a expiré et a été supprimé.\n", enumEffectToChar(listeEtat->etats[i].effet), listeEtat->etats[i].effet);
         else
             listeEtatTemp.etats[j++] = listeEtat->etats[i];
     }
