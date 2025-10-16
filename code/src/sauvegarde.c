@@ -417,29 +417,38 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
 
     typedef struct {
         char *nom;
-        int cout_oxygene;
-        int gain_oxygene;
-        // A penser pour la suite,
-        // Peux etre des compétences pour les creatures...
+        char *description;
+        int cooldown_max;
+        int cooldown_restant;
+        int multiplicateur_degats;
+        int chance_effet;
+        Effets effet;
+        int duree_effet;
+        int sur_soi;
     } Competence;
+
+    typedef struct {
+        Competence *competences;
+        size_t longueur;
+    } ListeCompetence;
 
     typedef struct {
         char *nom; // tableau de char (string)
         int pv;
         int pv_max;
-        int niveau_oxygene;
-        int niveau_oxygene_max;
-        int niveau_fatigue; // 0 à 5
+        int oxygene;
+        int oxygene_max;
+        int fatigue;
         int fatigue_max;
         int attaque_max;
         int attaque_min;
         int defense;
         int vitesse;
-        unsigned perles; // monnaie du jeu
+        unsigned perles;
         unsigned niveau;
-        ListeEtat liste_etats; // contient un tableau
-        Competence *competences; // tableau de competences (pas sur de le garder)
-        size_t longueur_competences;
+        ListeEtat liste_etats;
+        ListeCompetence liste_competences;
+        int profondeur;
     } Plongeur;
 */
 
