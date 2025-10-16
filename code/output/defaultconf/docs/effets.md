@@ -49,11 +49,11 @@ int degats = calculerDegatsSubiDebutTourEffet(
 
 - `POISON` : PV -= 5% des *`pv_max`* && oxygene -= 5% de *`oxygene_max`*
 
-- `ETREINTE` : Empêche d'attaquer && (PV + defense) -= 2%
+- `ETREINTE` : Empêche d'attaquer && PV -= 2% (pv_max + defense)
 
 ## 3. Avant que l'entitée attaque
 
-- `ETREINTE` : Empêche d'attaquer && PV -= 2%
+- `ETREINTE` : Empêche d'attaquer && PV -= 2% (pv_max + defense)
 
 - `PARALYSIE` : Empêche d'attaquer
 
