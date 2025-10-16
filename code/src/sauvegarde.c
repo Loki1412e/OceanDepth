@@ -277,12 +277,12 @@ Plongeur *loadDiver(FILE *file) {
         freeDiverContent(diver);
         return NULL;
     }
-    diver->longueur_competences = comp_len;
-    diver->competences = NULL;
+    diver->liste_competences.longueur = comp_len;
+    diver->liste_competences.competences = NULL;
 
     if (comp_len > 0) {
-        diver->competences = calloc(comp_len, sizeof(Competence));
-        if (!diver->competences) {
+        diver->liste_competences.competences = calloc(comp_len, sizeof(Competence));
+        if (!diver->liste_competences.competences) {
             fprintf(stderr, "loadDiver calloc competences\n");
             freeDiverContent(diver);
             return NULL;
@@ -298,8 +298,8 @@ Plongeur *loadDiver(FILE *file) {
             }
 
             // Copier données sauf le nom
-            diver->competences[i] = tmp_comp;
-            diver->competences[i].nom = NULL;
+            diver->liste_competences.competences[i] = tmp_comp;
+            diver->liste_competences.competences[i].nom = NULL;
 
             // Lire taille nom de la compétence
             size_t comp_nom_len = 0;
@@ -310,19 +310,19 @@ Plongeur *loadDiver(FILE *file) {
             }
 
             if (comp_nom_len > 0) {
-                diver->competences[i].nom = calloc(comp_nom_len, sizeof(char));
-                if (!diver->competences[i].nom) {
+                diver->liste_competences.competences[i].nom = calloc(comp_nom_len, sizeof(char));
+                if (!diver->liste_competences.competences[i].nom) {
                     fprintf(stderr, "loadDiver calloc comp nom\n");
                     freeDiverContent(diver);
                     return NULL;
                 }
-                if (fread(diver->competences[i].nom, 1, comp_nom_len, file) != comp_nom_len) {
+                if (fread(diver->liste_competences.competences[i].nom, 1, comp_nom_len, file) != comp_nom_len) {
                     perror("loadDiver fread comp nom");
                     freeDiverContent(diver);
                     return NULL;
                 }
             } else {
-                diver->competences[i].nom = NULL;
+                diver->liste_competences.competences[i].nom = NULL;
             }
         }
     }
@@ -447,7 +447,7 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
     Plongeur diver_copy = *diver;
     diver_copy.nom = NULL;
     diver_copy.liste_etats.etats = NULL;
-    diver_copy.competences = NULL;
+    diver_copy.liste_competences.competences = NULL;
 
     // Bloc sans pointeurs
     if (addBlock(tmpSave, &diver_copy, sizeof(Plongeur)) != EXIT_SUCCESS)
@@ -472,13 +472,13 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
             return EXIT_FAILURE;
     }
 
-    size_t comp_len = diver->longueur_competences;
+    size_t comp_len = diver->liste_competences.longueur;
     // taille competences
     if (addBlock(tmpSave, &comp_len, sizeof(size_t)) != EXIT_SUCCESS)
         return EXIT_FAILURE;
     // tab competences
     for (size_t i = 0; i < comp_len; i++) {
-        Competence *comp = &diver->competences[i];
+        Competence *comp = &diver->liste_competences.competences[i];
 
         // Sauvegarde Competence sans pointeurs
         Competence comp_copy = *comp;

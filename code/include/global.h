@@ -67,6 +67,7 @@
         size_t longueur;
     } ListeEtat;
 
+
     typedef struct {
         char *nom;
         char *description;
@@ -107,6 +108,7 @@
         // On va attribuer des etats a partir de compétences ce sera mieux
         // ---> // Effets effet_special; // voir Effets -> a modifier mettre liste d'effets speciaux
         ListeEtat liste_etats;
+        ListeCompetence liste_competences;
         ApparitionCreature *apparition;
     } CreatureMarine;
 
@@ -132,8 +134,7 @@
         unsigned perles; // monnaie du jeu
         unsigned niveau;
         ListeEtat liste_etats;
-        Competence *competences; // tableau de competences (pas sur de le garder)
-        size_t longueur_competences;
+        ListeCompetence liste_competences;
         int profondeur;
     } Plongeur;
 
