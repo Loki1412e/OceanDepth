@@ -87,16 +87,16 @@ int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, char *t
 
                     tmp = bestiary->longueur_creatures ?
                             realloc(bestiary->creatures, sizeof(CreatureMarine*) * (bestiary->longueur_creatures + 1)) :
-                            malloc(sizeof(CreatureMarine*) * (bestiary->longueur_creatures + 1));
+                            calloc((bestiary->longueur_creatures + 1), sizeof(CreatureMarine*));
                     if (tmp == NULL) {
-                        fprintf(stderr, "Erreur: addCreatureInBestiary(): Echec %s\n", bestiary->longueur_creatures ? "realloc" : "malloc");
+                        fprintf(stderr, "Erreur: addCreatureInBestiary(): Echec %s\n", bestiary->longueur_creatures ? "realloc" : "calloc");
                         return EXIT_FAILURE;
                     }
                     bestiary->creatures = tmp;
                     index = bestiary->longueur_creatures;
                     bestiary->longueur_creatures++;
 
-                    bestiary->creatures[index] = malloc(sizeof(CreatureMarine));
+                    bestiary->creatures[index] = calloc(1, sizeof(CreatureMarine));
                     if (bestiary->creatures[index] == NULL) {
                         fprintf(stderr, "Erreur: addCreatureInBestiary(): Allocation mémoire creature\n");
                         bestiary->longueur_creatures--;
@@ -141,7 +141,7 @@ Bestiaire *initEmptyBestiary() {
 
     // Allocation mémoire
 
-    Bestiaire *bestiary = malloc(sizeof(Bestiaire));
+    Bestiaire *bestiary = calloc(1, sizeof(Bestiaire));
     if (bestiary == NULL) {
         fprintf(stderr, "Erreur: initEmptyBestiary(): Allocation mémoire bestiary\n");
         return NULL;
@@ -163,18 +163,24 @@ Bestiaire *initmodalBestiary() {
 
     // Allocation mémoire
 
-    Bestiaire *modalBestiary = malloc(sizeof(Bestiaire));
+    Bestiaire *modalBestiary = calloc(1, sizeof(Bestiaire));
     if (modalBestiary == NULL) {
         fprintf(stderr, "Erreur: initmodalBestiary(): Allocation mémoire modalBestiary\n");
         return NULL;
     }
     
     modalBestiary->longueur_creatures = count_all_unique_model;
-    modalBestiary->creatures = malloc(sizeof(CreatureMarine*) * count_all_unique_model);
+    modalBestiary->creatures = calloc(count_all_unique_model, sizeof(CreatureMarine*));
+    if (!modalBestiary->creatures) {
+        fprintf(stderr, "Erreur: initmodalBestiary(): Allocation mémoire modalBestiary->creatures\n");
+        modalBestiary->longueur_creatures = 0;
+        freeBestiary(modalBestiary);
+        return NULL;
+    }
     
     for (size_t i = 0; i < count_all_unique_model; i++) {
         
-        modalBestiary->creatures[i] = malloc(sizeof(CreatureMarine));
+        modalBestiary->creatures[i] = calloc(1, sizeof(CreatureMarine));
         if (modalBestiary->creatures[i] == NULL) {
             modalBestiary->longueur_creatures = i;
             freeBestiary(modalBestiary);
@@ -182,7 +188,7 @@ Bestiaire *initmodalBestiary() {
             return NULL;
         }
 
-        modalBestiary->creatures[i]->apparition = malloc(sizeof(ApparitionCreature));
+        modalBestiary->creatures[i]->apparition = calloc(1, sizeof(ApparitionCreature));
         if (modalBestiary->creatures[i]->apparition == NULL) {
             free(modalBestiary->creatures[i]);
             modalBestiary->longueur_creatures = i;
@@ -248,7 +254,7 @@ int setBestiaryFromConf(Bestiaire *modalBestiary) {
             line[strcspn(line, "\n")] = 0; // retirer le \n
             len = strlen(line + 9);
             
-            modalBestiary->creatures[index]->nom_type = malloc(sizeof(char) * len + 1);
+            modalBestiary->creatures[index]->nom_type = calloc(len + 1, sizeof(char));
             
             if (!modalBestiary->creatures[index]->nom_type) {
                 fprintf(stderr, "Erreur: setBestiaryFromConf(): Allocation nom_type\n");
@@ -388,7 +394,7 @@ unsigned *parseCreaturesApparitionConf(int index, char *line, size_t *length, ch
     // ex: 0,1,2
     *length = count; // doit etre initialisé à 0 si vide
     
-    depth = malloc(sizeof(unsigned) * count);
+    depth = calloc(count, sizeof(unsigned));
     if (depth == NULL) {
         fprintf(stderr, "Erreur: %s -> parseCreaturesApparitionConf(): Allocation mémoire bestiary->models[%d]->profondeur_apparition\n", errorOrigin, index);
         return NULL;
@@ -429,20 +435,20 @@ int applyModel(CreatureMarine *modalBestiary, CreatureMarine *creature) {
     // creature->effet_special = modalBestiary->effet_special;
     // creature->est_vivant = modalBestiary->est_vivant;
 
-    creature->nom_type = malloc(sizeof(char) * (length_nom_type + 1));
+    creature->nom_type = calloc((length_nom_type + 1), sizeof(char));
     if (creature->nom_type == NULL) goto MEMORY_ERROR;
     strcpy(creature->nom_type, modalBestiary->nom_type);
 
     // Ici, apparition ne doit PAS être alloué avant l'appel à applyModel.
-    creature->apparition = malloc(sizeof(ApparitionCreature));
+    creature->apparition = calloc(1, sizeof(ApparitionCreature));
     if (creature->apparition == NULL) goto MEMORY_ERROR;
 
     creature->apparition->longueur_profondeurs = modalBestiary->apparition->longueur_profondeurs;
-    creature->apparition->profondeurs = malloc(sizeof(unsigned) * creature->apparition->longueur_profondeurs);
+    creature->apparition->profondeurs = calloc(creature->apparition->longueur_profondeurs, sizeof(unsigned));
     if (creature->apparition->profondeurs == NULL) goto MEMORY_ERROR;
 
     creature->apparition->longueur_taux = modalBestiary->apparition->longueur_taux;
-    creature->apparition->taux = malloc(sizeof(unsigned) * creature->apparition->longueur_taux);
+    creature->apparition->taux = calloc(creature->apparition->longueur_taux, sizeof(unsigned));
     if (creature->apparition->taux == NULL) goto MEMORY_ERROR;
 
     creature->etats_subi.etats = NULL;

@@ -43,7 +43,7 @@ char *lireString() {
 
     int valid = 0;
     
-    buff = malloc(sizeof(char) * 512);
+    buff = calloc(512, sizeof(char));
     if (!buff) return NULL;
 
     while (!valid) {

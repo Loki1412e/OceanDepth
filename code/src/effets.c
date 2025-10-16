@@ -186,7 +186,7 @@ void decrementerDureesEtNettoyer(ListeEtat *listeEtat, int estFinDeTourCombat, i
         }
     }
 
-    listeEtatTemp.etats = malloc(sizeof(Etat) * listeEtatTemp.longueur);
+    listeEtatTemp.etats = calloc(listeEtatTemp.longueur, sizeof(Etat));
     if (!listeEtatTemp.etats) {
         fprintf(stderr, "Erreur: decrementerDureesEtNettoyer(): Allocation mémoire échouée\n");
         return;
