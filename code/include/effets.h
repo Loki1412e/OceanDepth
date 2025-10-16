@@ -14,6 +14,7 @@
     int calculerDegatsInfligesEffet(ListeEtat *etatsCible, int degatsBase);
     int calculerDegatsSubiDebutTourEffet(ListeEtat *etats, int *pv, int maxPv, int defense);
 
+    ListeEtat initEmptyListeEtat();
     void freeListeEtat(ListeEtat *listeEtat);
 
 #endif
