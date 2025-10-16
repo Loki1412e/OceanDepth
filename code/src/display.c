@@ -188,7 +188,7 @@ void printDiver(Plongeur *diver) {
     printf("Niveau: %hu\n", diver->niveau);
     printf("Perles: %hu\n", diver->perles);
     
-    printListeEtat(diver->etats_subi);
+    printListeEtat(diver->liste_etats);
 
     if (diver->longueur_competences > 0 && diver->competences != NULL) {
         printf("Compétences (%zu):\n", diver->longueur_competences);

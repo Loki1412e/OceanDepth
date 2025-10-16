@@ -238,19 +238,19 @@ Plongeur *loadDiver(FILE *file) {
         return NULL;
     }
 
-    // Lire etats_subi.etats
+    // Lire liste_etats.etats
     size_t etats_len = 0;
     if (fread(&etats_len, sizeof(size_t), 1, file) != 1) {
         perror("loadDiver fread etats_len");
         freeDiverContent(diver);
         return NULL;
     }
-    diver->etats_subi.longueur = etats_len;
-    diver->etats_subi.etats = NULL;
+    diver->liste_etats.longueur = etats_len;
+    diver->liste_etats.etats = NULL;
 
     if (etats_len > 0) {
-        diver->etats_subi.etats = calloc(etats_len, sizeof(Etat));
-        if (!diver->etats_subi.etats) {
+        diver->liste_etats.etats = calloc(etats_len, sizeof(Etat));
+        if (!diver->liste_etats.etats) {
             fprintf(stderr, "loadDiver calloc etats\n");
             freeDiverContent(diver);
             return NULL;
@@ -266,7 +266,7 @@ Plongeur *loadDiver(FILE *file) {
             }
 
             // Copier les données
-            diver->etats_subi.etats[i] = tmp_etat;
+            diver->liste_etats.etats[i] = tmp_etat;
         }
     }
 
@@ -401,10 +401,10 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
         AUCUN,
         // Suite ...
         LENGTH_EffetsSpeciaux
-    } EffetsSpeciaux;
+    } Effets;
 
     typedef struct {
-        EffetsSpeciaux effet;
+        Effets effet;
         int estPermanent;
         int duree_zone;
         int duree_combat;
@@ -437,7 +437,7 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
         int vitesse;
         unsigned perles; // monnaie du jeu
         unsigned niveau;
-        ListeEtat etats_subi; // contient un tableau
+        ListeEtat liste_etats; // contient un tableau
         Competence *competences; // tableau de competences (pas sur de le garder)
         size_t longueur_competences;
     } Plongeur;
@@ -446,7 +446,7 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
     // On eleve tout les pointeurs
     Plongeur diver_copy = *diver;
     diver_copy.nom = NULL;
-    diver_copy.etats_subi.etats = NULL;
+    diver_copy.liste_etats.etats = NULL;
     diver_copy.competences = NULL;
 
     // Bloc sans pointeurs
@@ -461,13 +461,13 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
     if (nom_len > 0 && addBlock(tmpSave, diver->nom, nom_len) != EXIT_SUCCESS)
         return EXIT_FAILURE;
 
-    size_t etats_len = diver->etats_subi.longueur;
+    size_t etats_len = diver->liste_etats.longueur;
     // taille états
     if (addBlock(tmpSave, &etats_len, sizeof(size_t)) != EXIT_SUCCESS)
         return EXIT_FAILURE;
     // tab états
     for (size_t i = 0; i < etats_len; i++) {
-        Etat etat_copy = diver->etats_subi.etats[i];
+        Etat etat_copy = diver->liste_etats.etats[i];
         if (addBlock(tmpSave, &etat_copy, sizeof(Etat)) != EXIT_SUCCESS)
             return EXIT_FAILURE;
     }

@@ -35,7 +35,7 @@ Plongeur *initDiver(char *diver_name) {
     diver->pv = diver->pv_max;
     diver->niveau_oxygene = diver->niveau_oxygene_max;
 
-    diver->etats_subi = initEmptyListeEtat();
+    diver->liste_etats = initEmptyListeEtat();
 
     diver->competences = NULL;
     diver->longueur_competences = 0;
@@ -101,7 +101,7 @@ void freeDiverContent(Plongeur *diver) {
         diver->nom = NULL;
     }
     
-    freeListeEtat(&diver->etats_subi);
+    freeListeEtat(&diver->liste_etats);
     
     if (diver->competences) {
         for (size_t i = 0; i < diver->longueur_competences; i++) {

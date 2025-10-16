@@ -3,7 +3,7 @@
 void freeListeEtat(ListeEtat *listeEtat);
 
 
-char *enumSpecialEffectToChar(EffetsSpeciaux type) {
+char *enumSpecialEffectToChar(Effets type) {
     switch (type) {
         case BENEDICTION_OCEAN: return "BENEDICTION_OCEAN";
         case MALEDICTION_OCEAN: return "MALEDICTION_OCEAN";
@@ -18,10 +18,10 @@ char *enumSpecialEffectToChar(EffetsSpeciaux type) {
     }
 }
 
-EffetsSpeciaux charToEnumSpecialEffect(char *type) {
+Effets charToEnumSpecialEffect(char *type) {
     for (size_t effet = 0; effet < LENGTH_EffetsSpeciaux; effet++) {
-        if (strcmp(type, enumSpecialEffectToChar((EffetsSpeciaux) effet)) == 0)
-            return (EffetsSpeciaux) effet;
+        if (strcmp(type, enumSpecialEffectToChar((Effets) effet)) == 0)
+            return (Effets) effet;
     }
     return AUCUN;
 }
@@ -35,7 +35,7 @@ ListeEtat initEmptyListeEtat() {
 
 // Note : La gestion de la mémoire (realloc) est simplifiée ici.
 // Vous devriez ajouter des vérifications robustes.
-int ajouterEffet(ListeEtat *listeEtat, EffetsSpeciaux type, int dureeCombat, int dureeZone, int estPermanent) {
+int ajouterEffet(ListeEtat *listeEtat, Effets type, int dureeCombat, int dureeZone, int estPermanent) {
     if (!listeEtat) return EXIT_FAILURE;
     if (type <= AUCUN || type >= LENGTH_EffetsSpeciaux) return EXIT_FAILURE;
     
