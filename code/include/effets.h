@@ -3,10 +3,10 @@
 
     #include "global.h"
 
-    char *enumSpecialEffectToChar(EffetsSpeciaux type);
-    EffetsSpeciaux charToEnumSpecialEffect(char *type);
+    char *enumSpecialEffectToChar(Effets type);
+    Effets charToEnumSpecialEffect(char *type);
     
-    int ajouterEffet(ListeEtat *listeEtat, EffetsSpeciaux type, int dureeCombat, int dureeZone, int estPermanent);
+    int ajouterEffet(ListeEtat *listeEtat, Effets type, int dureeCombat, int dureeZone, int estPermanent);
     void decrementerDureesEtNettoyer(ListeEtat *listeEtat, int estFinDeTourCombat, int estFinDeZone);
 
     int peutAttaquer(ListeEtat *listeEtat);

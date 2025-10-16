@@ -15,7 +15,7 @@ int setBestiaryFromConf(Bestiaire *modalBestiary);
 unsigned *parseCreaturesApparitionConf(int index, char *line, size_t *length, char *errorOrigin, short *errorCode);
 int applyModel(CreatureMarine *model, CreatureMarine *creature);
 int countAllUniqueModel();
-// EffetsSpeciaux charSpecialEffectToEnum(char *special_effect);
+// Effets charSpecialEffectToEnum(char *special_effect);
 
 
 int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, unsigned depth_level) {
@@ -106,8 +106,8 @@ int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, char *t
                     // Alloués dans applyModel
                     bestiary->creatures[index]->nom = NULL;
                     bestiary->creatures[index]->apparition = NULL;
-                    bestiary->creatures[index]->etats_subi.etats = NULL;
-                    bestiary->creatures[index]->etats_subi.longueur = 0;
+                    bestiary->creatures[index]->liste_etats.etats = NULL;
+                    bestiary->creatures[index]->liste_etats.longueur = 0;
 
                     if (applyModel(modalBestiary->creatures[i], bestiary->creatures[index])) {
                         freeCreature(bestiary->creatures[index]);
@@ -197,7 +197,7 @@ Bestiaire *initmodalBestiary() {
             return NULL;
         }
 
-        modalBestiary->creatures[i]->etats_subi = initEmptyListeEtat();
+        modalBestiary->creatures[i]->liste_etats = initEmptyListeEtat();
         modalBestiary->creatures[i]->nom = NULL;
         modalBestiary->creatures[i]->apparition->profondeurs = NULL;
         modalBestiary->creatures[i]->apparition->taux = NULL;
@@ -451,8 +451,8 @@ int applyModel(CreatureMarine *modalBestiary, CreatureMarine *creature) {
     creature->apparition->taux = calloc(creature->apparition->longueur_taux, sizeof(unsigned));
     if (creature->apparition->taux == NULL) goto MEMORY_ERROR;
 
-    creature->etats_subi.etats = NULL;
-    creature->etats_subi.longueur = 0;
+    creature->liste_etats.etats = NULL;
+    creature->liste_etats.longueur = 0;
     
     for (size_t i = 0; i < creature->apparition->longueur_profondeurs; i++)
         creature->apparition->profondeurs[i] = modalBestiary->apparition->profondeurs[i];
@@ -515,7 +515,7 @@ void freeCreature(CreatureMarine *creature) {
         creature->apparition = NULL;
     }
     
-    freeListeEtat(&creature->etats_subi);
+    freeListeEtat(&creature->liste_etats);
 
     free(creature);
     creature = NULL;

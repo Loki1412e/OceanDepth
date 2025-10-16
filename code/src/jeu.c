@@ -47,12 +47,15 @@ int runGame(Sauvegarde *actualSave) {
 
         diver->profondeur = 1;
 
-        ajouterEffet(&diver->etats_subi, POISON, 3, 0, 0);
+        ajouterEffet(&diver->liste_etats, POISON, 3, 0, 0);
 
-        ajouterEffet(&bestiary->creatures[0]->etats_subi, PARALYSIE, 5, 0, 0);
-        ajouterEffet(&bestiary->creatures[1]->etats_subi, SAIGNEMENT, 5, 0, 0);
+        ajouterEffet(&bestiary->creatures[0]->liste_etats, PARALYSIE, 5, 0, 0);
+        ajouterEffet(&bestiary->creatures[1]->liste_etats, SAIGNEMENT, 5, 0, 0);
         
         printBestiary(bestiary);
+        
+        sleep(5);//debug
+
         combat(diver, bestiary->creatures, bestiary->longueur_creatures);
 
         freeBestiaryContent(bestiary);

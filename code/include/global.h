@@ -50,13 +50,13 @@
         VOIX_DU_COURANT,
         // Suite ...
         LENGTH_EffetsSpeciaux
-    } EffetsSpeciaux;
+    } Effets;
 
 
     /* Struct */
 
     typedef struct {
-        EffetsSpeciaux effet;
+        Effets effet;
         int estPermanent;
         int duree_zone;
         int duree_combat;
@@ -66,6 +66,24 @@
         Etat *etats;
         size_t longueur;
     } ListeEtat;
+
+    typedef struct {
+        char *nom;
+        char *description;
+        // Cooldown en tours
+        int cooldown_max;
+        int cooldown_restant;
+        int multiplicateur_degats;  // ex: 110 -> degats *= 110 / 100. => degats *= 1.1
+        int chance_effet;           // ex: 30 = 30% chance d’appliquer effet
+        Effets effet;               // ex: "SAIGNEMENT"
+        int duree_effet;            // en tours
+        int sur_soi;                // 1 = s’applique à soi, 0 = sur ennemi
+    } Competence;
+
+    typedef struct {
+        Competence *competences;
+        size_t longueur;
+    } ListeCompetence;
 
 
     typedef struct {
@@ -87,8 +105,8 @@
         int defense;
         int vitesse;
         // On va attribuer des etats a partir de compétences ce sera mieux
-        // ---> // EffetsSpeciaux effet_special; // voir EffetsSpeciaux -> a modifier mettre liste d'effets speciaux
-        ListeEtat etats_subi;
+        // ---> // Effets effet_special; // voir Effets -> a modifier mettre liste d'effets speciaux
+        ListeEtat liste_etats;
         ApparitionCreature *apparition;
     } CreatureMarine;
 
@@ -98,14 +116,6 @@
         CreatureMarine **creatures;
         size_t longueur_creatures;
     } Bestiaire;
-
-    typedef struct {
-        char *nom;
-        int cout_oxygene;
-        int gain_oxygene;
-        // A penser pour la suite,
-        // Peux etre des compétences pour les creatures...
-    } Competence;
 
     typedef struct {
         char *nom;
@@ -121,7 +131,7 @@
         int vitesse;
         unsigned perles; // monnaie du jeu
         unsigned niveau;
-        ListeEtat etats_subi;
+        ListeEtat liste_etats;
         Competence *competences; // tableau de competences (pas sur de le garder)
         size_t longueur_competences;
         int profondeur;
