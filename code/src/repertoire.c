@@ -138,7 +138,7 @@ char *build_filepath(char *dir, char *filename) {
     size_t len_file = strlen(filename);
     size_t total_len = len_dir + 1 + len_file;
 
-    char *full = malloc(total_len + 1);
+    char *full = calloc(total_len + 1, sizeof(char));
     if (!full) return NULL;
 
     snprintf(full, total_len + 1, "%.*s%c%s", (int)len_dir, dir, PATH_SEPARATOR, filename);
@@ -205,9 +205,9 @@ char **list_files(char *path, size_t *len) {
         return NULL;
     }
 
-    char **list = malloc(sizeof(char*) * (*len));
+    char **list = calloc(*len, sizeof(char*));
     if (!list) {
-        perror("malloc");
+        perror("calloc");
         return NULL;
     }
 

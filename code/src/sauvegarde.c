@@ -51,7 +51,7 @@ int setNewSaveName(Sauvegarde *save, char *save_name) {
 Sauvegarde *initSave() {
     Sauvegarde *save = NULL;
     
-    save = malloc(sizeof(Sauvegarde));
+    save = calloc(1, sizeof(Sauvegarde));
     if (!save) return NULL;
 
     save->nom = NULL;
@@ -68,7 +68,7 @@ ListeSauvegardes *preLoadListSaves(char *dir) {
 
     // Allocation
 
-    saves = malloc(sizeof(ListeSauvegardes));
+    saves = calloc(1, sizeof(ListeSauvegardes));
     if (!saves) return NULL;
 
     char **list_saves_name = list_files(dir, &(saves->longueur_sauvegardes));
@@ -80,7 +80,7 @@ ListeSauvegardes *preLoadListSaves(char *dir) {
         return saves;
     }
 
-    saves->sauvegardes = malloc(sizeof(Sauvegarde*) * saves->longueur_sauvegardes);
+    saves->sauvegardes = calloc(saves->longueur_sauvegardes, sizeof(Sauvegarde*));
     if (!saves->sauvegardes) {
         for (size_t i = 0; i < saves->longueur_sauvegardes; i++) free(list_saves_name[i]);
         free(list_saves_name);
@@ -226,9 +226,9 @@ Plongeur *loadDiver(FILE *file) {
         return NULL;
     }
 
-    diver->nom = malloc(nom_len);
+    diver->nom = calloc(nom_len, sizeof(char));
     if (!diver->nom) {
-        fprintf(stderr, "loadDiver malloc nom\n");
+        fprintf(stderr, "loadDiver calloc nom\n");
         freeDiverContent(diver);
         return NULL;
     }
@@ -249,9 +249,9 @@ Plongeur *loadDiver(FILE *file) {
     diver->etats_subi.etats = NULL;
 
     if (etats_len > 0) {
-        diver->etats_subi.etats = malloc(sizeof(Etat) * etats_len);
+        diver->etats_subi.etats = calloc(etats_len, sizeof(Etat));
         if (!diver->etats_subi.etats) {
-            fprintf(stderr, "loadDiver malloc etats\n");
+            fprintf(stderr, "loadDiver calloc etats\n");
             freeDiverContent(diver);
             return NULL;
         }
@@ -281,9 +281,9 @@ Plongeur *loadDiver(FILE *file) {
     diver->competences = NULL;
 
     if (comp_len > 0) {
-        diver->competences = malloc(sizeof(Competence) * comp_len);
+        diver->competences = calloc(comp_len, sizeof(Competence));
         if (!diver->competences) {
-            fprintf(stderr, "loadDiver malloc competences\n");
+            fprintf(stderr, "loadDiver calloc competences\n");
             freeDiverContent(diver);
             return NULL;
         }
@@ -310,9 +310,9 @@ Plongeur *loadDiver(FILE *file) {
             }
 
             if (comp_nom_len > 0) {
-                diver->competences[i].nom = malloc(comp_nom_len);
+                diver->competences[i].nom = calloc(comp_nom_len, sizeof(char));
                 if (!diver->competences[i].nom) {
-                    fprintf(stderr, "loadDiver malloc comp nom\n");
+                    fprintf(stderr, "loadDiver calloc comp nom\n");
                     freeDiverContent(diver);
                     return NULL;
                 }
@@ -535,7 +535,7 @@ SaveTmpFile *initTmpFile(char *dir, char *filename) {
         return NULL;
     }
 
-    SaveTmpFile *save = malloc(sizeof(SaveTmpFile));
+    SaveTmpFile *save = calloc(1, sizeof(SaveTmpFile));
     if (!save) {
         fprintf(stderr, "initTmpFile : erreur allocation mémoire\n");
         return NULL;
