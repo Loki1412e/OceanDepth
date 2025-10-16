@@ -56,7 +56,7 @@ int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, un
                 if (tirage < cumul) {
                     
                     // On l'ajoute dans le Bestiaire
-                    if (addCreatureInBestiary(modalBestiary, bestiary, model->nom_type, depth_level)) return EXIT_FAILURE;
+                    if (addCreatureInBestiary(modalBestiary, bestiary, model->nom, depth_level)) return EXIT_FAILURE;
 
                     // On trie le Bestiaire
                     sortCreaturesBySpeed(bestiary->creatures, bestiary->longueur_creatures);
@@ -79,7 +79,7 @@ int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, char *t
     unsigned index, max_id;
 
     for (size_t i = 0; i < modalBestiary->longueur_creatures; i++) {
-        if (strcmp(modalBestiary->creatures[i]->nom_type, type_name) == 0) {
+        if (strcmp(modalBestiary->creatures[i]->nom, type_name) == 0) {
             for (size_t j = 0; j < modalBestiary->creatures[i]->apparition->longueur_profondeurs; j++) {
                 if (modalBestiary->creatures[i]->apparition->profondeurs[j] <= depth_level) {
                     
@@ -104,7 +104,7 @@ int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, char *t
                     }
 
                     // Alloués dans applyModel
-                    bestiary->creatures[index]->nom_type = NULL;
+                    bestiary->creatures[index]->nom = NULL;
                     bestiary->creatures[index]->apparition = NULL;
                     bestiary->creatures[index]->etats_subi.etats = NULL;
                     bestiary->creatures[index]->etats_subi.longueur = 0;
@@ -198,7 +198,7 @@ Bestiaire *initmodalBestiary() {
         }
 
         modalBestiary->creatures[i]->etats_subi = initEmptyListeEtat();
-        modalBestiary->creatures[i]->nom_type = NULL;
+        modalBestiary->creatures[i]->nom = NULL;
         modalBestiary->creatures[i]->apparition->profondeurs = NULL;
         modalBestiary->creatures[i]->apparition->taux = NULL;
     }
@@ -247,23 +247,23 @@ int setBestiaryFromConf(Bestiaire *modalBestiary) {
 
     while (fgets(line, sizeof(line), f)) {
          
-        if (strncmp(line, "nom_type=", 9) == 0) {
+        if (strncmp(line, "nom=", 9) == 0) {
             length++;
             index = length - 1;
             
             line[strcspn(line, "\n")] = 0; // retirer le \n
             len = strlen(line + 9);
             
-            modalBestiary->creatures[index]->nom_type = calloc(len + 1, sizeof(char));
+            modalBestiary->creatures[index]->nom = calloc(len + 1, sizeof(char));
             
-            if (!modalBestiary->creatures[index]->nom_type) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf(): Allocation nom_type\n");
+            if (!modalBestiary->creatures[index]->nom) {
+                fprintf(stderr, "Erreur: setBestiaryFromConf(): Allocation nom\n");
                 freeBestiary(modalBestiary);
                 fclose(f);
                 return EXIT_FAILURE;
             }
 
-            strcpy(modalBestiary->creatures[index]->nom_type, line + 9); // on saute "nom_type="
+            strcpy(modalBestiary->creatures[index]->nom, line + 9); // on saute "nom="
         }
 
         else if (strncmp(line, "pv_min=", 7) == 0)
@@ -423,7 +423,7 @@ unsigned *parseCreaturesApparitionConf(int index, char *line, size_t *length, ch
 
 
 int applyModel(CreatureMarine *modalBestiary, CreatureMarine *creature) {
-    unsigned length_nom_type = strlen(modalBestiary->nom_type);
+    unsigned length_nom = strlen(modalBestiary->nom);
     
     creature->pv_min = modalBestiary->pv_min;
     creature->pv_max = modalBestiary->pv_max;
@@ -435,9 +435,9 @@ int applyModel(CreatureMarine *modalBestiary, CreatureMarine *creature) {
     // creature->effet_special = modalBestiary->effet_special;
     // creature->est_vivant = modalBestiary->est_vivant;
 
-    creature->nom_type = calloc((length_nom_type + 1), sizeof(char));
-    if (creature->nom_type == NULL) goto MEMORY_ERROR;
-    strcpy(creature->nom_type, modalBestiary->nom_type);
+    creature->nom = calloc((length_nom + 1), sizeof(char));
+    if (creature->nom == NULL) goto MEMORY_ERROR;
+    strcpy(creature->nom, modalBestiary->nom);
 
     // Ici, apparition ne doit PAS être alloué avant l'appel à applyModel.
     creature->apparition = calloc(1, sizeof(ApparitionCreature));
@@ -469,8 +469,8 @@ MEMORY_ERROR:
         free(creature->apparition);
         creature->apparition = NULL;
     }
-    free(creature->nom_type);
-    creature->nom_type = NULL;
+    free(creature->nom);
+    creature->nom = NULL;
     return EXIT_FAILURE;
 }
 
@@ -486,7 +486,7 @@ int countAllUniqueModel() {
     }
 
     while (fgets(line, sizeof(line), f))
-        if (strncmp(line, "nom_type=", 9) == 0) count++;
+        if (strncmp(line, "nom=", 9) == 0) count++;
 
     fclose(f);
     return count;
@@ -505,9 +505,9 @@ void freeCreature(CreatureMarine *creature) {
     
     if (!creature) return;
     
-    if (creature->nom_type) {
-        free(creature->nom_type);
-        creature->nom_type = NULL;
+    if (creature->nom) {
+        free(creature->nom);
+        creature->nom = NULL;
     }
     
     if (creature->apparition) {

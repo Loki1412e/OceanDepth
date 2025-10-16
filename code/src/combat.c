@@ -87,7 +87,7 @@ void joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature) {
 
     int gainFatigue = augmenterFatigue(joueur, 1); // de 1 pour le moment
 
-    printf("Vous attaquez %s → %d dégâts (PV restants: %d)\n", creature->nom_type, degats, creature->pv);
+    printf("Vous attaquez %s → %d dégâts (PV restants: %d)\n", creature->nom, degats, creature->pv);
     printf("Oxygène consommé: -%d (action de combat)\n", perteOxygene);
     printf("Fatigue augmentée: +%d (effort physique)\n", gainFatigue);
 }
@@ -100,7 +100,7 @@ void creatureAttaqueJoueur(CreatureMarine *creature, Plongeur *joueur) {
     joueur->pv -= degats;
     if (joueur->pv < 0) joueur->pv = 0;
     
-    printf("[%s] vous attaque → %d dégâts (PV restants: %d)\n", creature->nom_type, degats, joueur->pv);
+    printf("[%s] vous attaque → %d dégâts (PV restants: %d)\n", creature->nom, degats, joueur->pv);
 }
 
 void appliquerDegatsAvantTour(ListeEtat *etats, int *pv, int maxPv, int defense) {
@@ -142,11 +142,11 @@ void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_c
     printf("\n");
     for (size_t i = 0; i < nb_creatures; i++) {
         if (creatures[i]->pv > 0) {
-            printf("[%zu] %s (%d/%d PV)\n", i+1, creatures[i]->nom_type, creatures[i]->pv, creatures[i]->pv_max);
+            printf("[%zu] %s (%d/%d PV)\n", i+1, creatures[i]->nom, creatures[i]->pv, creatures[i]->pv_max);
             printListeEtat(creatures[i]->etats_subi);
             printf("\n");
         }
-        else printf("☠️  %s (%d/%d PV)\n", creatures[i]->nom_type, creatures[i]->pv, creatures[i]->pv_max);
+        else printf("☠️  %s (%d/%d PV)\n", creatures[i]->nom, creatures[i]->pv, creatures[i]->pv_max);
     }
 
     printf("\nActions:\n");
@@ -177,7 +177,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                 if (peutAttaquer(&creatures[i]->etats_subi))
                     creatureAttaqueJoueur(creatures[i], joueur);
                 
-                else printf("[%s] n'a pas pu attaquer.\n", creatures[i]->nom_type);
+                else printf("[%s] n'a pas pu attaquer.\n", creatures[i]->nom);
                 
                 decrementerDureesEtNettoyer(&creatures[i]->etats_subi, true, false);
                 if (joueur->pv <= 0) break;
@@ -218,7 +218,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     printf("\nQuelle cible ?\n");
                     for (size_t i = 0; i < nb_creatures; i++) {
                         if (creatures[i]->pv > 0)
-                            printf("[%zu] %s\n", i+1, creatures[i]->nom_type);
+                            printf("[%zu] %s\n", i+1, creatures[i]->nom);
                     }
                     printf("> ");
 
@@ -237,7 +237,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                             printf("Entrée invalide, veuillez choisir un monstre en vie :\n");
                             for (size_t i = 0; i < nb_creatures; i++) {
                                 if (creatures[i]->pv > 0)
-                                    printf("[%zu] %s (%d/%d PV)\n", i+1, creatures[i]->nom_type, creatures[i]->pv, creatures[i]->pv_max);
+                                    printf("[%zu] %s (%d/%d PV)\n", i+1, creatures[i]->nom, creatures[i]->pv, creatures[i]->pv_max);
                             }
                             printf("> ");
                         } while (1);
