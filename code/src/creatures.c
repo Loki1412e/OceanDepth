@@ -1,7 +1,7 @@
 #include "../include/creatures.h"
 
 
-Bestiaire *initmodalBestiary();
+Bestiaire *initModalBestiary();
 Bestiaire *initEmptyBestiary();
 int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, unsigned depth_level);
 int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, char *type_name, unsigned depth_level);
@@ -156,7 +156,7 @@ Bestiaire *initEmptyBestiary() {
 }
 
 
-Bestiaire *initmodalBestiary() {
+Bestiaire *initModalBestiary() {
     
     unsigned count_all_unique_model = countAllUniqueModel();
     if (!count_all_unique_model) return NULL;
@@ -165,14 +165,14 @@ Bestiaire *initmodalBestiary() {
 
     Bestiaire *modalBestiary = calloc(1, sizeof(Bestiaire));
     if (modalBestiary == NULL) {
-        fprintf(stderr, "Erreur: initmodalBestiary(): Allocation mémoire modalBestiary\n");
+        fprintf(stderr, "Erreur: initModalBestiary(): Allocation mémoire modalBestiary\n");
         return NULL;
     }
     
     modalBestiary->longueur_creatures = count_all_unique_model;
     modalBestiary->creatures = calloc(count_all_unique_model, sizeof(CreatureMarine*));
     if (!modalBestiary->creatures) {
-        fprintf(stderr, "Erreur: initmodalBestiary(): Allocation mémoire modalBestiary->creatures\n");
+        fprintf(stderr, "Erreur: initModalBestiary(): Allocation mémoire modalBestiary->creatures\n");
         modalBestiary->longueur_creatures = 0;
         freeBestiary(modalBestiary);
         return NULL;

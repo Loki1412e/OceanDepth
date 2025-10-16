@@ -4,7 +4,7 @@
     #include "global.h"
     #include "effets.h"
     
-    Bestiaire *initmodalBestiary();
+    Bestiaire *initModalBestiary();
     Bestiaire *initEmptyBestiary();
     int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, unsigned depth_level);
     int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, char *type_name, unsigned depth_level);
