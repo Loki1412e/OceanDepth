@@ -33,7 +33,9 @@ Plongeur *initDiver(char *diver_name) {
     }
 
     diver->pv = diver->pv_max;
-    diver->niveau_oxygene = diver->niveau_oxygene_max;
+    diver->oxygene = diver->oxygene_max;
+
+    diver->fatigue = 0;
 
     diver->liste_etats = initEmptyListeEtat();
 
@@ -57,11 +59,8 @@ int setDiverFromConf(Plongeur *diver) {
         if (strncmp(line, "pv_max=", 7) == 0)
             diver->pv_max = atoi(line + 7);
         
-        if (strncmp(line, "niveau_oxygene_max=", 19) == 0)
-            diver->niveau_oxygene_max = atoi(line + 19);
-        
-        if (strncmp(line, "niveau_fatigue=", 15) == 0)
-            diver->niveau_fatigue = atoi(line + 15);
+        if (strncmp(line, "oxygene_max=", 19) == 0)
+            diver->oxygene_max = atoi(line + 19);
         
         if (strncmp(line, "fatigue_max=", 12) == 0)
             diver->fatigue_max = atoi(line + 12);

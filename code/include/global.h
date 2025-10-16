@@ -123,9 +123,9 @@
         char *nom;
         int pv;
         int pv_max;
-        int niveau_oxygene;
-        int niveau_oxygene_max;
-        int niveau_fatigue; // 0 à 5
+        int oxygene;
+        int oxygene_max;
+        int fatigue;
         int fatigue_max;
         int attaque_max;
         int attaque_min;

@@ -20,14 +20,14 @@ void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_c
 /*====== Utils ======*/
 
 int augmenterFatigue(Plongeur *joueur, int gain) {
-    joueur->niveau_fatigue += gain;
-    if (joueur->niveau_fatigue > joueur->fatigue_max) joueur->niveau_fatigue = joueur->fatigue_max;
+    joueur->fatigue += gain;
+    if (joueur->fatigue > joueur->fatigue_max) joueur->fatigue = joueur->fatigue_max;
     return gain;
 }
 
 int diminuerFatigue(Plongeur *joueur, int perte) {
-    joueur->niveau_fatigue -= perte;
-    if (joueur->niveau_fatigue < 0) joueur->niveau_fatigue = 0;
+    joueur->fatigue -= perte;
+    if (joueur->fatigue < 0) joueur->fatigue = 0;
     return perte;
 }
 
@@ -49,8 +49,8 @@ int calculerDegats(int attaque_min, int attaque_max, int defense) {
 int appliquerConsommationOxygeneProfondeur(Plongeur *joueur) {
     
     int perte = random_int(2, 5) * (joueur->profondeur); // niveau de profondeur, ptet trop violent ???
-    joueur->niveau_oxygene -= perte;
-    if (joueur->niveau_oxygene < 0) joueur->niveau_oxygene = 0;
+    joueur->oxygene -= perte;
+    if (joueur->oxygene < 0) joueur->oxygene = 0;
 
     return perte;
 }
@@ -82,8 +82,8 @@ void joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature) {
     if (creature->pv < 0) creature->pv = 0;
 
     int perteOxygene = random_int(2, 4); // attaque normal
-    joueur->niveau_oxygene -= perteOxygene;
-    if (joueur->niveau_oxygene < 0) joueur->niveau_oxygene = 0;
+    joueur->oxygene -= perteOxygene;
+    if (joueur->oxygene < 0) joueur->oxygene = 0;
 
     int gainFatigue = augmenterFatigue(joueur, 1); // de 1 pour le moment
 
@@ -117,12 +117,12 @@ void appliquerDegatsAvantTour(ListeEtat *etats, int *pv, int maxPv, int defense)
 int afficherEtatOxygene(Plongeur *joueur) {
     int perte = 0;
     
-    int p = joueur->niveau_oxygene * 100 / joueur->niveau_oxygene_max;
+    int p = joueur->oxygene * 100 / joueur->oxygene_max;
 
     if (p <= 10)
-        printf("⚠️  Alerte critique : oxygène bas (%d%%) !\n", joueur->niveau_oxygene);
+        printf("⚠️  Alerte critique : oxygène bas (%d%%) !\n", joueur->oxygene);
 
-    if (joueur->niveau_oxygene == 0) {
+    if (joueur->oxygene == 0) {
         perte = joueur->pv_max * 0.05; // 5% de max pv = max 20 tours : mort.
         joueur->pv -= perte;
         printf("⛔ Plus d'oxygène, vous suffoquez ! -%d PV\n", perte);
@@ -134,8 +134,8 @@ int afficherEtatOxygene(Plongeur *joueur) {
 void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures, int attaques_restantes) {
     printf("\n=== COMBAT SOUS-MARIN ===\n");
     printf("Vie     : %d/%d\n", joueur->pv, joueur->pv_max);
-    printf("Oxygène : %d/%d\n", joueur->niveau_oxygene, joueur->niveau_oxygene_max);
-    printf("Fatigue : %d/%d\n", joueur->niveau_fatigue, joueur->fatigue_max);
+    printf("Oxygène : %d/%d\n", joueur->oxygene, joueur->oxygene_max);
+    printf("Fatigue : %d/%d\n", joueur->fatigue, joueur->fatigue_max);
     printListeEtat(joueur->liste_etats);
     
     printf("\n--- Créatures ---\n");
@@ -188,7 +188,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
         // Joueur
 
-        int attaques_restantes = calculerAttaquesMaxAvecFatigue(joueur->fatigue_max, joueur->niveau_fatigue);
+        int attaques_restantes = calculerAttaquesMaxAvecFatigue(joueur->fatigue_max, joueur->fatigue);
 
 
         appliquerConsommationOxygeneProfondeur(joueur);

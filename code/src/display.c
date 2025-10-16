@@ -207,8 +207,8 @@ void printDiver(Plongeur *diver) {
     printf("------------------------------------\n");
     printf("Profondeur: -%d\n", (diver->profondeur));
     printf("PV: %d / %d\n", diver->pv, diver->pv_max);
-    printf("Oxygène: %d / %d\n", diver->niveau_oxygene, diver->niveau_oxygene_max);
-    printf("Fatigue: %d / %d\n", diver->niveau_fatigue, diver->fatigue_max);
+    printf("Oxygène: %d / %d\n", diver->oxygene, diver->oxygene_max);
+    printf("Fatigue: %d / %d\n", diver->fatigue, diver->fatigue_max);
     printf("Attaque: %d - %d\n", diver->attaque_min, diver->attaque_max);
     printf("Défense: %d\n", diver->defense);
     printf("Vitesse: %d\n", diver->vitesse);
