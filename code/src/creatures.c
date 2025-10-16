@@ -12,10 +12,7 @@ void freeCreature(CreatureMarine *creature);
 
 void sortCreaturesBySpeed(CreatureMarine **creatures, size_t nb_creatures);
 int setBestiaryFromConf(Bestiaire *modalBestiary);
-unsigned *parseCreaturesApparitionConf(int index, char *line, size_t *length, char *errorOrigin, short *errorCode);
 int applyModel(CreatureMarine *model, CreatureMarine *creature);
-int countAllUniqueModel();
-// Effets charSpecialEffectToEnum(char *special_effect);
 
 
 int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, unsigned depth_level) {
@@ -158,7 +155,7 @@ Bestiaire *initEmptyBestiary() {
 
 Bestiaire *initModalBestiary() {
     
-    unsigned count_all_unique_model = countAllUniqueModel();
+    unsigned count_all_unique_model = confCountAllUniqueId("config/bestiaire/creatures.conf");
     if (!count_all_unique_model) return NULL;
 
     // Allocation mémoire
@@ -239,7 +236,7 @@ int setBestiaryFromConf(Bestiaire *modalBestiary) {
     FILE *f = fopen("config/bestiaire/creatures.conf", "r");
     if (f == NULL) return EXIT_FAILURE;
 
-    char line[256];
+    char line[512];
     size_t length = 0, index = 0;
     size_t len;
 
@@ -284,14 +281,9 @@ int setBestiaryFromConf(Bestiaire *modalBestiary) {
         else if (strncmp(line, "vitesse=", 8) == 0)
             modalBestiary->creatures[index]->vitesse = atoi(line + 8);
         
-        // else if (strncmp(line, "effet_special=", 14) == 0) {
-        //     line[strcspn(line, "\n")] = 0;
-        //     modalBestiary->creatures[index]->effet_special = charSpecialEffectToEnum(line + 14);
-        // }
-        
         else if (strncmp(line, "profondeur_apparition=", 22) == 0) {
-            line[strcspn(line, "\n")] = 0; // Retirer \n s'il rest
-            modalBestiary->creatures[index]->apparition->profondeurs = parseCreaturesApparitionConf(index, line, &(modalBestiary->creatures[index]->apparition->longueur_profondeurs), "profondeur_apparition", &errorCode);
+            line[strcspn(line, "\n")] = 0; // Retirer '\n' s'il existe
+            modalBestiary->creatures[index]->apparition->profondeurs = parseNumberList(index, line, &(modalBestiary->creatures[index]->apparition->longueur_profondeurs), "profondeur_apparition", &errorCode);
         
             if (errorCode == -1) continue;
             
@@ -303,8 +295,8 @@ int setBestiaryFromConf(Bestiaire *modalBestiary) {
         }
         
         else if (strncmp(line, "taux_apparition=", 16) == 0) {
-            line[strcspn(line, "\n")] = 0; // Retirer \n s'il reste
-            modalBestiary->creatures[index]->apparition->taux = parseCreaturesApparitionConf(index, line, &(modalBestiary->creatures[index]->apparition->longueur_taux), "taux_apparition", &errorCode);
+            line[strcspn(line, "\n")] = 0; // Retirer '\n' s'il existe
+            modalBestiary->creatures[index]->apparition->taux = parseNumberList(index, line, &(modalBestiary->creatures[index]->apparition->longueur_taux), "taux_apparition", &errorCode);
         
             if (errorCode == -1) continue;
             
@@ -349,76 +341,6 @@ int setBestiaryFromConf(Bestiaire *modalBestiary) {
 
     fclose(f);
     return EXIT_SUCCESS;
-}
-
-
-unsigned *parseCreaturesApparitionConf(int index, char *line, size_t *length, char *errorOrigin, short *errorCode) {
-
-    int prefixLen = strlen(errorOrigin) + 1;
-    unsigned *depth = NULL;
-    *errorCode = 0;
-
-    char profondeur_copy[256];
-    strncpy(profondeur_copy, line + prefixLen, sizeof(profondeur_copy) - 1);
-    profondeur_copy[sizeof(profondeur_copy) - 1] = '\0';
-    
-    *length = 0;
-
-    if (strlen(line + prefixLen) == 0) {
-        *errorCode = -1;
-        return NULL;
-    }
-
-    char *token = strtok(profondeur_copy, ",");
-    if (token == NULL) {
-        fprintf(stderr, "Erreur: %s -> parseCreaturesApparitionConf(): token == NULL #1\n", errorOrigin);
-        return NULL;
-    }
-
-    int count = 0;
-    
-    while (token != NULL) {
-        char *endptr;
-        long val = strtol(token, &endptr, 10); // renvoie la valeur numérique et met la str dans *endptr (radix = base 10, decimal)
-
-        if (endptr != token && val >= 0) count++;
-
-        token = strtok(NULL, ",");
-    }
-
-    if (count == 0) {
-        fprintf(stderr, "Erreur: %s -> parseCreaturesApparitionConf(): Pas de conversion, chaîne non numérique au début\n", errorOrigin);
-        return NULL;
-    }
-    
-    // ex: 0,1,2
-    *length = count; // doit etre initialisé à 0 si vide
-    
-    depth = calloc(count, sizeof(unsigned));
-    if (depth == NULL) {
-        fprintf(stderr, "Erreur: %s -> parseCreaturesApparitionConf(): Allocation mémoire bestiary->models[%d]->profondeur_apparition\n", errorOrigin, index);
-        return NULL;
-    }
-
-    strncpy(profondeur_copy, line + prefixLen, sizeof(profondeur_copy) - 1);
-    token = strtok(profondeur_copy, ",");
-    if (token == NULL) {
-        fprintf(stderr, "Erreur: %s -> parseCreaturesApparitionConf(): token == NULL #1\n", errorOrigin);
-        return NULL;
-    }
-
-    count = 0;
-    
-    while (token != NULL) {
-        char *endptr;
-        long val = strtol(token, &endptr, 10); // renvoie la valeur numérique et met la str dans *endptr (radix = base 10, decimal)
-
-        if (endptr != token && val >= 0) depth[count++] = (unsigned) val;
-        
-        token = strtok(NULL, ",");
-    }
-
-    return depth;
 }
 
 
@@ -472,24 +394,6 @@ MEMORY_ERROR:
     free(creature->nom);
     creature->nom = NULL;
     return EXIT_FAILURE;
-}
-
-
-int countAllUniqueModel() {
-    int count = 0;
-    char line[256];
-
-    FILE *f = fopen("config/bestiaire/creatures.conf", "r");
-    if (f == NULL) {
-        fprintf(stderr, "Erreur: countAllUniqueModel()\n");
-        return -1;
-    }
-
-    while (fgets(line, sizeof(line), f))
-        if (strncmp(line, "nom=", 9) == 0) count++;
-
-    fclose(f);
-    return count;
 }
 
 
