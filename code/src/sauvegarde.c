@@ -399,14 +399,6 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
 /*
     typedef enum {
         AUCUN,
-        BENEDICTION_OCEAN,
-        MALEDICTION_OCEAN,
-        SAIGNEMENT,
-        PARALYSIE,
-        ETREINTE,
-        PRECISION_REDUITE,
-        DEFENSE_AUGMENTEE,
-        VOIX_DU_COURANT,
         // Suite ...
         LENGTH_EffetsSpeciaux
     } EffetsSpeciaux;

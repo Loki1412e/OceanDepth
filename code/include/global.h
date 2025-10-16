@@ -42,6 +42,7 @@
         BENEDICTION_OCEAN,
         MALEDICTION_OCEAN,
         SAIGNEMENT,
+        POISON,
         PARALYSIE,
         ETREINTE,
         PRECISION_REDUITE,
