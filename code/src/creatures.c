@@ -236,7 +236,7 @@ void sortCreaturesBySpeed(CreatureMarine **creatures, size_t nb_creatures) {
 
 
 int setBestiaryFromConf(Bestiaire *modalBestiary) {
-    FILE *f = fopen("config/creatures/bestiaire.conf", "r");
+    FILE *f = fopen("config/bestiaire/creatures.conf", "r");
     if (f == NULL) return EXIT_FAILURE;
 
     char line[256];
@@ -479,7 +479,7 @@ int countAllUniqueModel() {
     int count = 0;
     char line[256];
 
-    FILE *f = fopen("config/creatures/bestiaire.conf", "r");
+    FILE *f = fopen("config/bestiaire/creatures.conf", "r");
     if (f == NULL) {
         fprintf(stderr, "Erreur: countAllUniqueModel()\n");
         return -1;
