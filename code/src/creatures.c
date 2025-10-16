@@ -191,8 +191,7 @@ Bestiaire *initmodalBestiary() {
             return NULL;
         }
 
-        modalBestiary->creatures[i]->etats_subi.etats = NULL;
-        modalBestiary->creatures[i]->etats_subi.longueur = 0;
+        modalBestiary->creatures[i]->etats_subi = initEmptyListeEtat();
         modalBestiary->creatures[i]->nom_type = NULL;
         modalBestiary->creatures[i]->apparition->profondeurs = NULL;
         modalBestiary->creatures[i]->apparition->taux = NULL;

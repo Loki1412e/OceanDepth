@@ -25,12 +25,11 @@ EffetsSpeciaux charToEnumSpecialEffect(char *type) {
     return AUCUN;
 }
 
-ListeEtat *initEmptyListeEtat() {
-    ListeEtat *listeEtat = malloc(sizeof(ListeEtat));
-    if (!listeEtat) return NULL;
-    listeEtat->etats = NULL;
-    listeEtat->longueur = 0;
-    return listeEtat;
+ListeEtat initEmptyListeEtat() {
+    return (ListeEtat) {
+        .etats = NULL,
+        .longueur = 0
+    };
 }
 
 // Note : La gestion de la mémoire (realloc) est simplifiée ici.
@@ -166,12 +165,8 @@ void decrementerDureesEtNettoyer(ListeEtat *listeEtat, int estFinDeTourCombat, i
     
     int etat_a_nettoyer[listeEtat->longueur];
 
-    ListeEtat *listeEtatTemp = initEmptyListeEtat();
-    if (!listeEtatTemp) {
-        fprintf(stderr, "Erreur: decrementerDureesEtNettoyer(): Allocation mémoire échouée\n");
-        return;
-    }
-    listeEtatTemp->longueur = listeEtat->longueur;
+    ListeEtat listeEtatTemp = initEmptyListeEtat();
+    listeEtatTemp.longueur = listeEtat->longueur;
 
     for (size_t i = 0; i < listeEtat->longueur; i++) {
         etat_a_nettoyer[i] = 0;
@@ -187,26 +182,26 @@ void decrementerDureesEtNettoyer(ListeEtat *listeEtat, int estFinDeTourCombat, i
 
         if (etat->duree_combat == 0 && etat->duree_zone == 0) {
             etat_a_nettoyer[i] = 1;
-            listeEtatTemp->longueur--;
+            listeEtatTemp.longueur--;
         }
     }
 
-    listeEtatTemp->etats = malloc(sizeof(Etat) * listeEtatTemp->longueur);
-    if (!listeEtatTemp->etats) {
+    listeEtatTemp.etats = malloc(sizeof(Etat) * listeEtatTemp.longueur);
+    if (!listeEtatTemp.etats) {
         fprintf(stderr, "Erreur: decrementerDureesEtNettoyer(): Allocation mémoire échouée\n");
         return;
     }
 
-    for (size_t i = 0, j = 0; i < listeEtat->longueur || j < listeEtatTemp->longueur; i++) {
+    for (size_t i = 0, j = 0; i < listeEtat->longueur || j < listeEtatTemp.longueur; i++) {
         if (etat_a_nettoyer[i])
             printf("L'effet [%s] (%d) a expiré et a été supprimé.\n", enumSpecialEffectToChar(listeEtat->etats[i].effet), listeEtat->etats[i].effet);
         else
-            listeEtatTemp->etats[j++] = listeEtat->etats[i];
+            listeEtatTemp.etats[j++] = listeEtat->etats[i];
     }
 
     freeListeEtat(listeEtat);
-    listeEtat->etats = listeEtatTemp->etats;
-    listeEtat->longueur = listeEtatTemp->longueur;
+    listeEtat->etats = listeEtatTemp.etats;
+    listeEtat->longueur = listeEtatTemp.longueur;
 }
 
 
