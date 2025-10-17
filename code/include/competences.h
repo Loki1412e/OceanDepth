@@ -3,11 +3,15 @@
 
     #include "global.h"
     #include "effets.h"
+
+    void freeCompetence(Competence *competence);
+    void freeListeCompetence(ListeCompetence *liste_competences);
     
-    // ListeCompetence initEmptyinitSkillsList();
+    ListeCompetence initEmptySkillList();
+    Competence duplicateCompetence(Competence *modal, short *res);
+    ListeCompetence duplicateListeCompetence(ListeCompetence *modal, short *res);
+    
     // ListeCompetence initSkillsList();
     // int addSkillInList(Bestiaire *modalBestiary, Bestiaire *bestiary, char *type_name, unsigned depth_level);
-    // void freeSkill(Competence *skill);
-    // void freeSkillList(ListeCompetence *list);
 
 #endif
