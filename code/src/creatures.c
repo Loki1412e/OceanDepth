@@ -208,7 +208,7 @@ void sortCreaturesBySpeed(CreatureMarine **creatures, size_t nb_creatures) {
 
 
 int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *skill_list, char *path) {
-    if (!modalBestiary || !modalBestiary->creatures || modalBestiary->longueur_creatures == 0)
+    if (!modalBestiary || !modalBestiary->creatures || modalBestiary->longueur_creatures == 0 || !path)
         return EXIT_FAILURE;
 
     FILE *f = fopen(path, "r");
@@ -219,11 +219,10 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *skill_list, c
 
     char line[512];
     size_t length = 0, index = 0;
+
+    long *arrayLong = NULL;
     size_t len;
-
-    short res = 0;
-
-    long *arrayLong;
+    short res;
 
     while (fgets(line, sizeof(line), f)) {
 
@@ -290,14 +289,14 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *skill_list, c
 
             modalBestiary->creatures[index]->pv_max = my_strToInt(line + 7, &res);
             if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strToInt() -> \"pv_min=\"\n");
+                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strToInt() -> \"pv_max=\"\n");
                 freeBestiary(modalBestiary);
                 fclose(f);
                 return EXIT_FAILURE;
             }
         }
 
-        else if (strncmp(line, "attaque_minimale=", 17) == 0) {
+        else if (strncmp(line, "attaque_min=", 17) == 0) {
             line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
             if (line[0] == '\0') continue; // ligne vide
 
@@ -310,7 +309,7 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *skill_list, c
             }
         }
         
-        else if (strncmp(line, "attaque_maximale=", 17) == 0) {
+        else if (strncmp(line, "attaque_max=", 17) == 0) {
             line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
             if (line[0] == '\0') continue; // ligne vide
 

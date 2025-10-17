@@ -18,7 +18,7 @@ char *enumEffectToChar(Effets type) {
     }
 }
 
-Effets charToEnumEffectToChar(char *type) {
+Effets charToEnumEffect(char *type) {
     for (size_t effet = 0; effet < LENGTH_EffetsSpeciaux; effet++) {
         if (strcmp(type, enumEffectToChar((Effets) effet)) == 0)
             return (Effets) effet;
