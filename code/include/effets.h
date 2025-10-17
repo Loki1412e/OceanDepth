@@ -17,4 +17,7 @@
     ListeEtat initEmptyListeEtat();
     void freeListeEtat(ListeEtat *listeEtat);
 
+    Etat duplicateEtat(Etat *modal);
+    ListeEtat duplicateListeEtat(ListeEtat *modal, short *res);
+
 #endif

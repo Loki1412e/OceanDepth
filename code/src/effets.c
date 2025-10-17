@@ -26,11 +26,51 @@ Effets charToEnumEffectToChar(char *type) {
     return AUCUN;
 }
 
+
 ListeEtat initEmptyListeEtat() {
     return (ListeEtat) {
         .etats = NULL,
         .longueur = 0
     };
+}
+
+Etat duplicateEtat(Etat *modal) {
+    return (Etat) {
+        .effet = modal->effet,
+        .estPermanent = modal->estPermanent,
+        .duree_zone = modal->duree_zone,
+        .duree_combat = modal->duree_combat
+    };
+}
+
+// Return:
+// - `ListeEtat`
+// - `*res` = `EXIT_FAILURE` ou `EXIT_SUCCESS`
+ListeEtat duplicateListeEtat(ListeEtat *modal, short *res) {
+    if (!modal->etats || modal->longueur == 0) {
+        *res = EXIT_FAILURE;
+        return initEmptyListeEtat();
+    }
+
+    *res = EXIT_SUCCESS;
+    
+    ListeEtat liste = {
+        .etats = NULL,
+        .longueur = modal->longueur
+    };
+    
+    liste.etats = calloc(modal->longueur, sizeof(Etat));
+    if (!liste.etats) {
+        fprintf(stderr, "Erreur: duplicateListeEtat(): Allocation mémoire calloc\n");
+        *res = EXIT_FAILURE;
+        return liste;
+    }
+
+    for (size_t i = 0; i < modal->longueur; i++) {
+        liste.etats[i] = duplicateEtat(&modal->etats[i]);
+    }
+
+    return liste;
 }
 
 // Note : La gestion de la mémoire (realloc) est simplifiée ici.
