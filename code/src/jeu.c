@@ -14,14 +14,21 @@ int runGame(Sauvegarde *actualSave) {
     Plongeur *diver = actualSave->diver;
     Bestiaire *modalBestiary = NULL;
     Bestiaire *bestiary = NULL;
-    ListeCompetence skills;
+    ListeCompetence skill_list;
 
     short res;
 
     /*===== Init Allocation ====*/
 
-    modalBestiary = initModalBestiary();
+    skill_list = initSkillsList(&res);
+    if (res == EXIT_FAILURE) {
+        fprintf(stderr, "Erreur lors du chargement des compétences.\n");
+        return EXIT_FAILURE;
+    }
+
+    modalBestiary = initModalBestiary(&skill_list);
     if (!modalBestiary) {
+        freeListeCompetence(&skill_list);
         fprintf(stderr, "Erreur lors du chargement du bestiaire modèle.\n");
         return EXIT_FAILURE;
     }
@@ -30,15 +37,7 @@ int runGame(Sauvegarde *actualSave) {
     if (!bestiary) {
         fprintf(stderr, "Erreur lors de la création du bestiaire.\n");
         freeBestiary(modalBestiary);
-        return EXIT_FAILURE;
-    }
-
-    skills = initSkillsList(&res);
-    if (res == EXIT_FAILURE) {
-        fprintf(stderr, "Erreur lors du chargement des compétences.\n");
-        freeListeCompetence(&skills);
-        freeBestiary(modalBestiary);
-        freeBestiary(bestiary);
+        freeListeCompetence(&skill_list);
         return EXIT_FAILURE;
     }
 
@@ -55,8 +54,12 @@ int runGame(Sauvegarde *actualSave) {
         size_t longueur_creatures = 2;
 
         for (size_t i = 0; i < longueur_creatures; i++) {
-            if (generateCreatureInBestiary(modalBestiary, bestiary)) return EXIT_FAILURE;
+            if (generateCreatureInBestiary(modalBestiary, bestiary)) {
+                runProgram = false;
+                break;
+            }
         }
+        if (!runProgram) break;
 
         diver->profondeur = 1;
 
@@ -67,9 +70,9 @@ int runGame(Sauvegarde *actualSave) {
         
         printBestiary(bestiary);
         
-        sleep(5);//debug
+        sleep(8);//debug
 
-        combat(diver, bestiary->creatures, bestiary->longueur_creatures);
+        // combat(diver, bestiary->creatures, bestiary->longueur_creatures);
 
         freeBestiaryContent(bestiary);
 
@@ -80,6 +83,7 @@ int runGame(Sauvegarde *actualSave) {
     
     freeBestiary(bestiary);
     freeBestiary(modalBestiary);
+    freeListeCompetence(&skill_list);
 
     return -1;
     

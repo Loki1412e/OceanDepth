@@ -239,6 +239,7 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
             }
 
             skills[index].effet = charToEnumEffect(buff);
+            free(buff);
         }
         
         else if (strncmp(line, "duree_effet=", 12) == 0) {
@@ -284,12 +285,14 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
 // - `ListeCompetence`
 // - `*res` = `EXIT_FAILURE` ou `EXIT_SUCCESS`
 ListeCompetence initSkillsList(short *res) {
-    if (!res) return initEmptySkillList();
+    if (!res) {
+        return initEmptySkillList();
+    }
     *res = EXIT_SUCCESS;
 
-    size_t count_all_unique_model = confCountAllUniqueId("config/bestiaire/competences.conf");
-    if (!count_all_unique_model) {
-        *res = EXIT_FAILURE;
+    size_t count_all_unique_model = confCountAllUniqueId("config/bestiaire/competences.conf", res);
+    if (*res == EXIT_FAILURE) {
+        fprintf(stderr, "Erreur: initSkillsList(): confCountAllUniqueId()\n");
         return initEmptySkillList();
     }
 
@@ -298,15 +301,16 @@ ListeCompetence initSkillsList(short *res) {
     skill_list.competences = calloc(count_all_unique_model, sizeof(Competence));
     if (!skill_list.competences) {
         fprintf(stderr, "Erreur: initSkillsList(): Allocation mémoire competences\n");
-        skill_list.longueur = 0;
         freeListeCompetence(&skill_list);
         *res = EXIT_FAILURE;
         return skill_list;
     }
+    skill_list.longueur = count_all_unique_model;
 
     // Initialisation du Bestiaire Model
 
     if (setListeCompetenceFromConf(&skill_list, "config/bestiaire/competences.conf")) {
+        fprintf(stderr, "Erreur: initSkillsList(): setListeCompetenceFromConf()\n");
         freeListeCompetence(&skill_list);
         *res = EXIT_FAILURE;
         return skill_list;
@@ -325,8 +329,8 @@ void freeCompetence(Competence *competence) {
     }
     
     if (competence->description) {
-        free(competence->nom);
-        competence->nom = NULL;
+        free(competence->description);
+        competence->description = NULL;
     }
 }
 
@@ -339,8 +343,8 @@ void freeListeCompetence(ListeCompetence *liste_competences) {
             freeCompetence(&liste_competences->competences[i]);
         
         free(liste_competences->competences);
+        liste_competences->competences = NULL;
     }
     
-    liste_competences->competences = NULL;
     liste_competences->longueur = 0;
 }
