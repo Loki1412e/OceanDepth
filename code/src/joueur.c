@@ -65,10 +65,10 @@ int setDiverFromConf(Plongeur *diver) {
         if (strncmp(line, "fatigue_max=", 12) == 0)
             diver->fatigue_max = atoi(line + 12);
 
-        else if (strncmp(line, "attaque_minimale=", 17) == 0)
+        else if (strncmp(line, "attaque_min=", 17) == 0)
             diver->attaque_min = atoi(line + 17);
         
-        else if (strncmp(line, "attaque_maximale=", 17) == 0)
+        else if (strncmp(line, "attaque_max=", 17) == 0)
             diver->attaque_max = atoi(line + 17);
         
         else if (strncmp(line, "defense=", 8) == 0)

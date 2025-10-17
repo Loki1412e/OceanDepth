@@ -108,6 +108,168 @@ ListeCompetence duplicateListeCompetence(ListeCompetence *modal, short *res) {
     
 // }
 
+int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
+    if (!skill_list || !skill_list->competences || skill_list->longueur == 0 || !path)
+        return EXIT_FAILURE;
+
+    FILE *f = fopen(path, "r");
+    if (f == NULL) {
+        fprintf(stderr, "Erreur: setListeCompetenceFromConf(): Impossible d'ouvrir le fichier de configuration \"%s\"\n", path);
+        return EXIT_FAILURE;
+    }
+
+    Competence *skills = skill_list->competences;
+
+    char line[512];
+    size_t length = 0, index = 0;
+
+    char *buff = NULL;
+    short res;
+
+    while (fgets(line, sizeof(line), f)) {
+
+        if (strncmp(line, "id=", 3) == 0) {
+            length++;
+            index = length - 1;
+
+            // Si dépassement alors on arrete de load mais on garde la conf actuelle
+            if (index >= skill_list->longueur) {
+                fprintf(stderr, "Warning: setListeCompetenceFromConf(): index %zu hors des limites de creatures\n", index);
+                break;
+            }
+        }
+         
+        if (strncmp(line, "nom=", 4) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            skills[index].nom = my_strdup(line + 4);
+            if (!skills[index].nom) {
+                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strdup() -> \"nom=\"\n");
+                freeListeCompetence(skill_list);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+         
+        if (strncmp(line, "description=", 12) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            skills[index].description = my_strdup(line + 12);
+            if (!skills[index].nom) {
+                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strdup() -> \"description=\"\n");
+                freeListeCompetence(skill_list);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+
+        else if (strncmp(line, "cooldown_max=", 13) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            skills[index].cooldown_max = my_strToInt(line + 13, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"cooldown_max=\"\n");
+                freeListeCompetence(skill_list);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+        
+        else if (strncmp(line, "cooldown_restant=", 17) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            skills[index].cooldown_restant = my_strToInt(line + 17, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"cooldown_restant=\"\n");
+                freeListeCompetence(skill_list);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+
+        else if (strncmp(line, "multiplicateur_degats=", 22) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            skills[index].multiplicateur_degats = my_strToInt(line + 22, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"multiplicateur_degats=\"\n");
+                freeListeCompetence(skill_list);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+        
+        else if (strncmp(line, "chance_effet=", 13) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            skills[index].chance_effet = my_strToInt(line + 13, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"chance_effet=\"\n");
+                freeListeCompetence(skill_list);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+        
+        else if (strncmp(line, "effet=", 6) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            buff = my_strdup(line + 6);
+            if (!buff) {
+                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strdup() -> \"effet=\"\n");
+                freeListeCompetence(skill_list);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+
+            skills[index].effet = charToEnumEffect(buff);
+        }
+        
+        else if (strncmp(line, "duree_effet=", 12) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            skills[index].duree_effet = my_strToInt(line + 12, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"duree_effet=\"\n");
+                freeListeCompetence(skill_list);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+        
+        else if (strncmp(line, "sur_soi=", 8) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            skills[index].sur_soi = my_strToInt(line + 8, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"sur_soi=\"\n");
+                freeListeCompetence(skill_list);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+    }
+
+    if (skill_list->longueur < length) {
+        fprintf(stderr, "Erreur: setListeCompetenceFromConf(): longueur (%zu) < length (%zu)\n", skill_list->longueur, length);
+        freeListeCompetence(skill_list);
+        fclose(f);
+        return EXIT_FAILURE;
+    }
+
+    fclose(f);
+    return EXIT_SUCCESS;
+}
+
 
 void freeCompetence(Competence *competence) {
     if (!competence) return;
