@@ -12,7 +12,7 @@
     int peutAttaquer(ListeEtat *listeEtat);
     int calculerDefenseEffet(int defenseBase, ListeEtat *etats);
     int calculerDegatsInfligesEffet(ListeEtat *etatsCible, int degatsBase);
-    int calculerDegatsSubiDebutTourEffet(ListeEtat *etats, int *pv, int maxPv, int defense);
+    int calculerDegatsSubiDebutTourEffet(ListeEtat *etats, int *pv, int maxPv, int defense, int *oxygene, int maxOxygene);
 
     ListeEtat initEmptyListeEtat();
     void freeListeEtat(ListeEtat *listeEtat);

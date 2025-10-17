@@ -10,13 +10,14 @@ CC_LIN_ARM64	= aarch64-linux-gnu-gcc
 CC_WIN_X86_64	= x86_64-w64-mingw32-gcc
 WINDRES			= x86_64-w64-mingw32-windres
 
-CFLAGS        = -Wall -Wextra -O2 -std=c99
+CFLAGS  = -Wall -Wextra -O2 -std=c99
+LDFLAGS	= -lm
 
-TARGET        = oceandepth
-SRCDIR        = src
-OUTDIR        = output
+TARGET	= oceandepth
+SRCDIR  = src
+OUTDIR  = output
 
-SOURCES       = $(wildcard $(SRCDIR)/*.c)
+SOURCES = $(wildcard $(SRCDIR)/*.c)
 
 # --- Plateforme Linux ---
 TARGET_LINUX_x86_64 = $(TARGET)_linux_x86_64
@@ -35,18 +36,18 @@ all: linux_x86_64 linux_arm64 win_x86_64
 linux_x86_64:
 	@echo "🐧 Compilation Linux x86_64..."
 	@mkdir -p $(OUTDIR)
-	$(CC_LIN_X86_64) $(SOURCES) -o $(OUTDIR)/$(TARGET_LINUX_x86_64) $(CFLAGS)
+	$(CC_LIN_X86_64) $(SOURCES) -o $(OUTDIR)/$(TARGET_LINUX_x86_64) $(CFLAGS) $(LDFLAGS)
 
 linux_arm64:
 	@echo "🐠 Compilation Linux arm64..."
 	@mkdir -p $(OUTDIR)
-	$(CC_LIN_ARM64) $(SOURCES) -o $(OUTDIR)/$(TARGET_LINUX_arm64) $(CFLAGS)
+	$(CC_LIN_ARM64) $(SOURCES) -o $(OUTDIR)/$(TARGET_LINUX_arm64) $(CFLAGS) $(LDFLAGS)
 
 # --- Compilation Windows x86_64 avec icône ---
 win_x86_64: $(ICONRES)
 	@echo "💠 Compilation Windows x86-64 avec icône..."
 	@mkdir -p $(OUTDIR)
-	$(CC_WIN_X86_64) $(SOURCES) $(ICONRES) -o $(OUTDIR)/$(TARGET_WIN64) $(CFLAGS)
+	$(CC_WIN_X86_64) $(SOURCES) $(ICONRES) -o $(OUTDIR)/$(TARGET_WIN64) $(CFLAGS) $(LDFLAGS)
 
 # --- Compilation du fichier .rc en .o ---
 $(ICONRES): $(RCFILE)

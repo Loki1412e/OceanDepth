@@ -113,7 +113,7 @@ void printListeEtat(ListeEtat etats) {
 }
 
 void printCompetence(Competence competence) {
-    printf("Nom de la compétence (id=%lu) : %s\n", competence.nom, competence.id);
+    printf("Nom de la compétence (id=%u) : %s\n", competence.id, competence.nom);
     printf("Description          : %s\n", competence.description);
     printf("Cooldown max         : %d tours\n", competence.cooldown_max);
     printf("Cooldown restant     : %d tours\n", competence.cooldown_restant);
@@ -154,7 +154,7 @@ void printCreature(CreatureMarine *creature) {
     printListeEtat(creature->liste_etats);
     printListeCompetence(creature->liste_competences);
 
-    printf("Rarete: %s\n", charToEnumRarete(creature->rarete));
+    printf("Rarete: %s\n", enumRareteToChar(creature->rarete));
 }
 
 

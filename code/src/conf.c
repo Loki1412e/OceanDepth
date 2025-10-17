@@ -14,10 +14,10 @@ char *enumRareteToChar(Rarete type) {
 
 Rarete charToEnumRarete(char *type) {
     for (size_t rarete = 0; rarete < LENGTH_Rarete; rarete++) {
-        if (strcmp(type, enumEffectToChar((Rarete) rarete)) == 0)
+        if (strcmp(type, enumRareteToChar((Rarete) rarete)) == 0)
             return (Rarete) rarete;
     }
-    return AUCUN;
+    return DESACTIVE;
 }
 
 unsigned rareteToPoids(Rarete rarete) {
