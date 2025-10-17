@@ -3,7 +3,8 @@
 
     #include "global.h"
     
+    unsigned rareteToPoids(RARETE rarete);
     size_t confCountAllUniqueId(char *path);
-    unsigned *parseNumberList(int index, char *line, size_t *length, char *errorOrigin, short *errorCode);
+    long *parseLongList(int index, char *line, size_t *length, char *prefix, short *res);
 
 #endif

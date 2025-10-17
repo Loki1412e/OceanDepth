@@ -1,6 +1,18 @@
 #include "../include/conf.h"
 
 
+unsigned rareteToPoids(RARETE rarete) {
+    switch (rarete) {
+        case COMMUN: return 80;
+        case PEU_COMMUN: return 40;
+        case RARE: return 15;
+        case TRES_RARE: return 5;
+        case ABERANT: return 1;        
+        default: return 0;
+    }
+}
+
+
 size_t confCountAllUniqueId(char *path) {
     size_t count = 0;
     char line[256];
@@ -19,72 +31,83 @@ size_t confCountAllUniqueId(char *path) {
     return count;
 }
 
+// Return :
+// - `long list`
+// - `*res` = `EXIT_FAILURE` / `EXIT_SUCCESS` / `-1` (success, vide)
+long *parseLongList(int index, char *line, size_t *length, char *prefix, short *res) {
+    if (!line || !length || !prefix || !res) return NULL;
 
-unsigned *parseNumberList(int index, char *line, size_t *length, char *errorOrigin, short *errorCode) {
+    // Retirer '\n' s'il existe
+    line[strcspn(line, "\n")] = 0;
 
-    int prefixLen = strlen(errorOrigin) + 1;
-    unsigned *depth = NULL;
-    *errorCode = 0;
-
-    char profondeur_copy[512];
-    strncpy(profondeur_copy, line + prefixLen, sizeof(profondeur_copy) - 1);
-    profondeur_copy[sizeof(profondeur_copy) - 1] = '\0';
+    *res = EXIT_SUCCESS;
     
+    long *list = NULL;
     *length = 0;
+    size_t indice = 0;
 
+    int prefixLen = strlen(prefix);
+
+    char buff[512];
+    char *token = NULL;
+
+    // Si il n'y a rien apres le préfixe -> return -1 (vide)
     if (strlen(line + prefixLen) == 0) {
-        *errorCode = -1;
+        *res = -1;
+        return NULL;
+    }
+    
+    // Init buff
+    strncpy(buff, line + prefixLen, sizeof(buff) - 1);
+    buff[sizeof(buff) - 1] = '\0';
+
+    // Compter le nombre de token
+    *length = my_countStrTokElem(buff, ",", res);
+    if (*res == EXIT_FAILURE) {
+        fprintf(stderr, "Erreur: parseLongList(): my_countStrTokElem()\n");
         return NULL;
     }
 
-    char *token = strtok(profondeur_copy, ",");
+    // Allocation
+    list = calloc(*length, sizeof(long));
+    if (list == NULL) {
+        fprintf(stderr, "Erreur: \"%s\" -> parseLongList(): Allocation mémoire bestiary->models[%d]->profondeur_apparition\n", prefix, index);
+        *res = EXIT_FAILURE;
+        return NULL;
+    }
+
+    // Init list
+
+    token = strtok(buff, ",");
     if (token == NULL) {
-        fprintf(stderr, "Erreur: %s -> parseNumberList(): token == NULL #1\n", errorOrigin);
+        fprintf(stderr, "Erreur: parseLongList(): first token == NULL\n");
+        free(list);
+        *res = EXIT_FAILURE;
         return NULL;
     }
 
-    int count = 0;
-    
     while (token != NULL) {
-        char *endptr;
-        long val = strtol(token, &endptr, 10); // renvoie la valeur numérique et met la str dans *endptr (radix = base 10, decimal)
-
-        if (endptr != token && val >= 0) count++;
-
-        token = strtok(NULL, ",");
-    }
-
-    if (count == 0) {
-        fprintf(stderr, "Erreur: %s -> parseNumberList(): Pas de conversion, chaîne non numérique au début\n", errorOrigin);
-        return NULL;
-    }
-    
-    // ex: 0,1,2
-    *length = count; // doit etre initialisé à 0 si vide
-    
-    depth = calloc(count, sizeof(unsigned));
-    if (depth == NULL) {
-        fprintf(stderr, "Erreur: %s -> parseNumberList(): Allocation mémoire bestiary->models[%d]->profondeur_apparition\n", errorOrigin, index);
-        return NULL;
-    }
-
-    strncpy(profondeur_copy, line + prefixLen, sizeof(profondeur_copy) - 1);
-    token = strtok(profondeur_copy, ",");
-    if (token == NULL) {
-        fprintf(stderr, "Erreur: %s -> parseNumberList(): token == NULL #1\n", errorOrigin);
-        return NULL;
-    }
-
-    count = 0;
-    
-    while (token != NULL) {
-        char *endptr;
-        long val = strtol(token, &endptr, 10); // renvoie la valeur numérique et met la str dans *endptr (radix = base 10, decimal)
-
-        if (endptr != token && val >= 0) depth[count++] = (unsigned) val;
+        if (indice >= *length) {
+            fprintf(stderr, "Warning: parseLongList(): nb de token > my_countStrTokElem()\n");
+            break;
+        }
         
+        list[indice] = my_strToInt(token, res);
+
+        if (*res == EXIT_FAILURE) {
+            fprintf(stderr, "Erreur: parseLongList(): \"%s\" n'est pas une valeur numérique valide\n", token);
+            free(list);
+            return NULL;
+        }
+
+        indice++;
         token = strtok(NULL, ",");
     }
 
-    return depth;
+    if (indice < *length) {
+        fprintf(stderr, "Warning: parseLongList(): nb de token < my_countStrTokElem()\n");
+        *length = indice;
+    }
+
+    return list;
 }
