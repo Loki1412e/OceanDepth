@@ -7,6 +7,7 @@
     #include <errno.h>
     #include <stdlib.h>
     #include <string.h>
+    #include <math.h>
     #include <time.h>
 
     #ifdef _WIN32
@@ -34,8 +35,23 @@
 
     #define SAVE_DIR "save"
 
+    #define RARETE_POIDS_MAX 100
+    #define RARETE_BASE_EXP 1.5
+
 
     /* Enum */
+
+    typedef enum {
+        DESACTIVE,
+        COMMUN,
+        PEU_COMMUN,
+        RARE,
+        TRES_RARE,
+        ABERANT,
+        // Suite ...
+        LENGTH_RARETE
+    } RARETE;
+
 
     typedef enum {
         AUCUN,
@@ -85,18 +101,10 @@
         Competence *competences;
         size_t longueur;
     } ListeCompetence;
-
-
-    typedef struct {
-        unsigned *profondeurs;
-        size_t longueur_profondeurs;
-        unsigned *taux; // calculé avec niveau d'importance en comparaison avec les autres
-        size_t longueur_taux;
-    } ApparitionCreature;
     
 
     typedef struct {
-        unsigned id; // identifiant unique pour cibler
+        unsigned id;
         char *nom;
         int pv_min;
         int pv_max;
@@ -105,16 +113,12 @@
         int attaque_max;
         int defense;
         int vitesse;
-        // On va attribuer des etats a partir de compétences ce sera mieux
-        // ---> // Effets effet_special; // voir Effets -> a modifier mettre liste d'effets speciaux
         ListeEtat liste_etats;
         ListeCompetence liste_competences;
-        ApparitionCreature *apparition;
+        RARETE rarete;
     } CreatureMarine;
 
     typedef struct {
-        // CreatureMarine **models;
-        // size_t longueur_models;
         CreatureMarine **creatures;
         size_t longueur_creatures;
     } Bestiaire;

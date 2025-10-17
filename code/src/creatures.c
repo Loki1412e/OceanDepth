@@ -3,130 +3,118 @@
 
 Bestiaire *initModalBestiary();
 Bestiaire *initEmptyBestiary();
-int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, unsigned depth_level);
-int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, char *type_name, unsigned depth_level);
+int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary);
+int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, unsigned idConf);
 void freeBestiary(Bestiaire *bestiary);
 void freeBestiaryContent(Bestiaire *bestiary);
 void freeCreatures(CreatureMarine **creatures, size_t length);
 void freeCreature(CreatureMarine *creature);
 
 void sortCreaturesBySpeed(CreatureMarine **creatures, size_t nb_creatures);
-int setBestiaryFromConf(Bestiaire *modalBestiary);
-int applyModel(CreatureMarine *model, CreatureMarine *creature);
+int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *skill_list, char *path);
+CreatureMarine *duplicateCreature(CreatureMarine *model);
 
 
-int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, unsigned depth_level) {
+int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary) {
     if (!modalBestiary || modalBestiary->longueur_creatures == 0 || !bestiary) {
-        fprintf(stderr, "Erreur: generateCreatureInBestiary(): modalBestiary ou modalBestiary->longueur_creatures ou bestiary n'est pas défini.");
+        fprintf(stderr, "Erreur: generateCreatureInBestiary(): modalBestiary ou modalBestiary->longueur_creatures ou bestiary n'est pas défini.\n");
         return EXIT_FAILURE;
     }
 
-    unsigned total = 0;
+    unsigned totalPoids = 0;
 
-    // Calcul du poids total (somme des taux_apparition valides)
+    // Calcul du poids total basé sur la rareté de chaque créature
     for (size_t i = 0; i < modalBestiary->longueur_creatures; i++) {
-        CreatureMarine *model = modalBestiary->creatures[i];
-        if (!model || !model->apparition) continue;
+        CreatureMarine *creature = modalBestiary->creatures[i];
+        if (!creature) continue;
 
-        for (size_t j = 0; j < model->apparition->longueur_profondeurs; j++) {
-            if (model->apparition->profondeurs[j] == depth_level) {
-                total += model->apparition->taux[j];
-            }
-        }
+        totalPoids += rareteToPoids(creature->rarete);  // On additionne le poids de rareté
     }
 
-    if (total == 0) {
-        fprintf(stderr, "Erreur: generateCreatureInBestiary(): Aucune creature dispo a la profondeur %d.", depth_level);
+    if (totalPoids == 0) {
+        fprintf(stderr, "Erreur: generateCreatureInBestiary(): Aucune créature disponible avec une rareté valide.\n");
         return EXIT_FAILURE;
     }
 
-    unsigned tirage = random_int(0, total - 1); // de 0 à total - 1 = total options
-    unsigned cumul = 0;
+    // Tirage pondéré basé sur la rareté
+    unsigned tirage = random_int(0, totalPoids - 1);  // tirage entre 0 et totalPoids - 1
+    unsigned cumulPoids = 0;
 
     for (size_t i = 0; i < modalBestiary->longueur_creatures; i++) {
-        CreatureMarine *model = modalBestiary->creatures[i];
-        if (!model || !model->apparition) continue;
+        CreatureMarine *creature = modalBestiary->creatures[i];
+        if (!creature) continue;
 
-        for (size_t j = 0; j < model->apparition->longueur_profondeurs; j++) {
-            if (model->apparition->profondeurs[j] == depth_level) {
-                cumul += model->apparition->taux[j];
-                if (tirage < cumul) {
-                    
-                    // On l'ajoute dans le Bestiaire
-                    if (addCreatureInBestiary(modalBestiary, bestiary, model->nom, depth_level)) return EXIT_FAILURE;
+        // Poids de rareté de cette créature
+        unsigned poidsRarete = rareteToPoids(creature->rarete);
+        cumulPoids += poidsRarete;
 
-                    // On trie le Bestiaire
-                    sortCreaturesBySpeed(bestiary->creatures, bestiary->longueur_creatures);
-
-                    return EXIT_SUCCESS;
-                }
+        // Si le tirage est inférieur au cumul des poids, la créature est sélectionnée
+        if (tirage < cumulPoids) {
+            // On l'ajoute dans le Bestiaire
+            if (addCreatureInBestiary(modalBestiary, bestiary, creature->nom)) {
+                return EXIT_FAILURE;
             }
+
+            // On trie le Bestiaire par vitesse (ou autre critère si nécessaire)
+            sortCreaturesBySpeed(bestiary->creatures, bestiary->longueur_creatures);
+
+            return EXIT_SUCCESS;
         }
     }
 
-    fprintf(stderr, "Erreur: generateCreatureInBestiary(): Erreur pas censé arrivé ??");
+    // Si on arrive ici, c'est une erreur imprévue
+    fprintf(stderr, "Erreur: generateCreatureInBestiary(): Pas de créature choisie, erreur imprévue.\n");
     return EXIT_FAILURE;
 }
 
 
-int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, char *type_name, unsigned depth_level) {
+int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, unsigned idConf) {
+    if (!modalBestiary || !modalBestiary->creatures || modalBestiary->longueur_creatures == 0 || !bestiary)
+        return NULL;
 
     short existInModel = 0;
     CreatureMarine **tmp = NULL;
-    unsigned index, max_id;
+    size_t index;
 
     for (size_t i = 0; i < modalBestiary->longueur_creatures; i++) {
-        if (strcmp(modalBestiary->creatures[i]->nom, type_name) == 0) {
-            for (size_t j = 0; j < modalBestiary->creatures[i]->apparition->longueur_profondeurs; j++) {
-                if (modalBestiary->creatures[i]->apparition->profondeurs[j] <= depth_level) {
+        if (modalBestiary->creatures[i]->id == idConf) {
+
+            existInModel = 1;
+
+            if (bestiary->longueur_creatures == NULL)
+                tmp = calloc((bestiary->longueur_creatures + 1), sizeof(CreatureMarine*));
+
+            else
+                tmp = realloc(bestiary->creatures, sizeof(CreatureMarine*) * (bestiary->longueur_creatures + 1));
                     
-                    existInModel = 1;
-
-                    tmp = bestiary->longueur_creatures ?
-                            realloc(bestiary->creatures, sizeof(CreatureMarine*) * (bestiary->longueur_creatures + 1)) :
-                            calloc((bestiary->longueur_creatures + 1), sizeof(CreatureMarine*));
-                    if (tmp == NULL) {
-                        fprintf(stderr, "Erreur: addCreatureInBestiary(): Echec %s\n", bestiary->longueur_creatures ? "realloc" : "calloc");
-                        return EXIT_FAILURE;
-                    }
-                    bestiary->creatures = tmp;
-                    index = bestiary->longueur_creatures;
-                    bestiary->longueur_creatures++;
-
-                    bestiary->creatures[index] = calloc(1, sizeof(CreatureMarine));
-                    if (bestiary->creatures[index] == NULL) {
-                        fprintf(stderr, "Erreur: addCreatureInBestiary(): Allocation mémoire creature\n");
-                        bestiary->longueur_creatures--;
-                        return EXIT_FAILURE;
-                    }
-
-                    // Alloués dans applyModel
-                    bestiary->creatures[index]->nom = NULL;
-                    bestiary->creatures[index]->apparition = NULL;
-                    bestiary->creatures[index]->liste_etats.etats = NULL;
-                    bestiary->creatures[index]->liste_etats.longueur = 0;
-
-                    if (applyModel(modalBestiary->creatures[i], bestiary->creatures[index])) {
-                        freeCreature(bestiary->creatures[index]);
-                        bestiary->creatures[index] = NULL;
-                        bestiary->longueur_creatures--;
-                        return EXIT_FAILURE;
-                    }
-
-                    // Attribution d'un id unique
-                    max_id = 0;
-                    for (unsigned k = 0; k < index; k++) {
-                        if (bestiary->creatures[k]->id > max_id)
-                            max_id = bestiary->creatures[k]->id;
-                    }
-                    bestiary->creatures[index]->id = max_id + 1;
-                }
+            if (tmp == NULL) {
+                fprintf(stderr, "Erreur: addCreatureInBestiary(): Echec %s\n", bestiary->longueur_creatures ? "realloc" : "calloc");
+                return EXIT_FAILURE;
             }
+            bestiary->creatures = tmp;
+            index = bestiary->longueur_creatures;
+            bestiary->longueur_creatures++;
+
+            bestiary->creatures[index] = duplicateCreature(modalBestiary->creatures[i]);
+            if (bestiary->creatures[index] == NULL) {
+                fprintf(stderr, "Erreur: addCreatureInBestiary(): Allocation mémoire creature\n");
+                bestiary->longueur_creatures--;
+                return EXIT_FAILURE;
+            }
+
+            // Attribution d'un id unique
+            // max_id = 0;
+            // for (size_t j = 0; j < index; j++) {
+            //     if (bestiary->creatures[j]->id > max_id)
+            //         max_id = bestiary->creatures[j]->id;
+            // }
+            // bestiary->creatures[index]->id = max_id + 1;
+            bestiary->creatures[index]->id = index;
         }
     }
 
     if (!existInModel) {
-        fprintf(stderr, "Erreur: addCreatureInBestiary(): Aucune creature ne correspond (type_name=\"%s\" / depth_level=%hu)\n", type_name, depth_level);
+        fprintf(stderr, "Erreur: addCreatureInBestiary(): Aucune creature dans le model ne correspond (id=%hu)\n", idConf);
         return -1;
     }
 
@@ -134,33 +122,34 @@ int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, char *t
 }
 
 
+CreatureMarine *initEmptyCreature() {
+    CreatureMarine *creature = calloc(1, sizeof(CreatureMarine));
+    if (!creature) {
+        fprintf(stderr, "Erreur: initEmptyCreature(): Allocation mémoire\n");
+        return NULL;
+    }
+    return creature;
+}
+
+
 Bestiaire *initEmptyBestiary() {
-
-    // Allocation mémoire
-
     Bestiaire *bestiary = calloc(1, sizeof(Bestiaire));
     if (bestiary == NULL) {
         fprintf(stderr, "Erreur: initEmptyBestiary(): Allocation mémoire bestiary\n");
         return NULL;
     }
-
-    // Initialisation du Bestiaire Vide
-    
-    bestiary->longueur_creatures = 0;
-    bestiary->creatures = NULL;
-    
     return bestiary;
 }
 
 
-Bestiaire *initModalBestiary() {
+Bestiaire *initModalBestiary(ListeCompetence *skill_list) {
     
     unsigned count_all_unique_model = confCountAllUniqueId("config/bestiaire/creatures.conf");
     if (!count_all_unique_model) return NULL;
 
-    // Allocation mémoire
+    // Allocation mémoire -> calloc pour tout init 0 ou NULL
 
-    Bestiaire *modalBestiary = calloc(1, sizeof(Bestiaire));
+    Bestiaire *modalBestiary = initEmptyBestiary();
     if (modalBestiary == NULL) {
         fprintf(stderr, "Erreur: initModalBestiary(): Allocation mémoire modalBestiary\n");
         return NULL;
@@ -176,41 +165,26 @@ Bestiaire *initModalBestiary() {
     }
     
     for (size_t i = 0; i < count_all_unique_model; i++) {
-        
-        modalBestiary->creatures[i] = calloc(1, sizeof(CreatureMarine));
+        modalBestiary->creatures[i] = initEmptyCreature();
         if (modalBestiary->creatures[i] == NULL) {
+            fprintf(stderr, "Erreur: initBestiary(): Allocation mémoire modalBestiary->creatures\n");
             modalBestiary->longueur_creatures = i;
             freeBestiary(modalBestiary);
-            fprintf(stderr, "Erreur: initBestiary(): Allocation mémoire modalBestiary->creatures\n");
             return NULL;
         }
-
-        modalBestiary->creatures[i]->apparition = calloc(1, sizeof(ApparitionCreature));
-        if (modalBestiary->creatures[i]->apparition == NULL) {
-            free(modalBestiary->creatures[i]);
-            modalBestiary->longueur_creatures = i;
-            freeBestiary(modalBestiary);
-            fprintf(stderr, "Erreur: initBestiary(): Allocation mémoire modalBestiary->creatures\n");
-            return NULL;
-        }
-
-        modalBestiary->creatures[i]->liste_etats = initEmptyListeEtat();
-        modalBestiary->creatures[i]->nom = NULL;
-        modalBestiary->creatures[i]->apparition->profondeurs = NULL;
-        modalBestiary->creatures[i]->apparition->taux = NULL;
     }
 
     // Initialisation du Bestiaire Model
-    
-    if (setBestiaryFromConf(modalBestiary)) {
+
+    if (setBestiaryFromConf(modalBestiary, skill_list, "config/bestiaire/creatures.conf")) {
         freeBestiary(modalBestiary);
         return NULL;
     }
 
     for (size_t i = 0; i < count_all_unique_model; i++) {
+        // Init des creatures
+        // modalBestiary->creatures[i]->id = 0; -> deja à 0 avec calloc
         modalBestiary->creatures[i]->pv = modalBestiary->creatures[i]->pv_max;
-        // modalBestiary->creatures[i]->est_vivant = 1; // si pv > 0 alors est vivant
-        modalBestiary->creatures[i]->id = 0;
     }
     
     return modalBestiary;
@@ -218,6 +192,7 @@ Bestiaire *initModalBestiary() {
 
 
 // trier par vitesse decroissant (du plus au moins rapide)
+// A voir pour remplacer par un qsort()
 void sortCreaturesBySpeed(CreatureMarine **creatures, size_t nb_creatures) {
     CreatureMarine *tmp = NULL;
     for (size_t i = 0; i < nb_creatures - 1; i++) {
@@ -232,111 +207,234 @@ void sortCreaturesBySpeed(CreatureMarine **creatures, size_t nb_creatures) {
 }
 
 
-int setBestiaryFromConf(Bestiaire *modalBestiary) {
-    FILE *f = fopen("config/bestiaire/creatures.conf", "r");
-    if (f == NULL) return EXIT_FAILURE;
+int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *skill_list, char *path) {
+    if (!modalBestiary || !modalBestiary->creatures || modalBestiary->longueur_creatures == 0)
+        return EXIT_FAILURE;
+
+    FILE *f = fopen(path, "r");
+    if (f == NULL) {
+        fprintf(stderr, "Erreur: setBestiaryFromConf(): Impossible d'ouvrir le fichier de configuration \"%s\"\n", path);
+        return EXIT_FAILURE;
+    }
 
     char line[512];
     size_t length = 0, index = 0;
     size_t len;
 
-    short errorCode = 0;
+    short res = 0;
+
+    long *arrayLong;
 
     while (fgets(line, sizeof(line), f)) {
-         
-        if (strncmp(line, "nom=", 9) == 0) {
+
+        if (strncmp(line, "id=", 3) == 0) {
             length++;
             index = length - 1;
-            
-            line[strcspn(line, "\n")] = 0; // retirer le \n
-            len = strlen(line + 9);
-            
-            modalBestiary->creatures[index]->nom = calloc(len + 1, sizeof(char));
-            
-            if (!modalBestiary->creatures[index]->nom) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf(): Allocation nom\n");
+
+            // Si dépassement alors on arrete de load mais on garde la conf actuelle
+            if (index >= modalBestiary->longueur_creatures) {
+                fprintf(stderr, "Warning: setBestiaryFromConf(): index %zu hors des limites de creatures\n", index);
+                break;
+            }
+
+            if (!modalBestiary->creatures[index]) {
+                fprintf(stderr, "Erreur: setBestiaryFromConf(): créature à l'index [%zu] non initialisée\n", index);
                 freeBestiary(modalBestiary);
                 fclose(f);
                 return EXIT_FAILURE;
             }
 
-            strcpy(modalBestiary->creatures[index]->nom, line + 9); // on saute "nom="
-        }
+            // Init
 
-        else if (strncmp(line, "pv_min=", 7) == 0)
-            modalBestiary->creatures[index]->pv_min = atoi(line + 7);
-        
-        else if (strncmp(line, "pv_max=", 7) == 0)
-            modalBestiary->creatures[index]->pv_max = atoi(line + 7);
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
 
-        else if (strncmp(line, "attaque_minimale=", 17) == 0)
-            modalBestiary->creatures[index]->attaque_min = atoi(line + 17);
-        
-        else if (strncmp(line, "attaque_maximale=", 17) == 0)
-            modalBestiary->creatures[index]->attaque_max = atoi(line + 17);
-        
-        else if (strncmp(line, "defense=", 8) == 0)
-            modalBestiary->creatures[index]->defense = atoi(line + 8);
-        
-        else if (strncmp(line, "vitesse=", 8) == 0)
-            modalBestiary->creatures[index]->vitesse = atoi(line + 8);
-        
-        else if (strncmp(line, "profondeur_apparition=", 22) == 0) {
-            line[strcspn(line, "\n")] = 0; // Retirer '\n' s'il existe
-            modalBestiary->creatures[index]->apparition->profondeurs = parseNumberList(index, line, &(modalBestiary->creatures[index]->apparition->longueur_profondeurs), "profondeur_apparition", &errorCode);
-        
-            if (errorCode == -1) continue;
-            
-            else if (modalBestiary->creatures[index]->apparition->profondeurs == NULL) {
+            modalBestiary->creatures[index]->id = my_strToInt(line + 3, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strToInt() -> \"id=\"\n");
                 freeBestiary(modalBestiary);
                 fclose(f);
-                return EXIT_FAILURE;         
+                return EXIT_FAILURE;
+            }
+        }
+         
+        if (strncmp(line, "nom=", 4) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            modalBestiary->creatures[index]->nom = my_strdup(line + 4);
+            if (!modalBestiary->creatures[index]->nom) {
+                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strdup() -> \"nom=\"\n");
+                freeBestiary(modalBestiary);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+
+        else if (strncmp(line, "pv_min=", 7) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            modalBestiary->creatures[index]->pv_min = my_strToInt(line + 7, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strToInt() -> \"pv_min=\"\n");
+                freeBestiary(modalBestiary);
+                fclose(f);
+                return EXIT_FAILURE;
             }
         }
         
-        else if (strncmp(line, "taux_apparition=", 16) == 0) {
-            line[strcspn(line, "\n")] = 0; // Retirer '\n' s'il existe
-            modalBestiary->creatures[index]->apparition->taux = parseNumberList(index, line, &(modalBestiary->creatures[index]->apparition->longueur_taux), "taux_apparition", &errorCode);
-        
-            if (errorCode == -1) continue;
-            
-            else if (modalBestiary->creatures[index]->apparition->taux == NULL) {
+        else if (strncmp(line, "pv_max=", 7) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            modalBestiary->creatures[index]->pv_max = my_strToInt(line + 7, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strToInt() -> \"pv_min=\"\n");
                 freeBestiary(modalBestiary);
                 fclose(f);
-                return EXIT_FAILURE;         
+                return EXIT_FAILURE;
+            }
+        }
+
+        else if (strncmp(line, "attaque_minimale=", 17) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            modalBestiary->creatures[index]->attaque_min = my_strToInt(line + 17, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strToInt() -> \"attaque_min=\"\n");
+                freeBestiary(modalBestiary);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+        
+        else if (strncmp(line, "attaque_maximale=", 17) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            modalBestiary->creatures[index]->attaque_max = my_strToInt(line + 17, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strToInt() -> \"attaque_max=\"\n");
+                freeBestiary(modalBestiary);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+        
+        else if (strncmp(line, "defense=", 8) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            modalBestiary->creatures[index]->defense = my_strToInt(line + 8, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strToInt() -> \"defense=\"\n");
+                freeBestiary(modalBestiary);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+        
+        else if (strncmp(line, "vitesse=", 8) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            modalBestiary->creatures[index]->vitesse = my_strToInt(line + 8, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strToInt() -> \"vitesse=\"\n");
+                freeBestiary(modalBestiary);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+        
+        else if (strncmp(line, "rarete=", 7) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            modalBestiary->creatures[index]->rarete = my_strToInt(line + 7, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strToInt() -> \"rarete=\"\n");
+                freeBestiary(modalBestiary);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+        
+        else if (strncmp(line, "competences=", 12) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+            if (!skill_list || skill_list->longueur == 0 || !skill_list->competences) continue;
+            
+            modalBestiary->creatures[index]->liste_competences.longueur = 0;
+            len = 0;
+
+            arrayLong = parseLongList(index, line, &len, "competences=", &res);
+            switch (res) {
+                case EXIT_FAILURE:
+                    fprintf(stderr, "Erreur: setBestiaryFromConf() -> arrayLong = parseLongList()\n");
+                    freeBestiary(modalBestiary);
+                    fclose(f);
+                    return EXIT_FAILURE;
+            
+                case -1: // empty (pas de compétences)
+                    continue;
+            }
+
+            // On vérifie si l'id de la compétence existe
+            res = false;
+            for (size_t i = 0; i < len; i++) {
+                if (arrayLong[i] < 0 || arrayLong[i] >= skill_list->longueur) {
+                    fprintf(stderr, "Erreur: setBestiaryFromConf() -> competences -> l'id [%ld] n'existe pas dans skill_list\n", arrayLong[i]);
+                    res = true;
+                }
+            }
+            if (res) {
+                free(arrayLong);
+                freeBestiary(modalBestiary);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+
+            // Enleve les doublons de la liste (et la trie)
+            len = removeDuplicateInLongList(&arrayLong, len, res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setBestiaryFromConf() -> len = removeDuplicateInLongList()\n");
+                free(arrayLong);
+                freeBestiary(modalBestiary);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+
+            // Allocation et Init : liste_competences
+
+            if (modalBestiary->creatures[index]->liste_competences.competences)
+                freeListeCompetence(&modalBestiary->creatures[index]->liste_competences);
+            
+            modalBestiary->creatures[index]->liste_competences.competences = calloc(len, sizeof(Competence));
+            if (!modalBestiary->creatures[index]->liste_competences.competences) {
+                fprintf(stderr, "Erreur: setBestiaryFromConf() -> calloc(len, sizeof(Competence)) : Allocation mémoire\n");
+                free(arrayLong);
+                freeBestiary(modalBestiary);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+            
+            modalBestiary->creatures[index]->liste_competences.longueur = len;
+
+            for (size_t i = 0; i < len; i++) {
+                // On utilise la liste de tout les skill pour init ceux de la creature
+                modalBestiary->creatures[index]->liste_competences.competences[i] = skill_list->competences[arrayLong[i]];
             }
         }
     }
 
-    if (modalBestiary->longueur_creatures != length) {
+    if (modalBestiary->longueur_creatures < length) {
+        fprintf(stderr, "Erreur: setBestiaryFromConf(): longueur_creatures (%zu) < length (%zu)\n", modalBestiary->longueur_creatures, length);
         freeBestiary(modalBestiary);
         fclose(f);
-        fprintf(stderr, "Erreur: setBestiaryFromConf(): longueur_creatures (%zu) != length (%zu)\n", modalBestiary->longueur_creatures, length);
         return EXIT_FAILURE;
-    }
-
-    for (size_t i = 0; i < modalBestiary->longueur_creatures; i++) {
-        
-        if (modalBestiary->creatures[i]->apparition->longueur_taux != modalBestiary->creatures[i]->apparition->longueur_profondeurs) {
-            unsigned *tmp = realloc(
-                modalBestiary->creatures[i]->apparition->taux,
-                sizeof(unsigned) * modalBestiary->creatures[i]->apparition->longueur_profondeurs
-            );
-            if (!tmp) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf(): Realloc taux\n");
-                freeBestiary(modalBestiary);
-                fclose(f);
-                return EXIT_FAILURE;
-            }
-            modalBestiary->creatures[i]->apparition->taux = tmp;
-
-            if (modalBestiary->creatures[i]->apparition->longueur_taux < modalBestiary->creatures[i]->apparition->longueur_profondeurs) {
-                for (size_t j = (modalBestiary->creatures[i]->apparition->longueur_profondeurs - modalBestiary->creatures[i]->apparition->longueur_taux); j < modalBestiary->creatures[i]->apparition->longueur_profondeurs; j++)
-                    modalBestiary->creatures[i]->apparition->taux[j] = 0;
-            }
-
-            modalBestiary->creatures[i]->apparition->longueur_taux = modalBestiary->creatures[i]->apparition->longueur_profondeurs;
-        }
     }
 
     fclose(f);
@@ -344,56 +442,52 @@ int setBestiaryFromConf(Bestiaire *modalBestiary) {
 }
 
 
-int applyModel(CreatureMarine *modalBestiary, CreatureMarine *creature) {
-    unsigned length_nom = strlen(modalBestiary->nom);
+CreatureMarine *duplicateCreature(CreatureMarine *modal) {
+    if (!modal) return NULL;
+
+    CreatureMarine *creature = calloc(1, sizeof(CreatureMarine));
+    if (!creature) {
+        fprintf(stderr, "Erreur: duplicateCreature(): Allocation mémoire calloc\n");
+        return EXIT_FAILURE;
+    }
+
+    // Init
     
-    creature->pv_min = modalBestiary->pv_min;
-    creature->pv_max = modalBestiary->pv_max;
-    creature->pv = modalBestiary->pv;
-    creature->attaque_min = modalBestiary->attaque_min;
-    creature->attaque_max = modalBestiary->attaque_max;
-    creature->defense = modalBestiary->defense;
-    creature->vitesse = modalBestiary->vitesse;
-    // creature->effet_special = modalBestiary->effet_special;
-    // creature->est_vivant = modalBestiary->est_vivant;
+    creature->id = modal->id;
+    creature->pv_min = modal->pv_min;
+    creature->pv_max = modal->pv_max;
+    creature->pv = modal->pv;
+    creature->attaque_min = modal->attaque_min;
+    creature->attaque_max = modal->attaque_max;
+    creature->defense = modal->defense;
+    creature->vitesse = modal->vitesse;
 
-    creature->nom = calloc((length_nom + 1), sizeof(char));
-    if (creature->nom == NULL) goto MEMORY_ERROR;
-    strcpy(creature->nom, modalBestiary->nom);
+    // Allocation / Init
 
-    // Ici, apparition ne doit PAS être alloué avant l'appel à applyModel.
-    creature->apparition = calloc(1, sizeof(ApparitionCreature));
-    if (creature->apparition == NULL) goto MEMORY_ERROR;
+    short res;
 
-    creature->apparition->longueur_profondeurs = modalBestiary->apparition->longueur_profondeurs;
-    creature->apparition->profondeurs = calloc(creature->apparition->longueur_profondeurs, sizeof(unsigned));
-    if (creature->apparition->profondeurs == NULL) goto MEMORY_ERROR;
+    creature->nom = my_strdup(modal->nom);
+    if (creature->nom == NULL) {
+        fprintf(stderr, "Erreur: duplicateCreature(): Allocation mémoire via creature->nom = my_strdup()\n");
+        freeCreature(creature);
+        return EXIT_FAILURE;
+    }
 
-    creature->apparition->longueur_taux = modalBestiary->apparition->longueur_taux;
-    creature->apparition->taux = calloc(creature->apparition->longueur_taux, sizeof(unsigned));
-    if (creature->apparition->taux == NULL) goto MEMORY_ERROR;
-
-    creature->liste_etats.etats = NULL;
-    creature->liste_etats.longueur = 0;
+    creature->liste_etats = duplicateListeEtat(&modal->liste_etats, &res);
+    if (res == EXIT_FAILURE) {
+        fprintf(stderr, "Erreur: duplicateCreature(): duplicateListeEtat()\n");
+        freeCreature(creature);
+        return EXIT_FAILURE;
+    }
     
-    for (size_t i = 0; i < creature->apparition->longueur_profondeurs; i++)
-        creature->apparition->profondeurs[i] = modalBestiary->apparition->profondeurs[i];
-    
-    for (size_t i = 0; i < creature->apparition->longueur_taux; i++)
-        creature->apparition->taux[i] = modalBestiary->apparition->taux[i];
+    creature->liste_competences = duplicateListeCompetence(&modal->liste_competences, &res);
+    if (res == EXIT_FAILURE) {
+        fprintf(stderr, "Erreur: duplicateCreature(): duplicateListeCompetence()\n");
+        freeCreature(creature);
+        return EXIT_FAILURE;
+    }
     
     return EXIT_SUCCESS;
-
-MEMORY_ERROR:
-    if (creature->apparition) {
-        free(creature->apparition->taux);
-        free(creature->apparition->profondeurs);
-        free(creature->apparition);
-        creature->apparition = NULL;
-    }
-    free(creature->nom);
-    creature->nom = NULL;
-    return EXIT_FAILURE;
 }
 
 
@@ -406,20 +500,9 @@ void freeCreature(CreatureMarine *creature) {
         creature->nom = NULL;
     }
     
-    if (creature->apparition) {
-        if (creature->apparition->profondeurs) {
-            free(creature->apparition->profondeurs);
-            creature->apparition->profondeurs = NULL;
-        }
-        if (creature->apparition->taux) {
-            free(creature->apparition->taux);
-            creature->apparition->taux = NULL;
-        }
-        free(creature->apparition);
-        creature->apparition = NULL;
-    }
-    
     freeListeEtat(&creature->liste_etats);
+
+    freeListeCompetence(&creature->liste_competences);
 
     free(creature);
     creature = NULL;

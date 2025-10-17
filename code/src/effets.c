@@ -62,6 +62,7 @@ ListeEtat duplicateListeEtat(ListeEtat *modal, short *res) {
     liste.etats = calloc(modal->longueur, sizeof(Etat));
     if (!liste.etats) {
         fprintf(stderr, "Erreur: duplicateListeEtat(): Allocation mémoire calloc\n");
+        freeListeEtat(&liste);
         *res = EXIT_FAILURE;
         return liste;
     }

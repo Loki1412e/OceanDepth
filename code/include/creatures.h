@@ -8,8 +8,8 @@
     
     Bestiaire *initModalBestiary();
     Bestiaire *initEmptyBestiary();
-    int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, unsigned depth_level);
-    int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, char *type_name, unsigned depth_level);
+    int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary);
+    int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, unsigned idConf);
     void freeBestiary(Bestiaire *bestiary);
     void freeBestiaryContent(Bestiaire *bestiary);
     void freeCreatures(CreatureMarine **creatures, size_t length);

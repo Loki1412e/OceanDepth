@@ -12,6 +12,6 @@
     ListeCompetence duplicateListeCompetence(ListeCompetence *modal, short *res);
     
     // ListeCompetence initSkillsList();
-    // int addSkillInList(Bestiaire *modalBestiary, Bestiaire *bestiary, char *type_name, unsigned depth_level);
+    // int addSkillInList(Bestiaire *modalBestiary, Bestiaire *bestiary, char *nameigned depth_level);
 
 #endif
