@@ -2,6 +2,7 @@
 #define _COMPETENCES_H_
 
     #include "global.h"
+    #include "conf.h"
     #include "effets.h"
 
     void freeCompetence(Competence *competence);

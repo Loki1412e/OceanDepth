@@ -103,9 +103,9 @@ void creatureAttaqueJoueur(CreatureMarine *creature, Plongeur *joueur) {
     printf("[%s] vous attaque → %d dégâts (PV restants: %d)\n", creature->nom, degats, joueur->pv);
 }
 
-void appliquerDegatsAvantTour(ListeEtat *etats, int *pv, int maxPv, int defense) {
+void appliquerDegatsAvantTour(ListeEtat *etats, int *pv, int maxPv, int defense, int *oxygene, int maxOxygene) {
     int defenseFinal = calculerDefenseEffet(defense, etats);
-    int degats = calculerDegatsSubiDebutTourEffet(etats, pv, maxPv, defenseFinal);
+    int degats = calculerDegatsSubiDebutTourEffet(etats, pv, maxPv, defenseFinal, oxygene, maxOxygene);
     // degats = calculerDegatsInfligesEffet(etats, degats);
     
     *pv -= degats;
@@ -172,7 +172,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         // Monstres autant ou plus rapides
         for (size_t i = 0; i < nb_creatures; i++) {
             if (creatures[i]->pv > 0 && (creatures[i]->vitesse >= joueur->vitesse)) {
-                appliquerDegatsAvantTour(&creatures[i]->liste_etats, &creatures[i]->pv, creatures[i]->pv_max, creatures[i]->defense);
+                appliquerDegatsAvantTour(&creatures[i]->liste_etats, &creatures[i]->pv, creatures[i]->pv_max, creatures[i]->defense, NULL, false);
                 
                 if (peutAttaquer(&creatures[i]->liste_etats))
                     creatureAttaqueJoueur(creatures[i], joueur);
@@ -193,7 +193,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
         appliquerConsommationOxygeneProfondeur(joueur);
         afficherEtatOxygene(joueur);
-        appliquerDegatsAvantTour(&joueur->liste_etats, &joueur->pv, joueur->pv_max, joueur->defense);
+        appliquerDegatsAvantTour(&joueur->liste_etats, &joueur->pv, joueur->pv_max, joueur->defense, &joueur->oxygene, joueur->oxygene_max);
 
         afficherInterface(joueur, creatures, nb_creatures, attaques_restantes);
 
@@ -275,7 +275,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         // Monstres strictement moins rapides
         for (size_t i = 0; i < nb_creatures; i++) {
             if (creatures[i]->pv > 0 && (creatures[i]->vitesse < joueur->vitesse)) {
-                appliquerDegatsAvantTour(&creatures[i]->liste_etats, &creatures[i]->pv, creatures[i]->pv_max, creatures[i]->defense);
+                appliquerDegatsAvantTour(&creatures[i]->liste_etats, &creatures[i]->pv, creatures[i]->pv_max, creatures[i]->defense, NULL, false);
                 
                 if (peutAttaquer(&creatures[i]->liste_etats))
                     creatureAttaqueJoueur(creatures[i], joueur);

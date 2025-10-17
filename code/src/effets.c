@@ -176,7 +176,6 @@ int calculerDegatsInfligesEffet(ListeEtat *etatsCible, int degatsBase) {
     return degatsFinaux;
 }
 
-// Si 
 int calculerDegatsSubiDebutTourEffet(ListeEtat *etats, int *pv, int maxPv, int defense, int *oxygene, int maxOxygene) {
     int degats;
     int degatsFinaux = 0;
@@ -194,18 +193,20 @@ int calculerDegatsSubiDebutTourEffet(ListeEtat *etats, int *pv, int maxPv, int d
                 // Passe outre la défense donc on enleve les pv directement -> pv -= 5% des PV max
                 degats = maxPv * 0.05;
                 *pv -= degats;
-                printf("[SAIGNEMENT] -> -%d pv\n");
+                printf("[SAIGNEMENT] -> -%d pv\n", degats);
                 break;
 
             case POISON:
                 // Passe outre la défense donc on enleve les pv directement -> pv -= 5% des PV max
                 degats = maxPv * 0.05;
                 *pv -= degats;
+                printf("[POISON] -> -%d pv", degats);
                 if (oxygene) {
-                    *oxygene -= maxOxygene * 0.05;
-                    printf("[POISON] -> -%d pv et -%d oxygene\n");
+                    degats = maxOxygene * 0.05;
+                    *oxygene -= degats;
+                    printf(" et -%d oxygene", degats);
                 }
-                else printf("[POISON] -> -%d pv\n");
+                printf("\n");
                 break;
             
             default:

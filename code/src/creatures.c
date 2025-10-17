@@ -51,7 +51,7 @@ int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary) {
         // Si le tirage est inférieur au cumul des poids, la créature est sélectionnée
         if (tirage < cumulPoids) {
             // On l'ajoute dans le Bestiaire
-            if (addCreatureInBestiary(modalBestiary, bestiary, creature->nom)) {
+            if (addCreatureInBestiary(modalBestiary, bestiary, creature->id)) {
                 return EXIT_FAILURE;
             }
 
@@ -70,7 +70,7 @@ int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary) {
 
 int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, unsigned idConf) {
     if (!modalBestiary || !modalBestiary->creatures || modalBestiary->longueur_creatures == 0 || !bestiary)
-        return NULL;
+        return EXIT_FAILURE;
 
     short existInModel = 0;
     CreatureMarine **tmp = NULL;
@@ -81,7 +81,7 @@ int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, unsigne
 
             existInModel = 1;
 
-            if (bestiary->longueur_creatures == NULL)
+            if (bestiary->creatures == NULL)
                 tmp = calloc((bestiary->longueur_creatures + 1), sizeof(CreatureMarine*));
 
             else
@@ -384,7 +384,9 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *skill_list, c
             // On vérifie si l'id de la compétence existe
             res = false;
             for (size_t i = 0; i < len; i++) {
-                if (arrayLong[i] < 0 || arrayLong[i] >= skill_list->longueur) {
+                // ne sert a rien: || arrayLong[i] >= skill_list->longueur
+                // car: arrayLong[i] (unsigned) < (size_t) skill_list->longueur
+                if (arrayLong[i] < 0) {
                     fprintf(stderr, "Erreur: setBestiaryFromConf() -> competences -> l'id [%ld] n'existe pas dans skill_list\n", arrayLong[i]);
                     res = true;
                 }
@@ -397,7 +399,7 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *skill_list, c
             }
 
             // Enleve les doublons de la liste (et la trie)
-            len = removeDuplicateInLongList(&arrayLong, len, res);
+            len = removeDuplicateInLongList(&arrayLong, len, &res);
             if (res == EXIT_FAILURE) {
                 fprintf(stderr, "Erreur: setBestiaryFromConf() -> len = removeDuplicateInLongList()\n");
                 free(arrayLong);
@@ -447,7 +449,7 @@ CreatureMarine *duplicateCreature(CreatureMarine *modal) {
     CreatureMarine *creature = calloc(1, sizeof(CreatureMarine));
     if (!creature) {
         fprintf(stderr, "Erreur: duplicateCreature(): Allocation mémoire calloc\n");
-        return EXIT_FAILURE;
+        return NULL;
     }
 
     // Init
@@ -469,24 +471,24 @@ CreatureMarine *duplicateCreature(CreatureMarine *modal) {
     if (creature->nom == NULL) {
         fprintf(stderr, "Erreur: duplicateCreature(): Allocation mémoire via creature->nom = my_strdup()\n");
         freeCreature(creature);
-        return EXIT_FAILURE;
+        return NULL;
     }
 
     creature->liste_etats = duplicateListeEtat(&modal->liste_etats, &res);
     if (res == EXIT_FAILURE) {
         fprintf(stderr, "Erreur: duplicateCreature(): duplicateListeEtat()\n");
         freeCreature(creature);
-        return EXIT_FAILURE;
+        return NULL;
     }
     
     creature->liste_competences = duplicateListeCompetence(&modal->liste_competences, &res);
     if (res == EXIT_FAILURE) {
         fprintf(stderr, "Erreur: duplicateCreature(): duplicateListeCompetence()\n");
         freeCreature(creature);
-        return EXIT_FAILURE;
+        return NULL;
     }
     
-    return EXIT_SUCCESS;
+    return creature;
 }
 
 
