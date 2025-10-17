@@ -55,7 +55,7 @@ int runGame(Sauvegarde *actualSave) {
         size_t longueur_creatures = 2;
 
         for (size_t i = 0; i < longueur_creatures; i++) {
-            if (generateCreatureInBestiary(modalBestiary, bestiary, 0)) return EXIT_FAILURE;
+            if (generateCreatureInBestiary(modalBestiary, bestiary)) return EXIT_FAILURE;
         }
 
         diver->profondeur = 1;
