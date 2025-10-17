@@ -144,7 +144,7 @@ Bestiaire *initEmptyBestiary() {
 
 Bestiaire *initModalBestiary(ListeCompetence *skill_list) {
     
-    unsigned count_all_unique_model = confCountAllUniqueId("config/bestiaire/creatures.conf");
+    size_t count_all_unique_model = confCountAllUniqueId("config/bestiaire/creatures.conf");
     if (!count_all_unique_model) return NULL;
 
     // Allocation mémoire -> calloc pour tout init 0 ou NULL
@@ -167,7 +167,7 @@ Bestiaire *initModalBestiary(ListeCompetence *skill_list) {
     for (size_t i = 0; i < count_all_unique_model; i++) {
         modalBestiary->creatures[i] = initEmptyCreature();
         if (modalBestiary->creatures[i] == NULL) {
-            fprintf(stderr, "Erreur: initBestiary(): Allocation mémoire modalBestiary->creatures\n");
+            fprintf(stderr, "Erreur: initModalBestiary(): Allocation mémoire modalBestiary->creatures\n");
             modalBestiary->longueur_creatures = i;
             freeBestiary(modalBestiary);
             return NULL;

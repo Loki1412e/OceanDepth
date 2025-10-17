@@ -8,10 +8,10 @@
     void freeListeCompetence(ListeCompetence *liste_competences);
     
     ListeCompetence initEmptySkillList();
+    ListeCompetence initSkillsList();
     Competence duplicateCompetence(Competence *modal, short *res);
     ListeCompetence duplicateListeCompetence(ListeCompetence *modal, short *res);
-    
-    // ListeCompetence initSkillsList();
+
     // int addSkillInList(Bestiaire *modalBestiary, Bestiaire *bestiary, char *nameigned depth_level);
 
 #endif

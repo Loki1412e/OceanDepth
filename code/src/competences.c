@@ -16,6 +16,7 @@ ListeCompetence initEmptySkillList() {
 
 Competence initEmptySkill() {
     return (Competence) {
+        .id = 0,
         .nom = NULL,
         .description = NULL,
         .cooldown_max = 0,
@@ -37,6 +38,7 @@ Competence duplicateCompetence(Competence *modal, short *res) {
     *res = EXIT_SUCCESS;
 
     Competence competence = {
+        .id = modal->id,
         .nom = NULL,
         .description = NULL,
         .cooldown_max = modal->cooldown_max,
@@ -104,9 +106,6 @@ ListeCompetence duplicateListeCompetence(ListeCompetence *modal, short *res) {
     return liste;
 }
 
-// ListeCompetence initSkillsList() {
-    
-// }
 
 int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
     if (!skill_list || !skill_list->competences || skill_list->longueur == 0 || !path)
@@ -136,6 +135,19 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
             if (index >= skill_list->longueur) {
                 fprintf(stderr, "Warning: setListeCompetenceFromConf(): index %zu hors des limites de creatures\n", index);
                 break;
+            }
+
+            // Init
+
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            skill_list->competences[index].id = my_strToInt(line + 3, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"id=\"\n");
+                freeListeCompetence(skill_list);
+                fclose(f);
+                return EXIT_FAILURE;
             }
         }
          
@@ -268,6 +280,42 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
 
     fclose(f);
     return EXIT_SUCCESS;
+}
+
+
+// Return:
+// - `ListeCompetence`
+// - `*res` = `EXIT_FAILURE` ou `EXIT_SUCCESS`
+ListeCompetence initSkillsList(short *res) {
+    if (!res) return initEmptySkillList();
+    *res = EXIT_SUCCESS;
+
+    size_t count_all_unique_model = confCountAllUniqueId("config/bestiaire/competences.conf");
+    if (!count_all_unique_model) {
+        *res = EXIT_FAILURE;
+        return initEmptySkillList();
+    }
+
+    // Allocation mémoire -> calloc pour tout init 0 ou NULL
+    ListeCompetence skill_list = initEmptySkillList();
+    skill_list.competences = calloc(count_all_unique_model, sizeof(Competence));
+    if (!skill_list.competences) {
+        fprintf(stderr, "Erreur: initSkillsList(): Allocation mémoire competences\n");
+        skill_list.longueur = 0;
+        freeListeCompetence(&skill_list);
+        *res = EXIT_FAILURE;
+        return skill_list;
+    }
+
+    // Initialisation du Bestiaire Model
+
+    if (setListeCompetenceFromConf(&skill_list, "config/bestiaire/competences.conf")) {
+        freeListeCompetence(&skill_list);
+        *res = EXIT_FAILURE;
+        return skill_list;
+    }
+    
+    return skill_list;
 }
 
 
