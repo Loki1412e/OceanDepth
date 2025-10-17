@@ -113,15 +113,16 @@ void printListeEtat(ListeEtat etats) {
 }
 
 void printCompetence(Competence competence) {
-    printf("Nom de la compétence (id=%u) : %s\n", competence.id, competence.nom);
-    printf("Description          : %s\n", competence.description);
-    printf("Cooldown max         : %d tours\n", competence.cooldown_max);
-    printf("Cooldown restant     : %d tours\n", competence.cooldown_restant);
-    printf("Multiplicateur dégâts: %.1fx\n", competence.multiplicateur_degats / 100.0);
-    printf("Chance d'effet       : %d%%\n", competence.chance_effet);
-    printf("Effet appliqué       : %s\n", enumEffectToChar(competence.effet));
-    printf("Durée de l'effet     : %d tours\n", competence.duree_effet);
-    printf("Effet sur soi        : %s\n", competence.sur_soi ? "Oui" : "Non");
+    printf("\t Id                   : %u\n", competence.id);
+    printf("\t Nom                  : %s\n", competence.nom);
+    printf("\t Description          : %s\n", competence.description);
+    printf("\t Cooldown max         : %d tours\n", competence.cooldown_max);
+    printf("\t Cooldown restant     : %d tours\n", competence.cooldown_restant);
+    printf("\t Multiplicateur dégâts: x%.1f\n", competence.multiplicateur_degats / 100.0);
+    printf("\t Chance d'effet       : %d%%\n", competence.chance_effet);
+    printf("\t Effet appliqué       : %s\n", enumEffectToChar(competence.effet));
+    printf("\t Durée de l'effet     : %d tours\n", competence.duree_effet);
+    printf("\t Effet sur soi        : %s\n", competence.sur_soi ? "Oui" : "Non");
 }
 
 void printListeCompetence(ListeCompetence competences) {
@@ -132,10 +133,9 @@ void printListeCompetence(ListeCompetence competences) {
 
     printf("Competences (%zu):\n", competences.longueur);
     for (size_t i = 0; i < competences.longueur; i++) {
-        printf("\n");
         printCompetence(competences.competences[i]);
+        printf("\n");
     }
-    printf("\n");
 }
 
 
@@ -150,11 +150,10 @@ void printCreature(CreatureMarine *creature) {
     printf("Attaque: Min %d, Max %d\n", creature->attaque_min, creature->attaque_max);
     printf("Defense: %d\n", creature->defense);
     printf("Vitesse: %d\n", creature->vitesse);
+    printf("Rarete: %s\n", enumRareteToChar(creature->rarete));
     
     printListeEtat(creature->liste_etats);
     printListeCompetence(creature->liste_competences);
-
-    printf("Rarete: %s\n", enumRareteToChar(creature->rarete));
 }
 
 
