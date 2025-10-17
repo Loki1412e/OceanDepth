@@ -2,8 +2,11 @@
 #define _CONF_H_
 
     #include "global.h"
+
+    char *enumRareteToChar(Rarete type);
+    Rarete charToEnumRarete(char *type);
+    unsigned rareteToPoids(Rarete rarete);
     
-    unsigned rareteToPoids(RARETE rarete);
     size_t confCountAllUniqueId(char *path);
     long *parseLongList(int index, char *line, size_t *length, char *prefix, short *res);
 
