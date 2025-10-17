@@ -263,7 +263,9 @@ void decrementerDureesEtNettoyer(ListeEtat *listeEtat, int estFinDeTourCombat, i
 
 void freeListeEtat(ListeEtat *listeEtat) {
     if (!listeEtat) return;
-    free(listeEtat->etats);
-    listeEtat->etats = NULL;
+    if (listeEtat->etats) {
+        free(listeEtat->etats);
+        listeEtat->etats = NULL;
+    }
     listeEtat->longueur = 0;
 }

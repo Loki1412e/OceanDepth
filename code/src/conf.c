@@ -27,14 +27,20 @@ unsigned rareteToPoids(Rarete rarete) {
 }
 
 
-size_t confCountAllUniqueId(char *path) {
+// Return :
+// - `size_t count`
+// - `short *res` = `EXIT_FAILURE` ou `EXIT_SUCCESS`
+size_t confCountAllUniqueId(char *path, short *res) {
+    if (!path || !res) return 0;
+    *res = EXIT_SUCCESS;
+    
     size_t count = 0;
     char line[256];
 
     FILE *f = fopen(path, "r");
     if (f == NULL) {
         fprintf(stderr, "Erreur: confCountAllUniqueId()\n");
-        return -1;
+        return EXIT_FAILURE;
     }
 
     while (fgets(line, sizeof(line), f)) {
@@ -46,47 +52,42 @@ size_t confCountAllUniqueId(char *path) {
 }
 
 // Return :
-// - `long list`
-// - `*res` = `EXIT_FAILURE` / `EXIT_SUCCESS` / `-1` (success, vide)
-long *parseLongList(int index, char *line, size_t *length, char *prefix, short *res) {
-    if (!line || !length || !prefix || !res) return NULL;
-
-    // Retirer '\n' s'il existe
-    line[strcspn(line, "\n")] = 0;
-
-    *res = EXIT_SUCCESS;
+// - `long *list` = Tableau
+// - `int *length` = Longueur du tableau
+long *parseLongList(char *str, size_t *length) {
+    if (!str || strlen(str) == 0 || !length) {
+        return NULL;
+    }
     
     long *list = NULL;
     *length = 0;
     size_t indice = 0;
 
-    int prefixLen = strlen(prefix);
-
-    char buff[512];
+    char *buff = NULL;
     char *token = NULL;
 
-    // Si il n'y a rien apres le préfixe -> return -1 (vide)
-    if (strlen(line + prefixLen) == 0) {
-        *res = -1;
-        return NULL;
-    }
+    short res;
     
     // Init buff
-    strncpy(buff, line + prefixLen, sizeof(buff) - 1);
-    buff[sizeof(buff) - 1] = '\0';
+    buff = my_strdup(str);
+    if (!buff) {
+        fprintf(stderr, "Erreur: parseLongList(): Allocation mémoire buff = my_strdup(str)\n");
+        return NULL;
+    }
 
     // Compter le nombre de token
-    *length = my_countStrTokElem(buff, ",", res);
-    if (*res == EXIT_FAILURE) {
+    *length = my_countStrTokElem(buff, ",", &res);
+    if (res == EXIT_FAILURE) {
         fprintf(stderr, "Erreur: parseLongList(): my_countStrTokElem()\n");
+        free(buff);
         return NULL;
     }
 
     // Allocation
     list = calloc(*length, sizeof(long));
     if (list == NULL) {
-        fprintf(stderr, "Erreur: \"%s\" -> parseLongList(): Allocation mémoire bestiary->models[%d]->profondeur_apparition\n", prefix, index);
-        *res = EXIT_FAILURE;
+        fprintf(stderr, "Erreur: parseLongList(): Allocation mémoire list = calloc(*length, sizeof(long))\n");
+        free(buff);
         return NULL;
     }
 
@@ -96,27 +97,31 @@ long *parseLongList(int index, char *line, size_t *length, char *prefix, short *
     if (token == NULL) {
         fprintf(stderr, "Erreur: parseLongList(): first token == NULL\n");
         free(list);
-        *res = EXIT_FAILURE;
+        free(buff);
         return NULL;
     }
 
     while (token != NULL) {
         if (indice >= *length) {
-            fprintf(stderr, "Warning: parseLongList(): nb de token > my_countStrTokElem()\n");
+            fprintf(stderr, "Warning: parseLongList(): nb de token >= my_countStrTokElem()\n");
             break;
         }
         
-        list[indice] = my_strToInt(token, res);
+        list[indice] = my_strToInt(token, &res);
 
-        if (*res == EXIT_FAILURE) {
+        if (res == EXIT_FAILURE) {
             fprintf(stderr, "Erreur: parseLongList(): \"%s\" n'est pas une valeur numérique valide\n", token);
             free(list);
+            free(buff);
             return NULL;
         }
 
         indice++;
         token = strtok(NULL, ",");
     }
+
+    // Plus besoin de buff
+    free(buff);
 
     if (indice < *length) {
         fprintf(stderr, "Warning: parseLongList(): nb de token < my_countStrTokElem()\n");
