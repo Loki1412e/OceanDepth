@@ -53,65 +53,65 @@ int setDiverFromConf(Plongeur *diver) {
 
     while (fgets(line, sizeof(line), f)) {
         
-        if (strncmp(line, "attaque_max=", 12) == 0) {
+        if (strncmp(line, "pv_max=", 7) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[7] == '\0') continue; // ligne vide
+
+            diver->pv_max = my_strToInt(line + 7, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setDiverFromConf(): my_strToInt() -> \"pv_max=\"\n");
+                freeDiver(diver);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+        
+        else if (strncmp(line, "oxygene_max=", 12) == 0) {
             line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
             if (line[12] == '\0') continue; // ligne vide
 
-            diver->attaque_max = my_strToInt(line + 12, &res);
+            diver->oxygene_max = my_strToInt(line + 12, &res);
             if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strToInt() -> \"attaque_max=\"\n");
+                fprintf(stderr, "Erreur: setDiverFromConf(): my_strToInt() -> \"oxygene_max=\"\n");
                 freeDiver(diver);
                 fclose(f);
                 return EXIT_FAILURE;
             }
         }
         
-        if (strncmp(line, "oxygene_max=", 19) == 0) {
-            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
-            if (line[19] == '\0') continue; // ligne vide
-
-            diver->oxygene_max = my_strToInt(line + 19, &res);
-            if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strToInt() -> \"oxygene_max=\"\n");
-                freeDiver(diver);
-                fclose(f);
-                return EXIT_FAILURE;
-            }
-        }
-        
-        if (strncmp(line, "fatigue_max=", 12) == 0) {
+        else if (strncmp(line, "fatigue_max=", 12) == 0) {
             line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
             if (line[12] == '\0') continue; // ligne vide
 
             diver->fatigue_max = my_strToInt(line + 12, &res);
             if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strToInt() -> \"fatigue_max=\"\n");
+                fprintf(stderr, "Erreur: setDiverFromConf(): my_strToInt() -> \"fatigue_max=\"\n");
                 freeDiver(diver);
                 fclose(f);
                 return EXIT_FAILURE;
             }
         }
 
-        else if (strncmp(line, "attaque_min=", 17) == 0) {
+        else if (strncmp(line, "attaque_min=", 12) == 0) {
             line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
-            if (line[17] == '\0') continue; // ligne vide
+            if (line[12] == '\0') continue; // ligne vide
 
-            diver->attaque_min = my_strToInt(line + 17, &res);
+            diver->attaque_min = my_strToInt(line + 12, &res);
             if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strToInt() -> \"attaque_min=\"\n");
+                fprintf(stderr, "Erreur: setDiverFromConf(): my_strToInt() -> \"attaque_min=\"\n");
                 freeDiver(diver);
                 fclose(f);
                 return EXIT_FAILURE;
             }
         }
         
-        else if (strncmp(line, "attaque_max=", 17) == 0) {
+        else if (strncmp(line, "attaque_max=", 12) == 0) {
             line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
-            if (line[17] == '\0') continue; // ligne vide
+            if (line[12] == '\0') continue; // ligne vide
 
-            diver->attaque_max = my_strToInt(line + 17, &res);
+            diver->attaque_max = my_strToInt(line + 12, &res);
             if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strToInt() -> \"attaque_max=\"\n");
+                fprintf(stderr, "Erreur: setDiverFromConf(): my_strToInt() -> \"attaque_max=\"\n");
                 freeDiver(diver);
                 fclose(f);
                 return EXIT_FAILURE;
@@ -124,7 +124,7 @@ int setDiverFromConf(Plongeur *diver) {
 
             diver->defense = my_strToInt(line + 8, &res);
             if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strToInt() -> \"defense=\"\n");
+                fprintf(stderr, "Erreur: setDiverFromConf(): my_strToInt() -> \"defense=\"\n");
                 freeDiver(diver);
                 fclose(f);
                 return EXIT_FAILURE;
@@ -137,7 +137,7 @@ int setDiverFromConf(Plongeur *diver) {
 
             diver->vitesse = my_strToInt(line + 8, &res);
             if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strToInt() -> \"vitesse=\"\n");
+                fprintf(stderr, "Erreur: setDiverFromConf(): my_strToInt() -> \"vitesse=\"\n");
                 freeDiver(diver);
                 fclose(f);
                 return EXIT_FAILURE;
@@ -150,7 +150,7 @@ int setDiverFromConf(Plongeur *diver) {
 
             diver->niveau = my_strToInt(line + 7, &res);
             if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strToInt() -> \"niveau=\"\n");
+                fprintf(stderr, "Erreur: setDiverFromConf(): my_strToInt() -> \"niveau=\"\n");
                 freeDiver(diver);
                 fclose(f);
                 return EXIT_FAILURE;
@@ -163,7 +163,7 @@ int setDiverFromConf(Plongeur *diver) {
 
             diver->perles = my_strToInt(line + 7, &res);
             if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strToInt() -> \"perles=\"\n");
+                fprintf(stderr, "Erreur: setDiverFromConf(): my_strToInt() -> \"perles=\"\n");
                 freeDiver(diver);
                 fclose(f);
                 return EXIT_FAILURE;
@@ -176,7 +176,7 @@ int setDiverFromConf(Plongeur *diver) {
 
             diver->profondeur = my_strToInt(line + 11, &res);
             if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strToInt() -> \"profondeur=\"\n");
+                fprintf(stderr, "Erreur: setDiverFromConf(): my_strToInt() -> \"profondeur=\"\n");
                 freeDiver(diver);
                 fclose(f);
                 return EXIT_FAILURE;
