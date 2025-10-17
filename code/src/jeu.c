@@ -5,7 +5,7 @@
 int runGame(Sauvegarde *actualSave) {
     if (!actualSave || !actualSave->diver) return EXIT_FAILURE;
 
-    clearConsole();
+    printf("\nclearConsole\n");//clearConsole();
 
     /*===== Init var ====*/
 
