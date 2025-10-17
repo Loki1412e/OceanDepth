@@ -3,9 +3,6 @@
 void freeCompetence(Competence *competence);
 void freeListeCompetence(ListeCompetence *liste_competences);
 
-// ListeCompetence initSkillsList();
-// int addSkillInList(Bestiaire *modalBestiary, Bestiaire *bestiary, char *name, unsigned depth_level);
-
 
 ListeCompetence initEmptySkillList() {
     return (ListeCompetence) {
