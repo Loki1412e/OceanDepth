@@ -2,14 +2,9 @@
 
 
 unsigned rareteToPoids(RARETE rarete) {
-    switch (rarete) {
-        case COMMUN: return 80;
-        case PEU_COMMUN: return 40;
-        case RARE: return 15;
-        case TRES_RARE: return 5;
-        case ABERANT: return 1;        
-        default: return 0;
-    }
+    if (rarete <= 0) return 0;
+    double res = RARETE_POIDS_MAX * pow(RARETE_BASE_EXP, (double) (-(rarete - 1)));
+    return (unsigned) round(res);
 }
 
 

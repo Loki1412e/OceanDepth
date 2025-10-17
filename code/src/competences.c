@@ -4,7 +4,7 @@ void freeCompetence(Competence *competence);
 void freeListeCompetence(ListeCompetence *liste_competences);
 
 // ListeCompetence initSkillsList();
-// int addSkillInList(Bestiaire *modalBestiary, Bestiaire *bestiary, char *type_name, unsigned depth_level);
+// int addSkillInList(Bestiaire *modalBestiary, Bestiaire *bestiary, char *name, unsigned depth_level);
 
 
 ListeCompetence initEmptySkillList() {
@@ -51,6 +51,7 @@ Competence duplicateCompetence(Competence *modal, short *res) {
     competence.nom = my_strdup(modal->nom);
     if (!competence.nom) {
         fprintf(stderr, "Erreur: duplicateCompetence(): Allocation mémoire: my_strdup(modal->nom)\n");
+        freeCompetence(&competence);
         *res = EXIT_FAILURE;
         return competence;
     }
@@ -58,6 +59,7 @@ Competence duplicateCompetence(Competence *modal, short *res) {
     competence.description = my_strdup(modal->description);
     if (!competence.description) {
         fprintf(stderr, "Erreur: duplicateCompetence(): Allocation mémoire: my_strdup(modal->description)\n");
+        freeCompetence(&competence);
         *res = EXIT_FAILURE;
         return competence;
     }
@@ -84,6 +86,7 @@ ListeCompetence duplicateListeCompetence(ListeCompetence *modal, short *res) {
     liste.competences = calloc(modal->longueur, sizeof(Etat));
     if (!liste.competences) {
         fprintf(stderr, "Erreur: duplicateListeEtat(): Allocation mémoire calloc\n");
+        freeListeCompetence(&liste);
         *res = EXIT_FAILURE;
         return liste;
     }
@@ -92,7 +95,7 @@ ListeCompetence duplicateListeCompetence(ListeCompetence *modal, short *res) {
         liste.competences[i] = duplicateCompetence(&modal->competences[i], res);
         if (*res == EXIT_FAILURE) {
             liste.longueur = i;
-            freeCompetence(liste.competences);
+            freeListeCompetence(&liste);
             *res = EXIT_FAILURE;
             return liste;
         }
