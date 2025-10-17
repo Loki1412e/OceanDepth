@@ -55,7 +55,7 @@ int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary) {
                 return EXIT_FAILURE;
             }
 
-            // On trie le Bestiaire par vitesse (ou autre critère si nécessaire)
+            // On trie le Bestiaire par vitesse
             sortCreaturesBySpeed(bestiary->creatures, bestiary->longueur_creatures);
 
             return EXIT_SUCCESS;
@@ -103,13 +103,13 @@ int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, unsigne
             }
 
             // Attribution d'un id unique
+            bestiary->creatures[index]->id = index;
             // max_id = 0;
             // for (size_t j = 0; j < index; j++) {
             //     if (bestiary->creatures[j]->id > max_id)
             //         max_id = bestiary->creatures[j]->id;
             // }
             // bestiary->creatures[index]->id = max_id + 1;
-            bestiary->creatures[index]->id = index;
         }
     }
 
