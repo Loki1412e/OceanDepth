@@ -49,8 +49,8 @@
         TRES_RARE,
         ABERANT,
         // Suite ...
-        LENGTH_RARETE
-    } RARETE;
+        LENGTH_Rarete
+    } Rarete;
 
 
     typedef enum {
@@ -85,6 +85,7 @@
 
 
     typedef struct {
+        unsigned id;
         char *nom;
         char *description;
         // Cooldown en tours
@@ -115,7 +116,7 @@
         int vitesse;
         ListeEtat liste_etats;
         ListeCompetence liste_competences;
-        RARETE rarete;
+        Rarete rarete;
     } CreatureMarine;
 
     typedef struct {

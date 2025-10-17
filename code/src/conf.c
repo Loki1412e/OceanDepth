@@ -1,7 +1,26 @@
 #include "../include/conf.h"
 
 
-unsigned rareteToPoids(RARETE rarete) {
+char *enumRareteToChar(Rarete type) {
+    switch (type) {
+        case COMMUN: return "COMMUN";
+        case PEU_COMMUN: return "PEU_COMMUN";
+        case RARE: return "RARE";
+        case TRES_RARE: return "TRES_RARE";
+        case ABERANT: return "ABERANT";
+        default: return "DESACTIVE";
+    }
+}
+
+Rarete charToEnumRarete(char *type) {
+    for (size_t rarete = 0; rarete < LENGTH_Rarete; rarete++) {
+        if (strcmp(type, enumEffectToChar((Rarete) rarete)) == 0)
+            return (Rarete) rarete;
+    }
+    return AUCUN;
+}
+
+unsigned rareteToPoids(Rarete rarete) {
     if (rarete <= 0) return 0;
     double res = RARETE_POIDS_MAX * pow(RARETE_BASE_EXP, (double) (-(rarete - 1)));
     return (unsigned) round(res);
