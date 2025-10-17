@@ -6,7 +6,8 @@
 
     void freeCompetence(Competence *competence);
     void freeListeCompetence(ListeCompetence *liste_competences);
-    
+
+    ListeCompetence initSkillsList(short *res);
     ListeCompetence initEmptySkillList();
     ListeCompetence initSkillsList();
     Competence duplicateCompetence(Competence *modal, short *res);
