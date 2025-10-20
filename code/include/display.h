@@ -2,6 +2,7 @@
 #define _DISPLAY_H_
 
     #include "global.h"
+    #include "conf.h"
     #include "effets.h"
     
     // Temp
@@ -14,6 +15,8 @@
     void printBestiary(Bestiaire *bestiary);
     void printDiver(Plongeur *diver);
     void printListeEtat(ListeEtat etats);
+    void printCompetence(Competence competence);
+    void printListeCompetence(ListeCompetence competences);
 
     void printSaveLastRun(Sauvegarde *save);
     void printListSave(ListeSauvegardes *saves);

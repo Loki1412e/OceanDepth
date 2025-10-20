@@ -58,9 +58,12 @@ GROUPE-02/
 ├───code/
 │   │   Makefile
 │   │
-│   ├───config/
-│   │       creatures.conf
-│   │       plongeur.conf
+│   ├───config
+│   │   │   plongeur.conf
+│   │   │
+│   │   └───creatures
+│   │           bestiaire.conf
+│   │           competences.conf
 │   │
 │   ├───include/
 │   │       carte.h

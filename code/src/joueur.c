@@ -22,23 +22,20 @@ Plongeur *initDiver(char *diver_name) {
     diver->nom = NULL;
     if (diver_name) {
         diver->nom = my_strdup(diver_name);
-        if (!diver->nom) return NULL;
+        if (!diver->nom) {
+            fprintf(stderr, "Erreur: initDiver(): Allocation mémoire my_strdup(diver_name)\n");
+            return NULL;
+        }
     }
 
     // Initialisation du Joueur
 
     if (setDiverFromConf(diver)) {
-        freeDiver(diver);
         return NULL;
     }
 
     diver->pv = diver->pv_max;
-    diver->niveau_oxygene = diver->niveau_oxygene_max;
-
-    diver->etats_subi = initEmptyListeEtat();
-
-    diver->competences = NULL;
-    diver->longueur_competences = 0;
+    diver->oxygene = diver->oxygene_max;
 
     return diver;
 }
@@ -50,42 +47,141 @@ int setDiverFromConf(Plongeur *diver) {
 
     char line[256];
 
-    diver->longueur_competences = 0;
+    diver->liste_competences.longueur = 0;
+
+    short res;
 
     while (fgets(line, sizeof(line), f)) {
         
-        if (strncmp(line, "pv_max=", 7) == 0)
-            diver->pv_max = atoi(line + 7);
-        
-        if (strncmp(line, "niveau_oxygene_max=", 19) == 0)
-            diver->niveau_oxygene_max = atoi(line + 19);
-        
-        if (strncmp(line, "niveau_fatigue=", 15) == 0)
-            diver->niveau_fatigue = atoi(line + 15);
-        
-        if (strncmp(line, "fatigue_max=", 12) == 0)
-            diver->fatigue_max = atoi(line + 12);
+        if (strncmp(line, "pv_max=", 7) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[7] == '\0') continue; // ligne vide
 
-        else if (strncmp(line, "attaque_minimale=", 17) == 0)
-            diver->attaque_min = atoi(line + 17);
+            diver->pv_max = my_strToInt(line + 7, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setDiverFromConf(): my_strToInt() -> \"pv_max=\"\n");
+                freeDiver(diver);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
         
-        else if (strncmp(line, "attaque_maximale=", 17) == 0)
-            diver->attaque_max = atoi(line + 17);
+        else if (strncmp(line, "oxygene_max=", 12) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[12] == '\0') continue; // ligne vide
+
+            diver->oxygene_max = my_strToInt(line + 12, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setDiverFromConf(): my_strToInt() -> \"oxygene_max=\"\n");
+                freeDiver(diver);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
         
-        else if (strncmp(line, "defense=", 8) == 0)
-            diver->defense = atoi(line + 8);
+        else if (strncmp(line, "fatigue_max=", 12) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[12] == '\0') continue; // ligne vide
+
+            diver->fatigue_max = my_strToInt(line + 12, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setDiverFromConf(): my_strToInt() -> \"fatigue_max=\"\n");
+                freeDiver(diver);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+
+        else if (strncmp(line, "attaque_min=", 12) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[12] == '\0') continue; // ligne vide
+
+            diver->attaque_min = my_strToInt(line + 12, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setDiverFromConf(): my_strToInt() -> \"attaque_min=\"\n");
+                freeDiver(diver);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
         
-        else if (strncmp(line, "vitesse=", 8) == 0)
-            diver->vitesse = atoi(line + 8);
+        else if (strncmp(line, "attaque_max=", 12) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[12] == '\0') continue; // ligne vide
+
+            diver->attaque_max = my_strToInt(line + 12, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setDiverFromConf(): my_strToInt() -> \"attaque_max=\"\n");
+                freeDiver(diver);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
         
-        else if (strncmp(line, "niveau=", 7) == 0)
-            diver->niveau = atoi(line + 7);
+        else if (strncmp(line, "defense=", 8) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[8] == '\0') continue; // ligne vide
+
+            diver->defense = my_strToInt(line + 8, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setDiverFromConf(): my_strToInt() -> \"defense=\"\n");
+                freeDiver(diver);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
         
-        else if (strncmp(line, "perles=", 7) == 0)
-            diver->perles = atoi(line + 7);
+        else if (strncmp(line, "vitesse=", 8) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[8] == '\0') continue; // ligne vide
+
+            diver->vitesse = my_strToInt(line + 8, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setDiverFromConf(): my_strToInt() -> \"vitesse=\"\n");
+                freeDiver(diver);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
         
-        else if (strncmp(line, "profondeur=", 11) == 0)
-            diver->profondeur = atoi(line + 11);
+        else if (strncmp(line, "niveau=", 7) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[7] == '\0') continue; // ligne vide
+
+            diver->niveau = my_strToInt(line + 7, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setDiverFromConf(): my_strToInt() -> \"niveau=\"\n");
+                freeDiver(diver);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+        
+        else if (strncmp(line, "perles=", 7) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[7] == '\0') continue; // ligne vide
+
+            diver->perles = my_strToInt(line + 7, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setDiverFromConf(): my_strToInt() -> \"perles=\"\n");
+                freeDiver(diver);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+        
+        else if (strncmp(line, "profondeur=", 11) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[11] == '\0') continue; // ligne vide
+
+            diver->profondeur = my_strToInt(line + 11, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setDiverFromConf(): my_strToInt() -> \"profondeur=\"\n");
+                freeDiver(diver);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
     }
 
     fclose(f);
@@ -101,17 +197,17 @@ void freeDiverContent(Plongeur *diver) {
         diver->nom = NULL;
     }
     
-    freeListeEtat(&diver->etats_subi);
+    freeListeEtat(&diver->liste_etats);
     
-    if (diver->competences) {
-        for (size_t i = 0; i < diver->longueur_competences; i++) {
-            if (!diver->competences[i].nom) continue;
-            free(diver->competences[i].nom);
-            diver->competences[i].nom = NULL;
+    if (diver->liste_competences.competences) {
+        for (size_t i = 0; i < diver->liste_competences.longueur; i++) {
+            if (!diver->liste_competences.competences[i].nom) continue;
+            free(diver->liste_competences.competences[i].nom);
+            diver->liste_competences.competences[i].nom = NULL;
         }
-        free(diver->competences);
-        diver->competences = NULL;
-        diver->longueur_competences = 0;
+        free(diver->liste_competences.competences);
+        diver->liste_competences.competences = NULL;
+        diver->liste_competences.longueur = 0;
     }
 }
 
