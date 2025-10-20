@@ -8,6 +8,9 @@
     void freeCompetence(Competence *competence);
     void freeListeCompetence(ListeCompetence *liste_competences);
 
+    char *enumActionTypeToChar(ActionType type);
+    ActionType charToEnumActionType(char *type);
+
     ListeCompetence initSkillsList(short *res);
     ListeCompetence initEmptySkillList();
     ListeCompetence initSkillsList();

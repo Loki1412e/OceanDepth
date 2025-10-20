@@ -69,6 +69,20 @@
     } Effets;
 
 
+    typedef enum {
+        AUCUNE,
+        DEGATS_FIXES,
+        DEGATS_SCALES,
+        DEGATS_PERFORANTS,
+        MODIFIER_STAT,
+        VOL_DE_VIE,
+        APPLIQUER_EFFET,
+        RETIRER_EFFET,
+        // Suite ...
+        LENGTH_ActionType
+    } ActionType;
+
+
     /* Struct */
 
     typedef struct {
@@ -85,17 +99,22 @@
 
 
     typedef struct {
+        ActionType type;
+        char **params;      // Ex: { "attaque_max", "1.3" } / { "PARALYSIE", "2", "25" }
+        size_t longueur_params;
+    } Action;
+
+    typedef struct {
         unsigned id;
         char *nom;
         char *description;
-        // Cooldown en tours
+        int cout_oxygene;
+        int cout_pv;
+        char *ciblage;      // Ex: "ENNEMI_UNIQUE", "SOI_MEME"
         int cooldown_max;
         int cooldown_restant;
-        int multiplicateur_degats;  // ex: 110 -> degats *= 110 / 100. => degats *= 1.1
-        int chance_effet;           // ex: 30 = 30% chance d’appliquer effet
-        Effets effet;               // ex: "SAIGNEMENT"
-        int duree_effet;            // en tours
-        int sur_soi;                // 1 = s’applique à soi, 0 = sur ennemi
+        Action *actions;
+        size_t longueur_actions;
     } Competence;
 
     typedef struct {
