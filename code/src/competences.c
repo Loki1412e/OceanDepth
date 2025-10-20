@@ -71,6 +71,39 @@ Competence initEmptySkill() {
     };
 }
 
+
+Action duplicateAction(Action *modal, short *res) {
+    *res = EXIT_SUCCESS;
+    
+    Action action = {
+        .type = modal->type,
+        .longueur_params = modal->longueur_params,
+        .params = NULL
+    };
+
+    if (modal->longueur_params == 0)
+        return action;
+
+    action.params = calloc(modal->longueur_params, sizeof(char*));
+    if (!action.params) {
+        *res = EXIT_FAILURE;
+        return action;
+    }
+
+    for (size_t i = 0; i < modal->longueur_params; i++) {
+        action.params[i] = my_strdup(modal->params[i]);
+        if (!action.params[i]) {
+            fprintf(stderr, "Erreur: duplicateAction(): action.params[%zu] = my_strdup(modal->params[%zu])\n", i);
+            action.longueur_params = i;
+            freeAction(&action);
+            *res = EXIT_FAILURE;
+            return action;
+        }
+    }
+    
+    return action;
+}
+
 Competence duplicateCompetence(Competence *modal, short *res) {
     if (!modal) {
         *res = EXIT_FAILURE;
@@ -116,28 +149,13 @@ Competence duplicateCompetence(Competence *modal, short *res) {
         
         Action *ac = &competence.listeAction.actions[i];
         Action *am = &modal->listeAction.actions[i];
-
-        ac->type = am->type;
-        ac->longueur_params = am->longueur_params;
-
-        ac->params = calloc(ac->longueur_params, sizeof(char*));
+        
+        *ac = duplicateAction(am, res);
         if (!ac->params) {
-            fprintf(stderr, "Erreur: duplicateCompetence(): Allocation mémoire: competence.listeAction.actions[%zu] = calloc()\n", i);
+            fprintf(stderr, "Erreur: duplicateCompetence(): Allocation mémoire: competence.listeAction.actions[%zu] = duplicateAction(am, res)\n", i);
             freeCompetence(&competence);
             *res = EXIT_FAILURE;
             return competence;
-        }
-
-        for (size_t j = 0; j < ac->longueur_params; j++) {
-            
-            ac->params[j] = my_strdup(am->params[j]);
-            
-            if (!ac->params[j]) {
-                fprintf(stderr, "Erreur: duplicateCompetence(): Allocation mémoire: competence.listeAction.actions[%zu].params[j=%zu] = calloc()\n", i, j);
-                freeCompetence(&competence);
-                *res = EXIT_FAILURE;
-                return competence;
-            }
         }
     }
 
@@ -251,6 +269,45 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
             }
         }
 
+        else if (strncmp(line, "cout_pv=", 8) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            skills[index].cout_pv = my_strToInt(line + 8, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"cout_pv=\"\n");
+                freeListeCompetence(skill_list);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+
+        else if (strncmp(line, "cout_oxygene=", 13) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            skills[index].cout_oxygene = my_strToInt(line + 13, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"cout_oxygene=\"\n");
+                freeListeCompetence(skill_list);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+
+        else if (strncmp(line, "ciblage=", 8) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            skills[index].ciblage = my_strToInt(line + 8, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"ciblage=\"\n");
+                freeListeCompetence(skill_list);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+
         else if (strncmp(line, "cooldown_max=", 13) == 0) {
             line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
             if (line[0] == '\0') continue; // ligne vide
@@ -263,86 +320,12 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
                 return EXIT_FAILURE;
             }
         }
-        
-        else if (strncmp(line, "cooldown_restant=", 17) == 0) {
+
+        else if (strncmp(line, "actions=", 8) == 0) {
             line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
             if (line[0] == '\0') continue; // ligne vide
-
-            skills[index].cooldown_restant = my_strToInt(line + 17, &res);
-            if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"cooldown_restant=\"\n");
-                freeListeCompetence(skill_list);
-                fclose(f);
-                return EXIT_FAILURE;
-            }
-        }
-
-        else if (strncmp(line, "multiplicateur_degats=", 22) == 0) {
-            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
-            if (line[0] == '\0') continue; // ligne vide
-
-            skills[index].multiplicateur_degats = my_strToInt(line + 22, &res);
-            if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"multiplicateur_degats=\"\n");
-                freeListeCompetence(skill_list);
-                fclose(f);
-                return EXIT_FAILURE;
-            }
-        }
-        
-        else if (strncmp(line, "chance_effet=", 13) == 0) {
-            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
-            if (line[0] == '\0') continue; // ligne vide
-
-            skills[index].chance_effet = my_strToInt(line + 13, &res);
-            if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"chance_effet=\"\n");
-                freeListeCompetence(skill_list);
-                fclose(f);
-                return EXIT_FAILURE;
-            }
-        }
-        
-        else if (strncmp(line, "effet=", 6) == 0) {
-            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
-            if (line[0] == '\0') continue; // ligne vide
-
-            buff = my_strdup(line + 6);
-            if (!buff) {
-                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strdup() -> \"effet=\"\n");
-                freeListeCompetence(skill_list);
-                fclose(f);
-                return EXIT_FAILURE;
-            }
-
-            skills[index].effet = charToEnumEffect(buff);
-            free(buff);
-        }
-        
-        else if (strncmp(line, "duree_effet=", 12) == 0) {
-            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
-            if (line[0] == '\0') continue; // ligne vide
-
-            skills[index].duree_effet = my_strToInt(line + 12, &res);
-            if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"duree_effet=\"\n");
-                freeListeCompetence(skill_list);
-                fclose(f);
-                return EXIT_FAILURE;
-            }
-        }
-        
-        else if (strncmp(line, "sur_soi=", 8) == 0) {
-            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
-            if (line[0] == '\0') continue; // ligne vide
-
-            skills[index].sur_soi = my_strToInt(line + 8, &res);
-            if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"sur_soi=\"\n");
-                freeListeCompetence(skill_list);
-                fclose(f);
-                return EXIT_FAILURE;
-            }
+            
+            // A FAIRE
         }
     }
 
