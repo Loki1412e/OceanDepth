@@ -47,12 +47,13 @@ Etat duplicateEtat(Etat *modal) {
 // - `ListeEtat`
 // - `*res` = `EXIT_FAILURE` ou `EXIT_SUCCESS`
 ListeEtat duplicateListeEtat(ListeEtat *modal, short *res) {
+    *res = EXIT_SUCCESS;
+    
     if (!modal->etats || modal->longueur == 0) {
-        *res = EXIT_FAILURE;
+        // fprintf(stderr, "Erreur: duplicateListeEtat(): Argument(s) invalide(s)\n");
+        // *res = EXIT_FAILURE;
         return initEmptyListeEtat();
     }
-
-    *res = EXIT_SUCCESS;
     
     ListeEtat liste = {
         .etats = NULL,

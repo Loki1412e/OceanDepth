@@ -70,19 +70,18 @@ Competence duplicateCompetence(Competence *modal, short *res) {
 // - `ListeCompetence`
 // - `*res` = `EXIT_FAILURE` ou `EXIT_SUCCESS`
 ListeCompetence duplicateListeCompetence(ListeCompetence *modal, short *res) {
+    *res = EXIT_SUCCESS;
+    
     if (!modal->competences || modal->longueur == 0) {
-        *res = EXIT_FAILURE;
         return initEmptySkillList();
     }
-
-    *res = EXIT_SUCCESS;
     
     ListeCompetence liste = {
         .competences = NULL,
         .longueur = modal->longueur
     };
     
-    liste.competences = calloc(modal->longueur, sizeof(Etat));
+    liste.competences = calloc(modal->longueur, sizeof(Competence));
     if (!liste.competences) {
         fprintf(stderr, "Erreur: duplicateListeEtat(): Allocation mémoire calloc\n");
         freeListeCompetence(&liste);

@@ -46,11 +46,6 @@ int runGame(Sauvegarde *actualSave) {
 
     printSave(actualSave);
     printf("[%s] entre dans les profondeurs maritimes.\n\n", diver->nom);
-    
-    printf("\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
-    printBestiary(bestiary);
-    printf("\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n");
-    sleep(5);//debug
 
     while (runProgram) {
 
