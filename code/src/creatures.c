@@ -27,7 +27,6 @@ int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary) {
     for (size_t i = 0; i < modalBestiary->longueur_creatures; i++) {
         CreatureMarine *creature = modalBestiary->creatures[i];
         if (!creature) continue;
-
         totalPoids += rareteToPoids(creature->rarete);  // On additionne le poids de rareté
     }
 
@@ -143,7 +142,10 @@ Bestiaire *initEmptyBestiary() {
 
 
 Bestiaire *initModalBestiary(ListeCompetence *skill_list) {
-    if (!skill_list) return NULL;
+    if (!skill_list) {
+        fprintf(stderr, "Erreur: initModalBestiary(): *skill_list == NULL\n");
+        return NULL;
+    }
 
     short res;
     
@@ -183,6 +185,7 @@ Bestiaire *initModalBestiary(ListeCompetence *skill_list) {
     // Initialisation du Bestiaire Model
 
     if (setBestiaryFromConf(modalBestiary, skill_list, "config/bestiaire/creatures.conf") == EXIT_FAILURE) {
+        fprintf(stderr, "Erreur: initModalBestiary(): setBestiaryFromConf()\n");
         return NULL;
     }
 
@@ -213,8 +216,10 @@ void sortCreaturesBySpeed(CreatureMarine **creatures, size_t nb_creatures) {
 
 
 int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *skill_list, char *path) {
-    if (!modalBestiary || !modalBestiary->creatures || modalBestiary->longueur_creatures == 0 || !path)
+    if (!modalBestiary || !modalBestiary->creatures || modalBestiary->longueur_creatures == 0 || !path) {
+        fprintf(stderr, "Erreur: setBestiaryFromConf(): Parametre(s) mal initialisé(s)\n");
         return EXIT_FAILURE;
+    }
 
     FILE *f = fopen(path, "r");
     if (f == NULL) {
@@ -365,10 +370,8 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *skill_list, c
                 return EXIT_FAILURE;
             }
             if (rarete >= LENGTH_Rarete) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf(): rarete >= LENGTH_Rarete\n");
-                freeBestiary(modalBestiary);
-                fclose(f);
-                return EXIT_FAILURE;
+                fprintf(stderr, "Warning: setBestiaryFromConf(): rarete >= LENGTH_Rarete --> init à 0\n");
+                rarete = 0;
             }
 
             modalBestiary->creatures[index]->rarete = (Rarete) rarete;
@@ -491,7 +494,7 @@ CreatureMarine *duplicateCreature(CreatureMarine *modal) {
         freeCreature(creature);
         return NULL;
     }
-
+    
     creature->liste_etats = duplicateListeEtat(&modal->liste_etats, &res);
     if (res == EXIT_FAILURE) {
         fprintf(stderr, "Erreur: duplicateCreature(): duplicateListeEtat()\n");
