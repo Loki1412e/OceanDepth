@@ -199,6 +199,61 @@ ListeCompetence duplicateListeCompetence(ListeCompetence *modal, short *res) {
 }
 
 
+Action *parseActions(char *actions_str_raw, size_t *nb_actions, short *res) {
+
+    // A FAIRE !
+
+    // *res = EXIT_SUCCESS;
+    
+    // // 1. Compter le nombre d'actions (séparées par ';')
+    // *nb_actions = my_countStrTokElem(actions_str_raw, ";", res);
+    // if (*res == EXIT_FAILURE) {
+    //     return NULL;
+    // }
+    
+    // Action *actions = calloc(*nb_actions, sizeof(Action));
+    // if (!actions) {
+    //     *res = EXIT_FAILURE;
+    //     return NULL;
+    // }
+
+    // char *actions_str_copy = my_strdup(actions_str_raw);
+    // char *action_token = strtok(actions_str_copy, ";");
+    // size_t i = 0;
+
+    // while(action_token != NULL) {
+    //     // 2. Compter les paramètres pour l'action en cours (séparés par ':')
+    //     size_t nb_parts = my_countStrTokElem(action_token, ":", res);
+    //     actions[i].longueur_params = (nb_parts > 0) ? nb_parts - 1 : 0;
+        
+    //     char *action_str_copy = my_strdup(action_token);
+    //     char *part_token = strtok(action_str_copy, ":");
+
+    //     // 3. Assigner le type de l'action
+    //     actions[i].type = charToEnumActionType(part_token);
+    //     if (!actions[i].type) {
+    //         *res = EXIT_FAILURE;
+    //         return NULL;
+    //     }
+        
+    //     // 4. Allouer et assigner les paramètres
+    //     if (actions[i].longueur_params > 0) {
+    //         actions[i].params = calloc(actions[i].longueur_params, sizeof(char*));
+    //         size_t j = 0;
+    //         while ((part_token = strtok(NULL, ":")) != NULL) {
+    //             actions[i].params[j++] = my_strdup(part_token);
+    //         }
+    //     }
+    //     free(action_str_copy);
+    //     action_token = strtok(NULL, ";");
+    //     i++;
+    // }
+    // free(actions_str_copy);
+
+    // return actions;
+}
+
+
 int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
     if (!skill_list || !skill_list->competences || skill_list->longueur == 0 || !path)
         return EXIT_FAILURE;
@@ -216,6 +271,9 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
 
     char *buff = NULL;
     short res;
+
+    char *actions_str_copy = NULL;
+    char *action_token = NULL;
 
     while (fgets(line, sizeof(line), f)) {
 
@@ -324,8 +382,14 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
         else if (strncmp(line, "actions=", 8) == 0) {
             line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
             if (line[0] == '\0') continue; // ligne vide
-            
-            // A FAIRE
+
+            skills[index].listeAction.actions = parseActions(line + 8, &skills[index].listeAction.longueur, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): actions = calloc()\n");
+                freeListeCompetence(skill_list);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
         }
     }
 
@@ -344,6 +408,7 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
 // Return:
 // - `ListeCompetence`
 // - `*res` = `EXIT_FAILURE` ou `EXIT_SUCCESS`
+// POUR LE MOMENT : Uniquement monstre
 ListeCompetence initSkillsList(short *res) {
     if (!res) {
         return initEmptySkillList();
