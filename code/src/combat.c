@@ -48,20 +48,36 @@ int calculerDegats(int attaque_min, int attaque_max, int defense) {
 
 int appliquerConsommationOxygeneProfondeur(Plongeur *joueur) {
     
-    int perte;
-    
-    perte = random_int(2, 5) * (joueur->row_X + 1); // niveau de profondeur, ptet trop violent ???
+    int perte = random_int(2, 5) * (joueur->profondeur); // niveau de profondeur, ptet trop violent ???
     joueur->niveau_oxygene -= perte;
     if (joueur->niveau_oxygene < 0) joueur->niveau_oxygene = 0;
 
     return perte;
 }
 
+int creaturesVivantes(CreatureMarine **creatures, size_t nb_creatures) {
+    int nb_vivantes = 0;
+    
+    for (size_t i = 0; i < nb_creatures; i++)
+        if (creatures[i]->pv > 0) nb_vivantes++;
+
+    return nb_vivantes > 0;
+}
+
+// `return 0` si pas fini
+// `return 1` si tout les monstres sont morts ou si le joueur est mort
+int finDuCombat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
+    return joueur->pv <= 0 || !creaturesVivantes(creatures, nb_creatures);
+}
+
 
 /*====== Actions ======*/
 
 void joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature) {
-    int degats = calculerDegats(joueur->attaque_min, joueur->attaque_max, creature->defense);
+    int defenseCible = calculerDefenseEffet(creature->defense, &creature->etats_subi);
+    int degats = calculerDegats(joueur->attaque_min, joueur->attaque_max, defenseCible);
+    degats = calculerDegatsInfligesEffet(&creature->etats_subi, degats);
+
     creature->pv -= degats;
     if (creature->pv < 0) creature->pv = 0;
 
@@ -77,13 +93,24 @@ void joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature) {
 }
 
 void creatureAttaqueJoueur(CreatureMarine *creature, Plongeur *joueur) {
-    int degats = calculerDegats(creature->attaque_min, creature->attaque_max, joueur->defense);
+    int defenseCible = calculerDefenseEffet(joueur->defense, &joueur->etats_subi);
+    int degats = calculerDegats(creature->attaque_min, creature->attaque_max, defenseCible);
+    degats = calculerDegatsInfligesEffet(&joueur->etats_subi, degats);
+    
     joueur->pv -= degats;
     if (joueur->pv < 0) joueur->pv = 0;
     
     printf("[%s] vous attaque → %d dégâts (PV restants: %d)\n", creature->nom_type, degats, joueur->pv);
 }
 
+void appliquerDegatsAvantTour(ListeEtat *etats, int *pv, int maxPv, int defense) {
+    int defenseFinal = calculerDefenseEffet(defense, etats);
+    int degats = calculerDegatsSubiDebutTourEffet(etats, pv, maxPv, defenseFinal);
+    // degats = calculerDegatsInfligesEffet(etats, degats);
+    
+    *pv -= degats;
+    if (*pv < 0) *pv = 0;
+}
 
 /* ==== Affichage ==== */
 
@@ -109,11 +136,16 @@ void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_c
     printf("Vie     : %d/%d\n", joueur->pv, joueur->pv_max);
     printf("Oxygène : %d/%d\n", joueur->niveau_oxygene, joueur->niveau_oxygene_max);
     printf("Fatigue : %d/%d\n", joueur->niveau_fatigue, joueur->fatigue_max);
+    printListeEtat(joueur->etats_subi);
     
     printf("\n--- Créatures ---\n");
+    printf("\n");
     for (size_t i = 0; i < nb_creatures; i++) {
-        if (creatures[i]->pv > 0)
+        if (creatures[i]->pv > 0) {
             printf("[%zu] %s (%d/%d PV)\n", i+1, creatures[i]->nom_type, creatures[i]->pv, creatures[i]->pv_max);
+            printListeEtat(creatures[i]->etats_subi);
+            printf("\n");
+        }
         else printf("☠️  %s (%d/%d PV)\n", creatures[i]->nom_type, creatures[i]->pv, creatures[i]->pv_max);
     }
 
@@ -130,51 +162,44 @@ void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_c
 // creatures deja sort by speed (voir creature.c -> generateCreatureInBestiary)
 int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
     
-    int vivantes;
-    
     int choix;
     size_t cible;
 
-    short premierTour = 1;
-
     clearConsole();
     
-    while (joueur->pv > 0) {
-        
-        vivantes = 0;
+    while (finDuCombat(joueur, creatures, nb_creatures) != true) {
 
+        // Monstres autant ou plus rapides
         for (size_t i = 0; i < nb_creatures; i++) {
-            if (creatures[i]->pv > 0) vivantes++;
-        }
-
-        if (vivantes == 0) {
-            printf("\n✅ Toutes les créatures ont été vaincues !\n");
-            return EXIT_SUCCESS;
-        }
-
-        // Monstres autant ou plus rapides LORS DU premier tour de boucle
-        if (premierTour) {
-            for (size_t i = 0; i < nb_creatures; i++) {
-                if (creatures[i]->pv > 0 && (creatures[i]->vitesse >= joueur->vitesse)) {
+            if (creatures[i]->pv > 0 && (creatures[i]->vitesse >= joueur->vitesse)) {
+                appliquerDegatsAvantTour(&creatures[i]->etats_subi, &creatures[i]->pv, creatures[i]->pv_max, creatures[i]->defense);
+                
+                if (peutAttaquer(&creatures[i]->etats_subi))
                     creatureAttaqueJoueur(creatures[i], joueur);
-                    if (joueur->pv <= 0) break;
-                }
+                
+                else printf("[%s] n'a pas pu attaquer.\n", creatures[i]->nom_type);
+                
+                decrementerDureesEtNettoyer(&creatures[i]->etats_subi, true, false);
+                if (joueur->pv <= 0) break;
             }
-            premierTour = 0;
         }
+
+        if (finDuCombat(joueur, creatures, nb_creatures)) break;
 
         // Joueur
 
         int attaques_restantes = calculerAttaquesMaxAvecFatigue(joueur->fatigue_max, joueur->niveau_fatigue);
 
+
+        appliquerConsommationOxygeneProfondeur(joueur);
+        afficherEtatOxygene(joueur);
+        appliquerDegatsAvantTour(&joueur->etats_subi, &joueur->pv, joueur->pv_max, joueur->defense);
+
         afficherInterface(joueur, creatures, nb_creatures, attaques_restantes);
 
         while (attaques_restantes > 0) {
 
-            if (vivantes == 0) {
-                printf("\n✅ Toutes les créatures ont été vaincues !\n");
-                return EXIT_SUCCESS;
-            }
+            if (finDuCombat(joueur, creatures, nb_creatures)) break;
             
             choix = lireEntier();
             while (choix < 1 || choix > 4) {
@@ -184,6 +209,12 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
             switch (choix) {
                 case 1:
+
+                    if (!peutAttaquer(&joueur->etats_subi)) {
+                        printf("Vous n'avez pas pu attaquer.\n");
+                        break;
+                    }
+
                     printf("\nQuelle cible ?\n");
                     for (size_t i = 0; i < nb_creatures; i++) {
                         if (creatures[i]->pv > 0)
@@ -239,18 +270,27 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
             if (attaques_restantes > 0) afficherInterface(joueur, creatures, nb_creatures, attaques_restantes);
         }
 
-        appliquerConsommationOxygeneProfondeur(joueur);
-        afficherEtatOxygene(joueur);
+        decrementerDureesEtNettoyer(&joueur->etats_subi, true, false);
 
         // Monstres strictement moins rapides
         for (size_t i = 0; i < nb_creatures; i++) {
-            if (creatures[i]->pv > 0) {
-                creatureAttaqueJoueur(creatures[i], joueur);
+            if (creatures[i]->pv > 0 && (creatures[i]->vitesse < joueur->vitesse)) {
+                appliquerDegatsAvantTour(&creatures[i]->etats_subi, &creatures[i]->pv, creatures[i]->pv_max, creatures[i]->defense);
+                
+                if (peutAttaquer(&creatures[i]->etats_subi))
+                    creatureAttaqueJoueur(creatures[i], joueur);
+                
+                decrementerDureesEtNettoyer(&creatures[i]->etats_subi, true, false);
                 if (joueur->pv <= 0) break;
             }
         }
     }
+    
+    if (!creaturesVivantes(creatures, nb_creatures))
+        printf("\n✅ Toutes les créatures ont été vaincues !\n");
 
-    printf("\n☠️  Vous êtes mort... GAME OVER\n");
+    if (joueur->pv <= 0)
+        printf("\n☠️  Vous êtes mort... GAME OVER\n");
+
     return EXIT_SUCCESS;
 }

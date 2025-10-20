@@ -39,21 +39,33 @@
 
     typedef enum {
         AUCUN,
-        PARALYSIE,
-        POISON,
+        BENEDICTION_OCEAN,
+        MALEDICTION_OCEAN,
         SAIGNEMENT,
+        PARALYSIE,
+        ETREINTE,
+        PRECISION_REDUITE,
+        DEFENSE_AUGMENTEE,
+        VOIX_DU_COURANT,
         // Suite ...
         LENGTH_EffetsSpeciaux
     } EffetsSpeciaux;
 
-    
+
     /* Struct */
 
     typedef struct {
-        EffetsSpeciaux *etats;
-        size_t longueur_etats;
-    } Etats;
-    
+        EffetsSpeciaux effet;
+        int estPermanent;
+        int duree_zone;
+        int duree_combat;
+    } Etat;
+
+    typedef struct {
+        Etat *etats;
+        size_t longueur;
+    } ListeEtat;
+
 
     typedef struct {
         unsigned *profondeurs;
@@ -75,7 +87,7 @@
         int vitesse;
         // On va attribuer des etats a partir de compétences ce sera mieux
         // ---> // EffetsSpeciaux effet_special; // voir EffetsSpeciaux -> a modifier mettre liste d'effets speciaux
-        Etats etats_subi;
+        ListeEtat etats_subi;
         ApparitionCreature *apparition;
     } CreatureMarine;
 
@@ -108,11 +120,10 @@
         int vitesse;
         unsigned perles; // monnaie du jeu
         unsigned niveau;
-        Etats etats_subi;
+        ListeEtat etats_subi;
         Competence *competences; // tableau de competences (pas sur de le garder)
         size_t longueur_competences;
-        unsigned row_X; // 0
-        unsigned col_Y; // 0
+        int profondeur;
     } Plongeur;
 
     typedef struct {

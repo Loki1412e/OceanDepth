@@ -6,6 +6,7 @@
     #include "joueur.h"
     #include "creatures.h"
     #include "combat.h"
+    #include "effets.h"
 
     int runGame(Sauvegarde *actualSave);
 
