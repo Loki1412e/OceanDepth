@@ -126,7 +126,7 @@
         CiblageType ciblage;
         int cooldown_max;
         int cooldown_restant;
-        ListeAction liste_action;
+        ListeAction listeAction;
     } Competence;
 
     typedef struct {
