@@ -42,7 +42,7 @@ Plongeur *initDiver(char *diver_name) {
 
 // Pas encore les compétences a voir plus tard...
 int setDiverFromConf(Plongeur *diver) {
-    FILE *f = fopen("config/plongeur.conf", "r");
+    FILE *f = fopen("config/plongeur/stats.conf", "r");
     if (f == NULL) return EXIT_FAILURE;
 
     char line[256];
