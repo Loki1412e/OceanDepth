@@ -46,6 +46,10 @@ make clean && make debug && make run
 OceanDepth est un jeu d’aventure textuel en C où l’on incarne un plongeur explorant les abysses.  
 Objectif : survivre, combattre des créatures marines et découvrir des trésors enfouis.
 
+## 💾 Liste des fonctionnalités :
+
+### • [fonctionnalites.md](./documentation/fonctionnalites.md)
+
 ## 📂 Structure / Rendu du projet
 
 ```
