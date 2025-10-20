@@ -3,11 +3,12 @@
 void freeListeEtat(ListeEtat *listeEtat);
 
 
-char *enumSpecialEffectToChar(EffetsSpeciaux type) {
+char *enumEffectToChar(Effets type) {
     switch (type) {
         case BENEDICTION_OCEAN: return "BENEDICTION_OCEAN";
         case MALEDICTION_OCEAN: return "MALEDICTION_OCEAN";
         case SAIGNEMENT: return "SAIGNEMENT";
+        case POISON: return "POISON";
         case PARALYSIE: return "PARALYSIE";
         case ETREINTE: return "ETREINTE";
         case PRECISION_REDUITE: return "PRECISION_REDUITE";
@@ -17,13 +18,14 @@ char *enumSpecialEffectToChar(EffetsSpeciaux type) {
     }
 }
 
-EffetsSpeciaux charToEnumSpecialEffect(char *type) {
+Effets charToEnumEffect(char *type) {
     for (size_t effet = 0; effet < LENGTH_EffetsSpeciaux; effet++) {
-        if (strcmp(type, enumSpecialEffectToChar((EffetsSpeciaux) effet)) == 0)
-            return (EffetsSpeciaux) effet;
+        if (strcmp(type, enumEffectToChar((Effets) effet)) == 0)
+            return (Effets) effet;
     }
     return AUCUN;
 }
+
 
 ListeEtat initEmptyListeEtat() {
     return (ListeEtat) {
@@ -32,9 +34,50 @@ ListeEtat initEmptyListeEtat() {
     };
 }
 
+Etat duplicateEtat(Etat *modal) {
+    return (Etat) {
+        .effet = modal->effet,
+        .estPermanent = modal->estPermanent,
+        .duree_zone = modal->duree_zone,
+        .duree_combat = modal->duree_combat
+    };
+}
+
+// Return:
+// - `ListeEtat`
+// - `*res` = `EXIT_FAILURE` ou `EXIT_SUCCESS`
+ListeEtat duplicateListeEtat(ListeEtat *modal, short *res) {
+    *res = EXIT_SUCCESS;
+    
+    if (!modal->etats || modal->longueur == 0) {
+        // fprintf(stderr, "Erreur: duplicateListeEtat(): Argument(s) invalide(s)\n");
+        // *res = EXIT_FAILURE;
+        return initEmptyListeEtat();
+    }
+    
+    ListeEtat liste = {
+        .etats = NULL,
+        .longueur = modal->longueur
+    };
+    
+    liste.etats = calloc(modal->longueur, sizeof(Etat));
+    if (!liste.etats) {
+        fprintf(stderr, "Erreur: duplicateListeEtat(): Allocation mémoire calloc\n");
+        freeListeEtat(&liste);
+        *res = EXIT_FAILURE;
+        return liste;
+    }
+
+    for (size_t i = 0; i < modal->longueur; i++) {
+        liste.etats[i] = duplicateEtat(&modal->etats[i]);
+    }
+
+    return liste;
+}
+
 // Note : La gestion de la mémoire (realloc) est simplifiée ici.
 // Vous devriez ajouter des vérifications robustes.
-int ajouterEffet(ListeEtat *listeEtat, EffetsSpeciaux type, int dureeCombat, int dureeZone, int estPermanent) {
+int ajouterEffet(ListeEtat *listeEtat, Effets type, int dureeCombat, int dureeZone, int estPermanent) {
     if (!listeEtat) return EXIT_FAILURE;
     if (type <= AUCUN || type >= LENGTH_EffetsSpeciaux) return EXIT_FAILURE;
     
@@ -44,7 +87,7 @@ int ajouterEffet(ListeEtat *listeEtat, EffetsSpeciaux type, int dureeCombat, int
             listeEtat->etats[i].duree_combat = dureeCombat;
             listeEtat->etats[i].duree_zone = dureeZone;
             listeEtat->etats[i].estPermanent = estPermanent;
-            printf("Effet [%s] (%d) rafraîchi.\n", enumSpecialEffectToChar(type), type);
+            printf("Effet [%s] (%d) rafraîchi.\n", enumEffectToChar(type), type);
             return EXIT_SUCCESS;
         }
     }
@@ -134,7 +177,7 @@ int calculerDegatsInfligesEffet(ListeEtat *etatsCible, int degatsBase) {
     return degatsFinaux;
 }
 
-int calculerDegatsSubiDebutTourEffet(ListeEtat *etats, int *pv, int maxPv, int defense) {
+int calculerDegatsSubiDebutTourEffet(ListeEtat *etats, int *pv, int maxPv, int defense, int *oxygene, int maxOxygene) {
     int degats;
     int degatsFinaux = 0;
     printf("\n");
@@ -148,9 +191,23 @@ int calculerDegatsSubiDebutTourEffet(ListeEtat *etats, int *pv, int maxPv, int d
                 break;
 
             case SAIGNEMENT:
+                // Passe outre la défense donc on enleve les pv directement -> pv -= 5% des PV max
                 degats = maxPv * 0.05;
-                *pv -= degats; // Passe outre la défense donc on enleve les pv directement -> pv -= 5% des PV max
-                printf("L'effet [SAIGNEMENT] vous inflige des dégats\n");
+                *pv -= degats;
+                printf("[SAIGNEMENT] -> -%d pv\n", degats);
+                break;
+
+            case POISON:
+                // Passe outre la défense donc on enleve les pv directement -> pv -= 5% des PV max
+                degats = maxPv * 0.05;
+                *pv -= degats;
+                printf("[POISON] -> -%d pv", degats);
+                if (oxygene) {
+                    degats = maxOxygene * 0.05;
+                    *oxygene -= degats;
+                    printf(" et -%d oxygene", degats);
+                }
+                printf("\n");
                 break;
             
             default:
@@ -194,7 +251,7 @@ void decrementerDureesEtNettoyer(ListeEtat *listeEtat, int estFinDeTourCombat, i
 
     for (size_t i = 0, j = 0; i < listeEtat->longueur || j < listeEtatTemp.longueur; i++) {
         if (etat_a_nettoyer[i])
-            printf("L'effet [%s] (%d) a expiré et a été supprimé.\n", enumSpecialEffectToChar(listeEtat->etats[i].effet), listeEtat->etats[i].effet);
+            printf("L'effet [%s] (%d) a expiré et a été supprimé.\n", enumEffectToChar(listeEtat->etats[i].effet), listeEtat->etats[i].effet);
         else
             listeEtatTemp.etats[j++] = listeEtat->etats[i];
     }
@@ -207,7 +264,9 @@ void decrementerDureesEtNettoyer(ListeEtat *listeEtat, int estFinDeTourCombat, i
 
 void freeListeEtat(ListeEtat *listeEtat) {
     if (!listeEtat) return;
-    free(listeEtat->etats);
-    listeEtat->etats = NULL;
+    if (listeEtat->etats) {
+        free(listeEtat->etats);
+        listeEtat->etats = NULL;
+    }
     listeEtat->longueur = 0;
 }

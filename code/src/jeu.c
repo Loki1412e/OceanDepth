@@ -5,7 +5,7 @@
 int runGame(Sauvegarde *actualSave) {
     if (!actualSave || !actualSave->diver) return EXIT_FAILURE;
 
-    clearConsole();
+    printf("\nclearConsole\n");//clearConsole();
 
     /*===== Init var ====*/
 
@@ -14,21 +14,33 @@ int runGame(Sauvegarde *actualSave) {
     Plongeur *diver = actualSave->diver;
     Bestiaire *modalBestiary = NULL;
     Bestiaire *bestiary = NULL;
+    ListeCompetence skill_list;
+
+    short res;
 
     /*===== Init Allocation ====*/
 
-    modalBestiary = initmodalBestiary();
+    skill_list = initSkillsList(&res);
+    if (res == EXIT_FAILURE) {
+        fprintf(stderr, "Erreur lors du chargement des compétences.\n");
+        return EXIT_FAILURE;
+    }
+
+    modalBestiary = initModalBestiary(&skill_list);
     if (!modalBestiary) {
-        printf("Erreur lors du chargement du bestiaire modèle.\n");
+        freeListeCompetence(&skill_list);
+        fprintf(stderr, "Erreur lors du chargement du bestiaire modèle.\n");
         return EXIT_FAILURE;
     }
 
     bestiary = initEmptyBestiary();
     if (!bestiary) {
-        printf("Erreur lors de la création du bestiaire.\n");
+        fprintf(stderr, "Erreur lors de la création du bestiaire.\n");
         freeBestiary(modalBestiary);
+        freeListeCompetence(&skill_list);
         return EXIT_FAILURE;
     }
+
 
     /*===== Boucle principale ====*/
 
@@ -42,16 +54,22 @@ int runGame(Sauvegarde *actualSave) {
         size_t longueur_creatures = 2;
 
         for (size_t i = 0; i < longueur_creatures; i++) {
-            if (generateCreatureInBestiary(modalBestiary, bestiary, 0)) return EXIT_FAILURE;
+            if (generateCreatureInBestiary(modalBestiary, bestiary)) {
+                runProgram = false;
+                break;
+            }
         }
+        if (!runProgram) break;
 
         diver->profondeur = 1;
 
-        ajouterEffet(&diver->etats_subi, SAIGNEMENT, 3, 0, 0);
+        ajouterEffet(&diver->liste_etats, POISON, 3, 0, 0);
 
-        ajouterEffet(&bestiary->creatures[0]->etats_subi, PARALYSIE, 5, 0, 0);
+        ajouterEffet(&bestiary->creatures[0]->liste_etats, PARALYSIE, 5, 0, 0);
+        ajouterEffet(&bestiary->creatures[1]->liste_etats, SAIGNEMENT, 5, 0, 0);
         
         printBestiary(bestiary);
+
         combat(diver, bestiary->creatures, bestiary->longueur_creatures);
 
         freeBestiaryContent(bestiary);
@@ -63,6 +81,7 @@ int runGame(Sauvegarde *actualSave) {
     
     freeBestiary(bestiary);
     freeBestiary(modalBestiary);
+    freeListeCompetence(&skill_list);
 
     return -1;
     
