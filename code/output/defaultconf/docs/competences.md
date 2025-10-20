@@ -10,6 +10,8 @@ Chaque compétence est définie par plusieurs attributs, dont une liste d'**acti
 
 ### Structure d'une Compétence
 
+L'attribut `cout_oxygene` est uniquement valide pour le joueur.
+
 ```
 id=<id_numerique>
 nom=<nom_de_la_competence>

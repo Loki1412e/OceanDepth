@@ -3,6 +3,27 @@
 void freeCompetence(Competence *competence);
 void freeListeCompetence(ListeCompetence *liste_competences);
 
+char *enumActionTypeToChar(ActionType type) {
+    switch (type) {
+        case DEGATS_FIXES: return "DEGATS_FIXES";
+        case DEGATS_SCALES: return "DEGATS_SCALES";
+        case DEGATS_PERFORANTS: return "DEGATS_PERFORANTS";
+        case MODIFIER_STAT: return "MODIFIER_STAT";
+        case VOL_DE_VIE: return "VOL_DE_VIE";
+        case APPLIQUER_EFFET: return "APPLIQUER_EFFET";
+        case RETIRER_EFFET: return "RETIRER_EFFET";
+        default: return "AUCUNE";
+    }
+}
+
+ActionType charToEnumActionType(char *type) {
+    for (size_t actionType = 0; actionType < LENGTH_ActionType; actionType++) {
+        if (strcmp(type, enumActionTypeToChar((ActionType) actionType)) == 0)
+            return (ActionType) actionType;
+    }
+    return AUCUNE;
+}
+
 
 ListeCompetence initEmptySkillList() {
     return (ListeCompetence) {
