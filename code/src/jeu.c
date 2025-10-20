@@ -69,8 +69,6 @@ int runGame(Sauvegarde *actualSave) {
         ajouterEffet(&bestiary->creatures[1]->liste_etats, SAIGNEMENT, 5, 0, 0);
         
         printBestiary(bestiary);
-        
-        sleep(8);//debug
 
         // combat(diver, bestiary->creatures, bestiary->longueur_creatures);
 
