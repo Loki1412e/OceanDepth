@@ -51,7 +51,7 @@ int setNewSaveName(Sauvegarde *save, char *save_name) {
 Sauvegarde *initSave() {
     Sauvegarde *save = NULL;
     
-    save = malloc(sizeof(Sauvegarde));
+    save = calloc(1, sizeof(Sauvegarde));
     if (!save) return NULL;
 
     save->nom = NULL;
@@ -68,7 +68,7 @@ ListeSauvegardes *preLoadListSaves(char *dir) {
 
     // Allocation
 
-    saves = malloc(sizeof(ListeSauvegardes));
+    saves = calloc(1, sizeof(ListeSauvegardes));
     if (!saves) return NULL;
 
     char **list_saves_name = list_files(dir, &(saves->longueur_sauvegardes));
@@ -80,7 +80,7 @@ ListeSauvegardes *preLoadListSaves(char *dir) {
         return saves;
     }
 
-    saves->sauvegardes = malloc(sizeof(Sauvegarde*) * saves->longueur_sauvegardes);
+    saves->sauvegardes = calloc(saves->longueur_sauvegardes, sizeof(Sauvegarde*));
     if (!saves->sauvegardes) {
         for (size_t i = 0; i < saves->longueur_sauvegardes; i++) free(list_saves_name[i]);
         free(list_saves_name);
@@ -170,8 +170,7 @@ Sauvegarde *loadSave(char *save_name, short preLoad) {
         return NULL;
     }
 
-    // Si preLoad = True alors on s'arrete à loadInfo()
-    if (preLoad) {
+    if (preLoad) { // Si preLoad = True alors on s'arrete à loadInfo()
         fclose(file);
         return save;
     }
@@ -227,9 +226,9 @@ Plongeur *loadDiver(FILE *file) {
         return NULL;
     }
 
-    diver->nom = malloc(nom_len);
+    diver->nom = calloc(nom_len, sizeof(char));
     if (!diver->nom) {
-        fprintf(stderr, "loadDiver malloc nom\n");
+        fprintf(stderr, "loadDiver calloc nom\n");
         freeDiverContent(diver);
         return NULL;
     }
@@ -246,22 +245,29 @@ Plongeur *loadDiver(FILE *file) {
         freeDiverContent(diver);
         return NULL;
     }
-    diver->etats_subi.longueur_etats = etats_len;
+    diver->etats_subi.longueur = etats_len;
+    diver->etats_subi.etats = NULL;
 
     if (etats_len > 0) {
-        diver->etats_subi.etats = malloc(sizeof(EffetsSpeciaux) * etats_len);
+        diver->etats_subi.etats = calloc(etats_len, sizeof(Etat));
         if (!diver->etats_subi.etats) {
-            fprintf(stderr, "loadDiver malloc etats\n");
+            fprintf(stderr, "loadDiver calloc etats\n");
             freeDiverContent(diver);
             return NULL;
         }
-        if (fread(diver->etats_subi.etats, sizeof(EffetsSpeciaux), etats_len, file) != etats_len) {
-            perror("loadDiver fread etats");
-            freeDiverContent(diver);
-            return NULL;
+
+        for (size_t i = 0; i < etats_len; i++) {
+            // Lire Etats sans pointeurs
+            Etat tmp_etat;
+            if (fread(&tmp_etat, sizeof(Etat), 1, file) != 1) {
+                perror("loadDiver fread Competence");
+                freeDiverContent(diver);
+                return NULL;
+            }
+
+            // Copier les données
+            diver->etats_subi.etats[i] = tmp_etat;
         }
-    } else {
-        diver->etats_subi.etats = NULL;
     }
 
     // Lire competences
@@ -272,11 +278,12 @@ Plongeur *loadDiver(FILE *file) {
         return NULL;
     }
     diver->longueur_competences = comp_len;
+    diver->competences = NULL;
 
     if (comp_len > 0) {
-        diver->competences = malloc(sizeof(Competence) * comp_len);
+        diver->competences = calloc(comp_len, sizeof(Competence));
         if (!diver->competences) {
-            fprintf(stderr, "loadDiver malloc competences\n");
+            fprintf(stderr, "loadDiver calloc competences\n");
             freeDiverContent(diver);
             return NULL;
         }
@@ -303,9 +310,9 @@ Plongeur *loadDiver(FILE *file) {
             }
 
             if (comp_nom_len > 0) {
-                diver->competences[i].nom = malloc(comp_nom_len);
+                diver->competences[i].nom = calloc(comp_nom_len, sizeof(char));
                 if (!diver->competences[i].nom) {
-                    fprintf(stderr, "loadDiver malloc comp nom\n");
+                    fprintf(stderr, "loadDiver calloc comp nom\n");
                     freeDiverContent(diver);
                     return NULL;
                 }
@@ -318,8 +325,6 @@ Plongeur *loadDiver(FILE *file) {
                 diver->competences[i].nom = NULL;
             }
         }
-    } else {
-        diver->competences = NULL;
     }
 
     return diver;
@@ -394,17 +399,29 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
 /*
     typedef enum {
         AUCUN,
-        PARALYSIE,
-        POISON,
+        BENEDICTION_OCEAN,
+        MALEDICTION_OCEAN,
         SAIGNEMENT,
+        PARALYSIE,
+        ETREINTE,
+        PRECISION_REDUITE,
+        DEFENSE_AUGMENTEE,
+        VOIX_DU_COURANT,
         // Suite ...
         LENGTH_EffetsSpeciaux
     } EffetsSpeciaux;
 
     typedef struct {
-        EffetsSpeciaux *etats;
-        size_t longueur_etats;
-    } Etats;
+        EffetsSpeciaux effet;
+        int estPermanent;
+        int duree_zone;
+        int duree_combat;
+    } Etat;
+
+    typedef struct {
+        Etat *etats;
+        size_t longueur;
+    } ListeEtat;
 
     typedef struct {
         char *nom;
@@ -428,11 +445,9 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
         int vitesse;
         unsigned perles; // monnaie du jeu
         unsigned niveau;
-        Etats etats_subi; // contient un tableau
+        ListeEtat etats_subi; // contient un tableau
         Competence *competences; // tableau de competences (pas sur de le garder)
         size_t longueur_competences;
-        unsigned row_X; // 0
-        unsigned col_Y; // 0
     } Plongeur;
 */
 
@@ -454,13 +469,16 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
     if (nom_len > 0 && addBlock(tmpSave, diver->nom, nom_len) != EXIT_SUCCESS)
         return EXIT_FAILURE;
 
-    size_t etats_len = diver->etats_subi.longueur_etats;
+    size_t etats_len = diver->etats_subi.longueur;
     // taille états
     if (addBlock(tmpSave, &etats_len, sizeof(size_t)) != EXIT_SUCCESS)
         return EXIT_FAILURE;
     // tab états
-    if (etats_len > 0 && addBlock(tmpSave, diver->etats_subi.etats, sizeof(EffetsSpeciaux) * etats_len) != EXIT_SUCCESS)
-        return EXIT_FAILURE;
+    for (size_t i = 0; i < etats_len; i++) {
+        Etat etat_copy = diver->etats_subi.etats[i];
+        if (addBlock(tmpSave, &etat_copy, sizeof(Etat)) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+    }
 
     size_t comp_len = diver->longueur_competences;
     // taille competences
@@ -517,7 +535,7 @@ SaveTmpFile *initTmpFile(char *dir, char *filename) {
         return NULL;
     }
 
-    SaveTmpFile *save = malloc(sizeof(SaveTmpFile));
+    SaveTmpFile *save = calloc(1, sizeof(SaveTmpFile));
     if (!save) {
         fprintf(stderr, "initTmpFile : erreur allocation mémoire\n");
         return NULL;

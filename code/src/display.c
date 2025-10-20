@@ -9,22 +9,12 @@ void printCreature(CreatureMarine *creature);
 void printCreatures(CreatureMarine **creatures, size_t length);
 void printBestiary(Bestiaire *bestiary);
 void printDiver(Plongeur *diver);
+void printListeEtat(ListeEtat etats);
+
 void printSaveLastRun(Sauvegarde *save);
 void printListSave(ListeSauvegardes *saves);
 
 void printSave(Sauvegarde *save);
-
-char *enumSpecialEffectToChar(EffetsSpeciaux special_effect);
-
-
-char *enumSpecialEffectToChar(EffetsSpeciaux special_effect) {
-    switch (special_effect) {
-        case PARALYSIE: return "PARALYSIE";
-        case POISON: return "POISON";
-        case SAIGNEMENT: return "SAIGNEMENT";
-        default: return "AUCUN";
-    }
-}
 
 
 /*====== Temp ======*/
@@ -53,7 +43,7 @@ char *lireString() {
 
     int valid = 0;
     
-    buff = malloc(sizeof(char) * 512);
+    buff = calloc(512, sizeof(char));
     if (!buff) return NULL;
 
     while (!valid) {
@@ -159,6 +149,26 @@ void printBestiary(Bestiaire *bestiary) {
 }
 
 
+void printListeEtat(ListeEtat etats) {
+    if (etats.longueur == 0 || etats.etats == NULL) {
+        printf("Etats : Aucun\n");
+        return;
+    }
+
+    printf("Etats (%zu):\n", etats.longueur);
+    for (size_t i = 0; i < etats.longueur; i++) {
+        printf(" - %s (%d) => estPermanent=%d / duree_zone=%d / duree_combat=%d",
+            enumSpecialEffectToChar(etats.etats[i].effet) ? enumSpecialEffectToChar(etats.etats[i].effet) : "???",
+            etats.etats[i].effet,
+            etats.etats[i].estPermanent,
+            etats.etats[i].duree_zone,
+            etats.etats[i].duree_combat
+        );
+    }
+    printf("\n");
+}
+
+
 void printDiver(Plongeur *diver) {
     if (!diver) {
         printf("NULL Plongeur pointer\n");
@@ -168,7 +178,7 @@ void printDiver(Plongeur *diver) {
     printf("\n====================================\n");
     printf("PLONGEUR: %s\n", diver->nom ? diver->nom : "(Sans nom)");
     printf("------------------------------------\n");
-    printf("Profondeur: -%d\n", (diver->row_X + 1) * 50);
+    printf("Profondeur: -%d\n", (diver->profondeur));
     printf("PV: %d / %d\n", diver->pv, diver->pv_max);
     printf("Oxygène: %d / %d\n", diver->niveau_oxygene, diver->niveau_oxygene_max);
     printf("Fatigue: %d / %d\n", diver->niveau_fatigue, diver->fatigue_max);
@@ -177,11 +187,13 @@ void printDiver(Plongeur *diver) {
     printf("Vitesse: %d\n", diver->vitesse);
     printf("Niveau: %hu\n", diver->niveau);
     printf("Perles: %hu\n", diver->perles);
+    
+    printListeEtat(diver->etats_subi);
 
     if (diver->longueur_competences > 0 && diver->competences != NULL) {
         printf("Compétences (%zu):\n", diver->longueur_competences);
         for (size_t i = 0; i < diver->longueur_competences; i++) {
-            printf("  - %s\n", diver->competences[i].nom ? diver->competences[i].nom : "(Aucune)");
+            printf("  - %s\n", diver->competences[i].nom ? diver->competences[i].nom : "???");
         }
     } else {
         printf("Compétences: Aucune\n");

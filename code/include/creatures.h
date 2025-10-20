@@ -2,11 +2,12 @@
 #define _CREATURES_H_
 
     #include "global.h"
+    #include "effets.h"
     
-    Bestiaire *initModelBestiary();
+    Bestiaire *initmodalBestiary();
     Bestiaire *initEmptyBestiary();
-    int generateCreatureInBestiary(Bestiaire *modelBestiary, Bestiaire *bestiary, unsigned depth_level);
-    int addCreatureInBestiary(Bestiaire *modelBestiary, Bestiaire *bestiary, char *type_name, unsigned depth_level);
+    int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, unsigned depth_level);
+    int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, char *type_name, unsigned depth_level);
     void freeBestiary(Bestiaire *bestiary);
     void freeBestiaryContent(Bestiaire *bestiary);
     void freeCreatures(CreatureMarine **creatures, size_t length);

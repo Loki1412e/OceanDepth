@@ -17,7 +17,7 @@ int runGame(Sauvegarde *actualSave) {
 
     /*===== Init Allocation ====*/
 
-    modalBestiary = initModelBestiary();
+    modalBestiary = initmodalBestiary();
     if (!modalBestiary) {
         printf("Erreur lors du chargement du bestiaire modèle.\n");
         return EXIT_FAILURE;
@@ -33,7 +33,7 @@ int runGame(Sauvegarde *actualSave) {
     /*===== Boucle principale ====*/
 
     printSave(actualSave);
-    printf("'%s' entre dans les profondeurs maritimes.\n", diver->nom);
+    printf("[%s] entre dans les profondeurs maritimes.\n\n", diver->nom);
 
     while (runProgram) {
 
@@ -44,7 +44,14 @@ int runGame(Sauvegarde *actualSave) {
         for (size_t i = 0; i < longueur_creatures; i++) {
             if (generateCreatureInBestiary(modalBestiary, bestiary, 0)) return EXIT_FAILURE;
         }
+
+        diver->profondeur = 1;
+
+        ajouterEffet(&diver->etats_subi, SAIGNEMENT, 3, 0, 0);
+
+        ajouterEffet(&bestiary->creatures[0]->etats_subi, PARALYSIE, 5, 0, 0);
         
+        printBestiary(bestiary);
         combat(diver, bestiary->creatures, bestiary->longueur_creatures);
 
         freeBestiaryContent(bestiary);
