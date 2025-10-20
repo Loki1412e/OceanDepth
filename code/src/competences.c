@@ -12,7 +12,7 @@ char *enumActionTypeToChar(ActionType type) {
         case VOL_DE_VIE: return "VOL_DE_VIE";
         case APPLIQUER_EFFET: return "APPLIQUER_EFFET";
         case RETIRER_EFFET: return "RETIRER_EFFET";
-        default: return "AUCUNE";
+        default: return "AUCUN_ActionType";
     }
 }
 
@@ -21,7 +21,24 @@ ActionType charToEnumActionType(char *type) {
         if (strcmp(type, enumActionTypeToChar((ActionType) actionType)) == 0)
             return (ActionType) actionType;
     }
-    return AUCUNE;
+    return AUCUN_ActionType;
+}
+
+
+char *enumCiblageTypeToChar(ActionType type) {
+    switch (type) {
+        case ENNEMI_UNIQUE: return "ENNEMI_UNIQUE";
+        case SOI_MEME: return "SOI_MEME";
+        default: return "AUCUN_CiblageType";
+    }
+}
+
+CiblageType charToEnumCiblageType(char *type) {
+    for (size_t ciblageType = 0; ciblageType < LENGTH_CiblageType; ciblageType++) {
+        if (strcmp(type, enumCiblageTypeToChar((CiblageType) ciblageType)) == 0)
+            return (CiblageType) ciblageType;
+    }
+    return AUCUN_CiblageType;
 }
 
 
@@ -37,13 +54,13 @@ Competence initEmptySkill() {
         .id = 0,
         .nom = NULL,
         .description = NULL,
+        .cout_oxygene = 0,
+        .cout_pv = 0,
+        .ciblage = 0,
         .cooldown_max = 0,
         .cooldown_restant = 0,
-        .multiplicateur_degats = 0,
-        .chance_effet = 0,
-        .effet = 0,
-        .duree_effet = 0,
-        .sur_soi = 0
+        .actions = NULL,
+        .longueur_actions = 0
     };
 }
 
@@ -55,18 +72,14 @@ Competence duplicateCompetence(Competence *modal, short *res) {
 
     *res = EXIT_SUCCESS;
 
-    Competence competence = {
-        .id = modal->id,
-        .nom = NULL,
-        .description = NULL,
-        .cooldown_max = modal->cooldown_max,
-        .cooldown_restant = modal->cooldown_restant,
-        .multiplicateur_degats = modal->multiplicateur_degats,
-        .chance_effet = modal->chance_effet,
-        .effet = modal->effet,
-        .duree_effet = modal->duree_effet,
-        .sur_soi = modal->sur_soi,
-    };
+    Competence competence = initEmptySkill();
+    competence.id = modal->id;
+    competence.cout_oxygene = modal->cout_oxygene;
+    competence.cout_pv = modal->cout_pv;
+    competence.ciblage = modal->ciblage;
+    competence.cooldown_max = modal->cooldown_max;
+    competence.cooldown_restant = modal->cooldown_restant;
+    competence.longueur_actions = modal->longueur_actions;
 
     competence.nom = my_strdup(modal->nom);
     if (!competence.nom) {
@@ -82,6 +95,43 @@ Competence duplicateCompetence(Competence *modal, short *res) {
         freeCompetence(&competence);
         *res = EXIT_FAILURE;
         return competence;
+    }
+
+    competence.actions = calloc(competence.longueur_actions, sizeof(Action));
+    if (!competence.actions) {
+        fprintf(stderr, "Erreur: duplicateCompetence(): Allocation mémoire: competence.actions = calloc()\n");
+        freeCompetence(&competence);
+        *res = EXIT_FAILURE;
+        return competence;
+    }
+
+    for (size_t i = 0; i < competence.longueur_actions; i++) {
+        
+        Action *ac = &competence.actions[i];
+        Action *am = &modal->actions[i];
+
+        ac->type = am->type;
+        ac->longueur_params = am->longueur_params;
+
+        ac->params = calloc(ac->longueur_params, sizeof(char*));
+        if (!ac->params) {
+            fprintf(stderr, "Erreur: duplicateCompetence(): Allocation mémoire: competence.actions[%zu] = calloc()\n", i);
+            freeCompetence(&competence);
+            *res = EXIT_FAILURE;
+            return competence;
+        }
+
+        for (size_t j = 0; j < ac->longueur_params; j++) {
+            
+            ac->params[j] = my_strdup(am->params[j]);
+            
+            if (!ac->params[j]) {
+                fprintf(stderr, "Erreur: duplicateCompetence(): Allocation mémoire: competence.actions[%zu].params[j=%zu] = calloc()\n", i, j);
+                freeCompetence(&competence);
+                *res = EXIT_FAILURE;
+                return competence;
+            }
+        }
     }
 
     return competence;
@@ -339,6 +389,15 @@ ListeCompetence initSkillsList(short *res) {
     return skill_list;
 }
 
+void freeAction(Action *action) {
+    if (!action) return;
+
+    for (size_t i = 0; i < action->longueur_params; i++)
+        free(action->params[i]);
+    
+    action->params = NULL;
+    action->longueur_params = 0;
+}
 
 void freeCompetence(Competence *competence) {
     if (!competence) return;
@@ -351,6 +410,11 @@ void freeCompetence(Competence *competence) {
     if (competence->description) {
         free(competence->description);
         competence->description = NULL;
+    }
+
+    if (competence->liste_action.actions) {
+        for (int i = 0; i < competence->liste_action.longueur; i++)
+            freeAction(&competence->liste_action.actions[i]);
     }
 }
 

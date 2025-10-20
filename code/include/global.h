@@ -70,7 +70,7 @@
 
 
     typedef enum {
-        AUCUNE,
+        AUCUN_ActionType,
         DEGATS_FIXES,
         DEGATS_SCALES,
         DEGATS_PERFORANTS,
@@ -81,6 +81,14 @@
         // Suite ...
         LENGTH_ActionType
     } ActionType;
+
+    typedef enum {
+        AUCUN_CiblageType,
+        ENNEMI_UNIQUE,
+        SOI_MEME,
+        // Suite ...
+        LENGTH_CiblageType
+    } CiblageType;
 
 
     /* Struct */
@@ -105,16 +113,20 @@
     } Action;
 
     typedef struct {
+        Action *actions;
+        size_t longueur;
+    } ListeAction;
+
+    typedef struct {
         unsigned id;
         char *nom;
         char *description;
         int cout_oxygene;
         int cout_pv;
-        char *ciblage;      // Ex: "ENNEMI_UNIQUE", "SOI_MEME"
+        CiblageType ciblage;
         int cooldown_max;
         int cooldown_restant;
-        Action *actions;
-        size_t longueur_actions;
+        ListeAction liste_action;
     } Competence;
 
     typedef struct {
