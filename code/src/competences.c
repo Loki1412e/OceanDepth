@@ -42,6 +42,14 @@ CiblageType charToEnumCiblageType(char *type) {
 }
 
 
+ListeAction initEmptyListeAction() {
+    return (ListeAction) {
+        .actions = NULL,
+        .longueur = 0
+    };
+}
+
+
 ListeCompetence initEmptySkillList() {
     return (ListeCompetence) {
         .competences = NULL,
@@ -59,8 +67,7 @@ Competence initEmptySkill() {
         .ciblage = 0,
         .cooldown_max = 0,
         .cooldown_restant = 0,
-        .actions = NULL,
-        .longueur_actions = 0
+        .listeAction = initEmptyListeAction()
     };
 }
 
@@ -79,7 +86,7 @@ Competence duplicateCompetence(Competence *modal, short *res) {
     competence.ciblage = modal->ciblage;
     competence.cooldown_max = modal->cooldown_max;
     competence.cooldown_restant = modal->cooldown_restant;
-    competence.longueur_actions = modal->longueur_actions;
+    competence.listeAction.longueur = modal->listeAction.longueur;
 
     competence.nom = my_strdup(modal->nom);
     if (!competence.nom) {
@@ -97,25 +104,25 @@ Competence duplicateCompetence(Competence *modal, short *res) {
         return competence;
     }
 
-    competence.actions = calloc(competence.longueur_actions, sizeof(Action));
-    if (!competence.actions) {
+    competence.listeAction.actions = calloc(competence.listeAction.longueur, sizeof(Action));
+    if (!competence.listeAction.actions) {
         fprintf(stderr, "Erreur: duplicateCompetence(): Allocation mémoire: competence.actions = calloc()\n");
         freeCompetence(&competence);
         *res = EXIT_FAILURE;
         return competence;
     }
 
-    for (size_t i = 0; i < competence.longueur_actions; i++) {
+    for (size_t i = 0; i < competence.listeAction.longueur; i++) {
         
-        Action *ac = &competence.actions[i];
-        Action *am = &modal->actions[i];
+        Action *ac = &competence.listeAction.actions[i];
+        Action *am = &modal->listeAction.actions[i];
 
         ac->type = am->type;
         ac->longueur_params = am->longueur_params;
 
         ac->params = calloc(ac->longueur_params, sizeof(char*));
         if (!ac->params) {
-            fprintf(stderr, "Erreur: duplicateCompetence(): Allocation mémoire: competence.actions[%zu] = calloc()\n", i);
+            fprintf(stderr, "Erreur: duplicateCompetence(): Allocation mémoire: competence.listeAction.actions[%zu] = calloc()\n", i);
             freeCompetence(&competence);
             *res = EXIT_FAILURE;
             return competence;
@@ -126,7 +133,7 @@ Competence duplicateCompetence(Competence *modal, short *res) {
             ac->params[j] = my_strdup(am->params[j]);
             
             if (!ac->params[j]) {
-                fprintf(stderr, "Erreur: duplicateCompetence(): Allocation mémoire: competence.actions[%zu].params[j=%zu] = calloc()\n", i, j);
+                fprintf(stderr, "Erreur: duplicateCompetence(): Allocation mémoire: competence.listeAction.actions[%zu].params[j=%zu] = calloc()\n", i, j);
                 freeCompetence(&competence);
                 *res = EXIT_FAILURE;
                 return competence;
@@ -392,8 +399,10 @@ ListeCompetence initSkillsList(short *res) {
 void freeAction(Action *action) {
     if (!action) return;
 
-    for (size_t i = 0; i < action->longueur_params; i++)
-        free(action->params[i]);
+    for (size_t i = 0; i < action->longueur_params; i++) {
+        if (action->params[i])
+            free(action->params[i]);
+    }
     
     action->params = NULL;
     action->longueur_params = 0;
@@ -412,9 +421,9 @@ void freeCompetence(Competence *competence) {
         competence->description = NULL;
     }
 
-    if (competence->liste_action.actions) {
-        for (int i = 0; i < competence->liste_action.longueur; i++)
-            freeAction(&competence->liste_action.actions[i]);
+    if (competence->listeAction.actions) {
+        for (int i = 0; i < competence->listeAction.longueur; i++)
+            freeAction(&competence->listeAction.actions[i]);
     }
 }
 
