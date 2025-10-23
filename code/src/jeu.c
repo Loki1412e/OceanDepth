@@ -14,21 +14,21 @@ int runGame(Sauvegarde *actualSave) {
     Plongeur *diver = actualSave->diver;
     Bestiaire *modalBestiary = NULL;
     Bestiaire *bestiary = NULL;
-    ListeCompetence skill_list;
+    ListeCompetence modalSkills;
 
     short res;
 
     /*===== Init Allocation ====*/
 
-    skill_list = initSkillsList(&res);
+    modalSkills = initSkillsList(&res);
     if (res == EXIT_FAILURE) {
         fprintf(stderr, "Erreur lors du chargement des compétences.\n");
         return EXIT_FAILURE;
     }
 
-    modalBestiary = initModalBestiary(&skill_list);
+    modalBestiary = initModalBestiary(&modalSkills);
     if (!modalBestiary) {
-        freeListeCompetence(&skill_list);
+        freeListeCompetence(&modalSkills);
         fprintf(stderr, "Erreur lors du chargement du bestiaire modèle.\n");
         return EXIT_FAILURE;
     }
@@ -37,7 +37,7 @@ int runGame(Sauvegarde *actualSave) {
     if (!bestiary) {
         fprintf(stderr, "Erreur lors de la création du bestiaire.\n");
         freeBestiary(modalBestiary);
-        freeListeCompetence(&skill_list);
+        freeListeCompetence(&modalSkills);
         return EXIT_FAILURE;
     }
 
@@ -81,7 +81,7 @@ int runGame(Sauvegarde *actualSave) {
     
     freeBestiary(bestiary);
     freeBestiary(modalBestiary);
-    freeListeCompetence(&skill_list);
+    freeListeCompetence(&modalSkills);
 
     return -1;
     
