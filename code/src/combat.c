@@ -282,7 +282,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                             printf("Aucun");
                         printf(")");
                         if (c->cooldown_restant > 0)
-                            printf(" (en cooldown: %d tour%s restant%s)", c->cooldown_restant, c->cooldown_restant > 1 ? "s" : "", c->cooldown_restant > 1 ? "s" : "");
+                            printf(" (cooldown: %d tour%s restant%s)", c->cooldown_restant, c->cooldown_restant > 1 ? "s" : "", c->cooldown_restant > 1 ? "s" : "");
                         printf("\n    %s\n", c->description);
                     }
                     printf("> ");
