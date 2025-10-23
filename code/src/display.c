@@ -4,6 +4,7 @@
 size_t lireEntier();
 char *lireString();
 void clearConsole();
+void pressEnterToContinue();
 
 void printCreature(CreatureMarine *creature);
 void printCreatures(CreatureMarine **creatures, size_t length);
@@ -88,6 +89,12 @@ void clearConsole() {
         short res = system("clear");    // Linux + macOS
         (void) res;
     #endif
+}
+
+void pressEnterToContinue() {
+    printf("Appuyez sur Entrée pour continuer...");
+    while (getchar() != '\n');
+    clearConsole();
 }
 
 /*==================*/
