@@ -204,8 +204,12 @@ int loadInfo(Sauvegarde *save, FILE *file) {
 Plongeur *loadDiver(FILE *file) {
     if (!file) return NULL;
 
-    Plongeur *diver = initDiver(NULL);
-
+    Plongeur *diver = initDiver(NULL, NULL);
+    if (!diver) {
+        fprintf(stderr, "loadDiver initDiver\n");
+        return NULL;
+    }
+    
     // Lire le bloc Plongeur sans les pointeurs
     if (fread(diver, sizeof(Plongeur), 1, file) != 1) {
         perror("loadDiver fread Plongeur");
@@ -452,13 +456,28 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
     } Plongeur;
 */
 
-    // On eleve tout les pointeurs
-    Plongeur diver_copy = *diver;
-    diver_copy.nom = NULL;
+    // Init clean copy
+    Plongeur diver_copy = {0};
+    diver_copy.pv = diver->pv;
+    diver_copy.pv_max = diver->pv_max;
+    diver_copy.oxygene = diver->oxygene;
+    diver_copy.oxygene_max = diver->oxygene_max;
+    diver_copy.fatigue = diver->fatigue;
+    diver_copy.fatigue_max = diver->fatigue_max;
+    diver_copy.attaque_max = diver->attaque_max;
+    diver_copy.attaque_min = diver->attaque_min;
+    diver_copy.defense = diver->defense;
+    diver_copy.vitesse = diver->vitesse;
+    diver_copy.perles = diver->perles;
+    diver_copy.niveau = diver->niveau;
+    diver_copy.profondeur = diver->profondeur;
+    // On garde la longueur des listes mais pas les pointeurs
+    diver_copy.liste_etats.longueur = diver->liste_etats.longueur;
     diver_copy.liste_etats.etats = NULL;
+    diver_copy.liste_competences.longueur = diver->liste_competences.longueur;
     diver_copy.liste_competences.competences = NULL;
 
-    // Bloc sans pointeurs
+    // Bloc sans pointeurs (safe, no uninitialised bytes)
     if (addBlock(tmpSave, &diver_copy, sizeof(Plongeur)) != EXIT_SUCCESS)
         return EXIT_FAILURE;
 
@@ -489,9 +508,19 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
     for (size_t i = 0; i < comp_len; i++) {
         Competence *comp = &diver->liste_competences.competences[i];
 
-        // Sauvegarde Competence sans pointeurs
-        Competence comp_copy = *comp;
+        // Build a clean competence copy with only scalar fields
+        Competence comp_copy = {0};
+        comp_copy.id = comp->id;
+        comp_copy.cout_oxygene = comp->cout_oxygene;
+        comp_copy.cout_pv = comp->cout_pv;
+        comp_copy.ciblage = comp->ciblage;
+        comp_copy.cooldown_max = comp->cooldown_max;
+        comp_copy.cooldown_restant = comp->cooldown_restant;
+        comp_copy.listeAction.longueur = comp->listeAction.longueur;
+        comp_copy.listeAction.actions = NULL;
         comp_copy.nom = NULL;
+        comp_copy.description = NULL;
+
         if (addBlock(tmpSave, &comp_copy, sizeof(Competence)) != EXIT_SUCCESS)
             return EXIT_FAILURE;
 

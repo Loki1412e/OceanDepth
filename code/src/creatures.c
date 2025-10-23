@@ -396,9 +396,7 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreature
             // On vérifie si l'id de la compétence existe
             res = false;
             for (size_t i = 0; i < len; i++) {
-                // ne sert a rien: || arrayLong[i] >= modalCreaturesSkills->longueur
-                // car: arrayLong[i] (unsigned) < (size_t) modalCreaturesSkills->longueur
-                if (arrayLong[i] < 0) {
+                if (arrayLong[i] < 0 || arrayLong[i] >= (long) modalCreaturesSkills->longueur) {
                     fprintf(stderr, "Erreur: setBestiaryFromConf() -> competences -> l'id [%ld] n'existe pas dans modalCreaturesSkills\n", arrayLong[i]);
                     res = true;
                 }

@@ -6,8 +6,9 @@
     #include "effets.h"
     #include "competences.h"
 
-    Plongeur *initDiver(char *diver_name);
     void freeDiverContent(Plongeur *diver);
     void freeDiver(Plongeur *diver);
+
+    Plongeur *initDiver(char *diver_name, ListeCompetence *modalDiverSkills);
 
 #endif

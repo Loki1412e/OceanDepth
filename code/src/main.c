@@ -96,6 +96,14 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
             }
             if (res != EXIT_SUCCESS) break;
 
+            // Load Default Competences Plongeur
+            ListeCompetence modalDiverSkills = initSkillsList(&res, "config/plongeur/competences.conf");
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur lors du chargement des compétences.\n");
+                freeSauvegarde(actualSave);
+                break;
+            }
+
             // Nom du Plongeur && init Plongeur
             printf("\nChoisir le nom du Plongeur\n> ");
             maxAttemp = 5;
@@ -103,7 +111,7 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
             while (!actualSave->diver && attemp < maxAttemp) {
                 strBuff = lireString();
                 if (strBuff) {
-                    actualSave->diver = initDiver(strBuff);
+                    actualSave->diver = initDiver(strBuff, &modalDiverSkills);
                     if (!actualSave->diver)
                         fprintf(stderr, "Erreur lors de la création du Plongeur.\n> ");
                     free(strBuff);
@@ -112,7 +120,12 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
                 else fprintf(stderr, "Erreur de lecture du nom\n> ");
                 attemp++;
             }            
-            if (!actualSave->diver) break;
+            if (!actualSave->diver) {
+                fprintf(stderr, "Erreur lors de la création du Plongeur.\n");
+                freeListeCompetence(&modalDiverSkills);
+                freeSauvegarde(actualSave);
+                break;
+            }
 
             printf("\nBienvenue %s !\n", actualSave->diver->nom);
 
