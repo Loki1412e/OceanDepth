@@ -10,7 +10,7 @@ void printCreature(CreatureMarine *creature);
 void printCreatures(CreatureMarine **creatures, size_t length);
 void printBestiary(Bestiaire *bestiary);
 void printDiver(Plongeur *diver);
-void printListeEtat(ListeEtat etats);
+void printListeEtat(ListeEtat etats, char* line_prefix);
 
 void printSaveLastRun(Sauvegarde *save);
 void printListSave(ListeSauvegardes *saves);
@@ -118,20 +118,15 @@ void printListeAction(ListeAction actions) {
     }
 }
 
-void printListeEtat(ListeEtat etats) {
-    if (etats.longueur == 0 || etats.etats == NULL) {
-        printf("Etats : Aucun\n");
-        return;
-    }
+void printListeEtat(ListeEtat etats, char* line_prefix) {
+    if (etats.longueur == 0 || etats.etats == NULL) return;
 
-    printf("Etats (%zu):\n", etats.longueur);
+    printf("%sEtats : ", line_prefix);
     for (size_t i = 0; i < etats.longueur; i++) {
-        printf(" - %s (%d) => estPermanent=%d / duree_zone=%d / duree_combat=%d",
-            enumEffectToChar(etats.etats[i].effet) ? enumEffectToChar(etats.etats[i].effet) : "???",
-            etats.etats[i].effet,
-            etats.etats[i].estPermanent,
-            etats.etats[i].duree_zone,
-            etats.etats[i].duree_combat
+        printf("[%s (%d t.)]%s",
+            enumEffectToChar(etats.etats[i].effet),
+            etats.etats[i].duree_combat,
+            (i < etats.longueur - 1) ? ", " : ""
         );
     }
     printf("\n");
@@ -176,7 +171,7 @@ void printCreature(CreatureMarine *creature) {
     printf("Vitesse: %d\n", creature->vitesse);
     printf("Rarete: %s\n", enumRareteToChar(creature->rarete));
     
-    printListeEtat(creature->liste_etats);
+    printListeEtat(creature->liste_etats, "");
     printListeCompetence(creature->liste_competences);
 }
 
@@ -223,7 +218,7 @@ void printDiver(Plongeur *diver) {
     printf("Niveau: %hu\n", diver->niveau);
     printf("Perles: %hu\n", diver->perles);
     
-    printListeEtat(diver->liste_etats);
+    printListeEtat(diver->liste_etats, "");
     printListeCompetence(diver->liste_competences);
 
     printf("====================================\n\n");
@@ -273,15 +268,14 @@ void printSave(Sauvegarde *save) {
     printDiver(save->diver);
 }
 
+
 void printProgressBar(char *prefix, int actuel, int max, int longueur) {
-    printf("%-8s: [", prefix);
+    if (actuel < 0) actuel = 0;
+    printf("%-10s: [", prefix);
     int nb_pleins = (int)(((float)actuel / max) * longueur);
     for (int i = 0; i < longueur; i++) {
-        if (i < nb_pleins) {
-            printf("█");
-        } else {
-            printf("-");
-        }
+        if (i < nb_pleins) printf("█");
+        else printf("▒");
     }
-    printf("] %d/%d\n", actuel, max);
+    printf("] %3d/%-3d", actuel, max);
 }
