@@ -25,4 +25,6 @@
 
     void printSave(Sauvegarde *save);
 
+    void printProgressBar(char *prefix, int actuel, int max, int longueur);
+
 #endif
