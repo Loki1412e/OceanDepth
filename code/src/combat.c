@@ -294,9 +294,18 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     }
 
                     Competence *comp_choisie = &joueur->liste_competences.competences[choix_comp - 1];
+                    if (!comp_choisie) {
+                        printf("Erreur interne: compétence introuvable.\n");
+                        continue;
+                    }
+
+                    void *cible_ptr = NULL;
+                    EntiteType entite_cible = ENTITE_PLONGEUR;
                     
-                    CreatureMarine *cible_creature = NULL;
                     if (comp_choisie->ciblage == ENNEMI_UNIQUE) {
+                        cible_ptr = NULL;
+                        entite_cible = ENTITE_CREATURE;
+                        
                         if (!peutAttaquer(&joueur->liste_etats)) {
                             printf("Vous n'avez pas pu attaquer.\n");
                             break;
@@ -320,7 +329,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                         if (nb_creatures_vivantes != 1) {
                             do {
                                 cible = lireEntier();
-                                if (cible >= 1 && cible <= nb_creatures && creatures[cible-1]->pv > 0) break;
+                                if (cible >= 1 && cible <= nb_creatures && creatures[cible - 1]->pv > 0) break;
                                 printf("Entrée invalide, veuillez choisir un monstre en vie :\n");
                                 for (size_t i = 0; i < nb_creatures; i++) {
                                     if (creatures[i]->pv > 0)
@@ -330,21 +339,34 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                             } while (1);
                         }
                         
-                        cible_creature = creatures[cible - 1];
-                    
-                        // Si la compétence échoue (cooldown, etc.), le joueur peut choisir une autre action.
-                        res = utiliserCompetence(comp_choisie, joueur, ENTITE_PLONGEUR, cible_creature, ENTITE_CREATURE);
-                        if (res == EXIT_FAILURE) {
-                            fprintf(stderr, "Erreur: combat(): utiliserCompetence() pour la compétence '%s'\n", comp_choisie->nom);
-                            return EXIT_FAILURE;
-                        }    
-                        else if (res == -1) {
-                            printf("Vous pouvez choisir une autre action.\n");
+                        cible_ptr = creatures[cible - 1];
+                        if (!cible_ptr) {
+                            printf("Erreur interne: cible introuvable.\n");
                             continue;
                         }
-                        else attaques_restantes--;
+                    }
+
+                    else if (comp_choisie->ciblage == SOI_MEME) {
+                        cible_ptr = joueur;
+                        entite_cible = ENTITE_PLONGEUR;
                     }
                     
+                    else {
+                        printf("Ciblage de compétence non géré dans l'interface.\n");
+                        continue;
+                    }
+                    
+                    // Si la compétence échoue (cooldown, etc.), le joueur peut choisir une autre action.
+                    res = utiliserCompetence(comp_choisie, joueur, ENTITE_PLONGEUR, cible_ptr, entite_cible);
+                    if (res == EXIT_FAILURE) {
+                        fprintf(stderr, "Erreur: combat(): utiliserCompetence() pour la compétence '%s'\n", comp_choisie->nom);
+                        return EXIT_FAILURE;
+                    }    
+                    else if (res == -1) {
+                        printf("Vous pouvez choisir une autre action.\n");
+                        continue;
+                    }
+                    else attaques_restantes--;                    
                     
                     break;
                     printf("\nclearConsole\n");//clearConsole();

@@ -220,15 +220,13 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
                 return EXIT_FAILURE;
             }
 
-            printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Modification de la stat '%s' de %d pour [%s].\n", stat_nom, valeur, cible_plongeur ? cible_plongeur->nom : cible_creature->nom);
-
             // Pointeurs vers les stats à modifier
             int *pv = cible_plongeur ? &cible_plongeur->pv : &cible_creature->pv;
             int *pv_max = cible_plongeur ? &cible_plongeur->pv_max : &cible_creature->pv_max;
             int *oxygene = cible_plongeur ? &cible_plongeur->oxygene : NULL;
             int *oxygene_max = cible_plongeur ? &cible_plongeur->oxygene_max : NULL;
             int *fatigue = cible_plongeur ? &cible_plongeur->fatigue : NULL;
-            // int *fatigue_max = cible_plongeur ? &cible_plongeur->fatigue_max : NULL;
+            int *fatigue_max = cible_plongeur ? &cible_plongeur->fatigue_max : NULL;
             // int *attaque_max = cible_plongeur ? &cible_plongeur->attaque_max : &cible_creature->attaque_max;
             // int *attaque_min = cible_plongeur ? &cible_plongeur->attaque_min : &cible_creature->attaque_min;
             int *defense = cible_plongeur ? &cible_plongeur->defense : &cible_creature->defense;
@@ -236,15 +234,21 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
 
             // Modification de la stat
             if (strcmp(stat_nom, "pv") == 0) {
-                *pv += *pv + valeur > *pv_max ? valeur : 0;
+                *pv += valeur;
+                if (*pv > *pv_max) *pv = *pv_max;
+                if (*pv < 0) *pv = 0;
                 printf(">> [%s] à régénéré %d PV.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
             }
             else if (strcmp(stat_nom, "oxygene") == 0 && cible_plongeur) {
-                 *oxygene += *oxygene + valeur > *oxygene_max ? valeur : 0;
+                 *oxygene += valeur;
+                 if (*oxygene > *oxygene_max) *oxygene = *oxygene_max;
+                 if (*oxygene < 0) *oxygene = 0;
                  printf(">> [%s] à régénéré %d d'oxygène.\n", cible_plongeur->nom, valeur);
             }
             else if (strcmp(stat_nom, "fatigue") == 0 && cible_plongeur) {
-                *fatigue -= *fatigue - valeur < 0 ? *fatigue : valeur;
+                *fatigue -= valeur;
+                if (*fatigue > *fatigue_max) *fatigue = *fatigue_max;
+                if (*fatigue < 0) *fatigue = 0;
                 printf(">> [%s] à réduit sa fatigue de %d.\n", cible_plongeur->nom, valeur);
             }
             // else if (strcmp(stat_nom, "attaque_max") == 0) {
@@ -257,10 +261,12 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
             // }
             else if (strcmp(stat_nom, "defense") == 0) {
                 *defense += valeur;
+                if (*defense < 0) *defense = 0;
                 printf(">> [%s] à modifié sa défense de %d.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
             }
             else if (strcmp(stat_nom, "vitesse") == 0) {
                 *vitesse += valeur;
+                if (*vitesse < 0) *vitesse = 0;
                 printf(">> [%s] à modifié sa vitesse de %d.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
             }
             else {
@@ -335,7 +341,10 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
 
 // Vérifie les conditions et lance une compétence.
 int utiliserCompetence(Competence *comp, void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, EntiteType cible_type) {
-    if (!comp || !lanceur_ptr || !cible_ptr) return EXIT_FAILURE;
+    if (!comp || !lanceur_ptr || !cible_ptr) {
+        fprintf(stderr, "Erreur: utiliserCompetence(): Invalid params\n");
+        return EXIT_FAILURE;
+    }
 
     // Déterminer qui est le lanceur et qui est la cible
     Plongeur* lanceur_plongeur = (lanceur_type == ENTITE_PLONGEUR) ? (Plongeur*)lanceur_ptr : NULL;
