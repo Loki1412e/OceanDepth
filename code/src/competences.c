@@ -1,5 +1,7 @@
 #include "../include/competences.h"
 
+void freeAction(Action *action);
+void freeActions(Action *actions, size_t longueur);
 void freeCompetence(Competence *competence);
 void freeListeCompetence(ListeCompetence *liste_competences);
 
@@ -228,6 +230,7 @@ Action *parseActions(char *actions_str_raw, size_t *nb_actions, short *res) {
     buff = my_strdup(actions_str_raw);
     if (!buff) {
         fprintf(stderr, "Erreur: parseLongList(): Allocation mémoire buff = my_strdup(str)\n");
+        *res = EXIT_FAILURE;
         return NULL;
     }
 
