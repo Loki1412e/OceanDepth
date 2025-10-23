@@ -42,7 +42,7 @@ Le champ `ciblage` détermine sur qui les actions de la compétence vont s'appli
 | :--- | :--- |
 | `ENNEMI_UNIQUE` | Cible une seule créature ennemie. |
 | `SOI_MEME` | La compétence s'applique sur le lanceur. |
-| `TOUS_ENNEMIS` | (Futur) Cible toutes les créatures ennemies. |
+| `TOUS_ENNEMIS` | (Pas encore traité) Cible toutes les créatures ennemies. |
 
 ---
 
@@ -51,6 +51,11 @@ Le champ `ciblage` détermine sur qui les actions de la compétence vont s'appli
 Voici la liste des `TYPE` d'actions disponibles et leurs paramètres.
 
 ### Actions de Dégâts
+
+#### `DEGAT_DEFAUT`
+- **Description** : Inflige un montant de dégâts entre `attaque_min` et `attaque_max`.
+- **Syntaxe** : `DEGAT_DEFAUT`
+- **Exemple** : `actions=DEGAT_DEFAUT` (*rand_int(entity->attaque_min, entity->attaque_max)*)
 
 #### `DEGATS_FIXES`
 - **Description** : Inflige un montant de dégâts fixe, ignorant les statistiques du lanceur.

@@ -5,8 +5,10 @@ void freeActions(Action *actions, size_t longueur);
 void freeCompetence(Competence *competence);
 void freeListeCompetence(ListeCompetence *liste_competences);
 
+
 char *enumActionTypeToChar(ActionType type) {
     switch (type) {
+        case DEGAT_DEFAUT: return "DEGAT_DEFAUT";
         case DEGATS_FIXES: return "DEGATS_FIXES";
         case DEGATS_SCALES: return "DEGATS_SCALES";
         case DEGATS_PERFORANTS: return "DEGATS_PERFORANTS";
@@ -323,21 +325,9 @@ Action *parseActions(char *actions_str_raw, size_t *nb_actions, short *res) {
         // -1 car on ne veut pas l'element 0 (c'est le type d'action)
         action->longueur_params--;
 
-        // Allocation params
-        action->params = calloc(action->longueur_params, sizeof(char*));
-        if (!action->params) {
-            fprintf(stderr, "Erreur: parseActions(): action->params = calloc()\n");
-            freeActions(actions, i+1);
-            for (size_t j = i; j < *nb_actions; j++)
-                free(listActionsStrBuff[j]);
-            free(listActionsStrBuff);
-            *res = EXIT_FAILURE;
-            return NULL;
-        }
-
         // Init params
         token = strtok(listActionsStrBuff[i], ":");
-        
+
         // 1er token == le type d'action
         action->type = charToEnumActionType(token);
         if (action->type == AUCUN_ActionType) {
@@ -349,8 +339,28 @@ Action *parseActions(char *actions_str_raw, size_t *nb_actions, short *res) {
             *res = EXIT_FAILURE;
             return NULL;
         }
+        
         // Tokens suivants == les params
         token = strtok(NULL, ":");
+
+        // Si pas de paramètre
+        if (token == NULL) {
+            free(listActionsStrBuff[i]);
+            listActionsStrBuff[i] = NULL;
+            continue;
+        }
+
+        // Allocation params
+        action->params = calloc(action->longueur_params, sizeof(char*));
+        if (!action->params) {
+            fprintf(stderr, "Erreur: parseActions(): action->params = calloc()\n");
+            freeActions(actions, i+1);
+            for (size_t j = i; j < *nb_actions; j++)
+                free(listActionsStrBuff[j]);
+            free(listActionsStrBuff);
+            *res = EXIT_FAILURE;
+            return NULL;
+        }
         
         param_index = 0;
         while (token != NULL) {
