@@ -14,16 +14,16 @@ char *enumEffectToChar(Effets type) {
         case PRECISION_REDUITE: return "PRECISION_REDUITE";
         case DEFENSE_AUGMENTEE: return "DEFENSE_AUGMENTEE";
         case VOIX_DU_COURANT: return "VOIX_DU_COURANT";
-        default: return "AUCUN";
+        default: return "AUCUN_Effets";
     }
 }
 
 Effets charToEnumEffect(char *type) {
-    for (size_t effet = 0; effet < LENGTH_EffetsSpeciaux; effet++) {
+    for (size_t effet = 0; effet < LENGTH_Effets; effet++) {
         if (strcmp(type, enumEffectToChar((Effets) effet)) == 0)
             return (Effets) effet;
     }
-    return AUCUN;
+    return AUCUN_Effets;
 }
 
 
@@ -79,7 +79,7 @@ ListeEtat duplicateListeEtat(ListeEtat *modal, short *res) {
 // Vous devriez ajouter des vérifications robustes.
 int ajouterEffet(ListeEtat *listeEtat, Effets type, int dureeCombat, int dureeZone, int estPermanent) {
     if (!listeEtat) return EXIT_FAILURE;
-    if (type <= AUCUN || type >= LENGTH_EffetsSpeciaux) return EXIT_FAILURE;
+    if (type <= AUCUN_Effets || type >= LENGTH_Effets) return EXIT_FAILURE;
     
     // Vérifier si l'effet existe déjà pour le rafraîchir au lieu de le dupliquer
     for (size_t i = 0; i < listeEtat->longueur; i++) {
