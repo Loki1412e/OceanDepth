@@ -15,9 +15,8 @@
     char *enumCiblageTypeToChar(CiblageType type);
     CiblageType charToEnumCiblageType(char *type);
 
-    ListeCompetence initSkillsList(short *res);
+    ListeCompetence initSkillsList(short *res, char *path);
     ListeCompetence initEmptySkillList();
-    ListeCompetence initSkillsList();
     Competence duplicateCompetence(Competence *modal, short *res);
     ListeCompetence duplicateListeCompetence(ListeCompetence *modal, short *res);
     
