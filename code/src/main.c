@@ -126,6 +126,7 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
                 freeSauvegarde(actualSave);
                 break;
             }
+            freeListeCompetence(&modalDiverSkills);
 
             printf("\nBienvenue %s !\n", actualSave->diver->nom);
 

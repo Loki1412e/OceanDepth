@@ -97,10 +97,11 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
             // Calcul des dégâts
             int defense_cible = cible_plongeur ? cible_plongeur->defense : cible_creature->defense;
             int degats = calculerDegats(att_min_lanceur, att_max_lanceur, defense_cible);
-
+            
             // Application des dégâts
-            if (cible_plongeur) cible_plongeur->pv -= degats;
-            if (cible_creature) cible_creature->pv -= degats;
+            int *pv = cible_plongeur ? &cible_plongeur->pv : &cible_creature->pv;
+            *pv -= degats;
+            if (*pv < 0) *pv = 0;
 
             // Affichage
             printf(">> [%s] subit %d dégâts !\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, degats);
@@ -170,8 +171,9 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
             int degats = (int)(calculerDegats(att_min_lanceur, att_max_lanceur, defense_cible) * multiplicateur);
 
             // Application des dégâts
-            if (cible_plongeur) cible_plongeur->pv -= degats;
-            if (cible_creature) cible_creature->pv -= degats;
+            int *pv = cible_plongeur ? &cible_plongeur->pv : &cible_creature->pv;
+            *pv -= degats;
+            if (*pv < 0) *pv = 0;
 
             // Affichage
             printf(">> [%s] subit %d dégâts !\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, degats);
@@ -217,6 +219,8 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
                 fprintf(stderr, "Erreur: executerAction(): my_strToInt() -> action->params[1] (MODIFIER_STAT)\n");
                 return EXIT_FAILURE;
             }
+
+            printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Modification de la stat '%s' de %d pour [%s].\n", stat_nom, valeur, cible_plongeur ? cible_plongeur->nom : cible_creature->nom);
 
             // Pointeurs vers les stats à modifier
             int *pv = cible_plongeur ? &cible_plongeur->pv : &cible_creature->pv;

@@ -328,6 +328,112 @@ Plongeur *loadDiver(FILE *file) {
             } else {
                 diver->liste_competences.competences[i].nom = NULL;
             }
+
+            /* Lire description de la competence */
+            size_t comp_desc_len = 0;
+            if (fread(&comp_desc_len, sizeof(size_t), 1, file) != 1) {
+                perror("loadDiver fread comp_desc_len");
+                freeDiverContent(diver);
+                return NULL;
+            }
+
+            if (comp_desc_len > 0) {
+                diver->liste_competences.competences[i].description = calloc(comp_desc_len, sizeof(char));
+                if (!diver->liste_competences.competences[i].description) {
+                    fprintf(stderr, "loadDiver calloc comp description\n");
+                    freeDiverContent(diver);
+                    return NULL;
+                }
+                if (fread(diver->liste_competences.competences[i].description, 1, comp_desc_len, file) != comp_desc_len) {
+                    perror("loadDiver fread comp description");
+                    freeDiverContent(diver);
+                    return NULL;
+                }
+            } else {
+                diver->liste_competences.competences[i].description = NULL;
+            }
+
+            /* Lire actions de la competence */
+            size_t comp_action_len = 0;
+            if (fread(&comp_action_len, sizeof(size_t), 1, file) != 1) {
+                perror("loadDiver fread comp_action_len");
+                freeDiverContent(diver);
+                return NULL;
+            }
+            diver->liste_competences.competences[i].listeAction.longueur = comp_action_len;
+            diver->liste_competences.competences[i].listeAction.actions = NULL;
+
+            if (comp_action_len > 0) {
+                diver->liste_competences.competences[i].listeAction.actions = calloc(comp_action_len, sizeof(Action));
+                if (!diver->liste_competences.competences[i].listeAction.actions) {
+                    fprintf(stderr, "loadDiver calloc comp actions\n");
+                    freeDiverContent(diver);
+                    return NULL;
+                }
+
+                for (size_t j = 0; j < comp_action_len; j++) {
+                    /* Lire Action sans ses params */
+                    Action tmp_action;
+                    if (fread(&tmp_action, sizeof(Action), 1, file) != 1) {
+                        perror("loadDiver fread Action");
+                        freeDiverContent(diver);
+                        return NULL;
+                    }
+
+                    /* Initialiser l'action dans la structure */
+                    diver->liste_competences.competences[i].listeAction.actions[j].type = tmp_action.type;
+                    diver->liste_competences.competences[i].listeAction.actions[j].longueur_params = 0;
+                    diver->liste_competences.competences[i].listeAction.actions[j].params = NULL;
+
+                    /* Lire le nombre de params et chaque param */
+                    size_t action_params_len = 0;
+                    if (fread(&action_params_len, sizeof(size_t), 1, file) != 1) {
+                        perror("loadDiver fread action_params_len");
+                        freeDiverContent(diver);
+                        return NULL;
+                    }
+
+                    if (action_params_len > 0) {
+                        diver->liste_competences.competences[i].listeAction.actions[j].params = calloc(action_params_len, sizeof(char*));
+                        if (!diver->liste_competences.competences[i].listeAction.actions[j].params) {
+                            fprintf(stderr, "loadDiver calloc action params array\n");
+                            freeDiverContent(diver);
+                            return NULL;
+                        }
+                        diver->liste_competences.competences[i].listeAction.actions[j].longueur_params = action_params_len;
+
+                        for (size_t k = 0; k < action_params_len; k++) {
+                            size_t param_len = 0;
+                            if (fread(&param_len, sizeof(size_t), 1, file) != 1) {
+                                perror("loadDiver fread param_len");
+                                freeDiverContent(diver);
+                                return NULL;
+                            }
+
+                            if (param_len > 0) {
+                                char *param = calloc(param_len, sizeof(char));
+                                if (!param) {
+                                    fprintf(stderr, "loadDiver calloc param string\n");
+                                    freeDiverContent(diver);
+                                    return NULL;
+                                }
+                                if (fread(param, 1, param_len, file) != param_len) {
+                                    perror("loadDiver fread param");
+                                    free(param);
+                                    freeDiverContent(diver);
+                                    return NULL;
+                                }
+                                diver->liste_competences.competences[i].listeAction.actions[j].params[k] = param;
+                            } else {
+                                diver->liste_competences.competences[i].listeAction.actions[j].params[k] = NULL;
+                            }
+                        }
+                    } else {
+                        diver->liste_competences.competences[i].listeAction.actions[j].params = NULL;
+                        diver->liste_competences.competences[i].listeAction.actions[j].longueur_params = 0;
+                    }
+                }
+            }
         }
     }
 
@@ -531,6 +637,47 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
         // tab nom de la compétence
         if (comp_nom_len > 0 && addBlock(tmpSave, comp->nom, comp_nom_len) != EXIT_SUCCESS)
             return EXIT_FAILURE;
+
+        size_t comp_desc_len = comp->description ? strlen(comp->description) + 1 : 0;
+        // taille description de la compétence
+        if (addBlock(tmpSave, &comp_desc_len, sizeof(size_t)) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+        // tab description de la compétence
+        if (comp_desc_len > 0 && addBlock(tmpSave, comp->description, comp_desc_len) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+
+        size_t comp_action_len = comp->listeAction.longueur;
+        // taille actions de la compétence
+        if (addBlock(tmpSave, &comp_action_len, sizeof(size_t)) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+        // tab actions de la compétence
+        for (size_t j = 0; j < comp_action_len; j++) {
+            Action *action = &comp->listeAction.actions[j];
+            Action action_copy = {0};
+            action_copy.type = action->type;
+            action_copy.params = NULL;
+            action_copy.longueur_params = action->longueur_params;
+            
+            // Bloc action sans pointeurs
+            if (addBlock(tmpSave, &action_copy, sizeof(Action)) != EXIT_SUCCESS)
+                return EXIT_FAILURE;
+
+            size_t action_params_len = action->longueur_params;
+            // nombre de parametres
+            if (addBlock(tmpSave, &action_params_len, sizeof(size_t)) != EXIT_SUCCESS)
+                return EXIT_FAILURE;
+            
+            for (size_t k = 0; k < action_params_len; k++) {
+                char *param = action->params[k];
+                size_t param_len = param ? strlen(param) + 1 : 0;
+                // taille parametre
+                if (addBlock(tmpSave, &param_len, sizeof(size_t)) != EXIT_SUCCESS)
+                    return EXIT_FAILURE;
+                // tab parametre
+                if (param_len > 0 && addBlock(tmpSave, param, param_len) != EXIT_SUCCESS)
+                    return EXIT_FAILURE;
+            }
+        }
     }
 
     return EXIT_SUCCESS;
