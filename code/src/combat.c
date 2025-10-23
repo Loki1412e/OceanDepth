@@ -180,8 +180,8 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
     short res;
 
-    printf("\nclearConsole\n");//clearConsole();
-    
+    clearConsole();
+
     while (finDuCombat(joueur, creatures, nb_creatures) != true) {
 
         // Monstres autant ou plus rapides
@@ -198,13 +198,15 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                 
                 decrementerDureesEtNettoyer(&creatures[i]->liste_etats, true, false);
                 decrementerCooldownsCompetences(&creatures[i]->liste_competences);
+
+                pressEnterToContinue();
                 if (joueur->pv <= 0) break;
             }
         }
-
         if (finDuCombat(joueur, creatures, nb_creatures)) break;
 
         // Joueur
+        clearConsole();
 
         int attaques_restantes = calculerAttaquesMaxAvecFatigue(joueur->fatigue_max, joueur->fatigue);
 
@@ -212,6 +214,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         afficherEtatOxygene(joueur);
         appliquerDegatsAvantTour(&joueur->liste_etats, &joueur->pv, joueur->pv_max, joueur->defense, &joueur->oxygene, joueur->oxygene_max);
 
+        pressEnterToContinue();
         afficherInterface(joueur, creatures, nb_creatures, attaques_restantes);
 
         while (attaques_restantes > 0) {
@@ -264,7 +267,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
                     joueurAttaqueCreature(joueur, creatures[cible-1]);
                     attaques_restantes--;
-                    printf("\nclearConsole\n");//clearConsole();
+                    pressEnterToContinue();
                     break;
 
                 
@@ -290,6 +293,8 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     size_t choix_comp = lireEntier();
                     if (choix_comp == 0 || choix_comp > joueur->liste_competences.longueur) {
                         printf("Action annulée.\n");
+                        pressEnterToContinue();
+                        afficherInterface(joueur, creatures, nb_creatures, attaques_restantes);
                         continue; // Ne termine pas le tour, redemande une action
                     }
 
@@ -366,26 +371,29 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                         printf("Vous pouvez choisir une autre action.\n");
                         continue;
                     }
-                    else attaques_restantes--;                    
+                    else attaques_restantes--;
                     
-                    break;
-                    printf("\nclearConsole\n");//clearConsole();
+                    // break;
+                    pressEnterToContinue();
                     break;
                 
                 case 3:
                     printf("→ Utilisation d’un objet (à implémenter)\n");
-                    printf("\nclearConsole\n");//clearConsole();
+                    pressEnterToContinue();
                     break;
                 
                 case 4:
                     printf("→ Vous terminez votre tour.\n");
                     diminuerFatigue(joueur, 1); // tmp / test
                     attaques_restantes = 0;
-                    printf("\nclearConsole\n");//clearConsole();
+                    pressEnterToContinue();
                     break;
             }
 
-            if (attaques_restantes > 0) afficherInterface(joueur, creatures, nb_creatures, attaques_restantes);
+            if (attaques_restantes > 0) {
+                clearConsole();
+                afficherInterface(joueur, creatures, nb_creatures, attaques_restantes);
+            }
         }
 
         decrementerDureesEtNettoyer(&joueur->liste_etats, true, false);
@@ -405,6 +413,8 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                 
                 decrementerDureesEtNettoyer(&creatures[i]->liste_etats, true, false);
                 decrementerCooldownsCompetences(&creatures[i]->liste_competences);
+
+                pressEnterToContinue();
                 if (joueur->pv <= 0) break;
             }
         }

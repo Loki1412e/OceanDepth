@@ -5,8 +5,6 @@
 int runGame(Sauvegarde *actualSave) {
     if (!actualSave || !actualSave->diver) return EXIT_FAILURE;
 
-    printf("\nclearConsole\n");//clearConsole();
-
     /*===== Init var ====*/
 
     int runProgram = true;
@@ -46,6 +44,7 @@ int runGame(Sauvegarde *actualSave) {
 
     printSave(actualSave);
     printf("[%s] entre dans les profondeurs maritimes.\n\n", diver->nom);
+    pressEnterToContinue();
 
     while (runProgram) {
 
@@ -69,6 +68,7 @@ int runGame(Sauvegarde *actualSave) {
         ajouterEffet(&bestiary->creatures[1]->liste_etats, SAIGNEMENT, 5, 0, 0);
         
         printBestiary(bestiary);
+        pressEnterToContinue();
 
         combat(diver, bestiary->creatures, bestiary->longueur_creatures);
 
