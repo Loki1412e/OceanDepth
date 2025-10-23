@@ -66,7 +66,7 @@ Voici la liste des `TYPE` d'actions disponibles et leurs paramètres.
 - **Description** : Inflige des dégâts basés sur une statistique du lanceur, multipliée par un facteur.
 - **Syntaxe** : `DEGATS_SCALES:<stat_de_base>:<multiplicateur>`
 - **Stat De Base Valides** : `attaque_min`, `attaque_max`, `pv_max`, `defense`.
-- **Exemple** : `actions=DEGATS_SCALES:attaque_max:1.5` (inflige des dégâts égaux à 150% de l'attaque maximale du lanceur).
+- **Exemple** : `actions=DEGATS_SCALES:attaque_max:150` (inflige des dégâts égaux à 150% de l'attaque maximale du lanceur).
 
 #### `DEGATS_PERFORANTS`
 - **Description** : Inflige des dégâts qui ignorent une partie de la défense de la cible.
