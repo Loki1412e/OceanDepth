@@ -4,6 +4,7 @@
     #include "global.h"
     #include "conf.h"
     #include "effets.h"
+    #include "actions.h"
 
     void freeCompetence(Competence *competence);
     void freeListeCompetence(ListeCompetence *liste_competences);
