@@ -13,7 +13,7 @@ char *enumActionTypeToChar(ActionType type) {
         case DEGATS_SCALES: return "DEGATS_SCALES";
         case DEGATS_PERFORANTS: return "DEGATS_PERFORANTS";
         case MODIFIER_STAT: return "MODIFIER_STAT";
-        case VOL_DE_VIE: return "VOL_DE_VIE";
+        // case VOL_DE_VIE: return "VOL_DE_VIE";
         case APPLIQUER_EFFET: return "APPLIQUER_EFFET";
         case RETIRER_EFFET: return "RETIRER_EFFET";
         default: return "AUCUN_ActionType";
