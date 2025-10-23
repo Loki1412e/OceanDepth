@@ -400,7 +400,7 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
 
     char line[512];
     size_t length = 0, index = 0;
-    
+
     short res;
 
     while (fgets(line, sizeof(line), f)) {
@@ -485,9 +485,9 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
             line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
             if (line[0] == '\0') continue; // ligne vide
 
-            skills[index].ciblage = my_strToInt(line + 8, &res);
-            if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"ciblage=\"\n");
+            skills[index].ciblage = charToEnumCiblageType(line + 8);
+            if (skills[index].ciblage == AUCUN_CiblageType) {
+                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): charToEnumCiblageType(\"%s\") -> \"ciblage=\"\n", line + 8);
                 freeListeCompetence(skill_list);
                 fclose(f);
                 return EXIT_FAILURE;
