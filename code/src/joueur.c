@@ -29,11 +29,7 @@ Plongeur *initDiver(char *diver_name) {
     }
 
     // Initialisation du Joueur
-
-    if (setDiverFromConf(diver)) {
-        return NULL;
-    }
-
+    if (setDiverFromConf(diver)) return NULL;
     diver->pv = diver->pv_max;
     diver->oxygene = diver->oxygene_max;
 
@@ -46,8 +42,6 @@ int setDiverFromConf(Plongeur *diver) {
     if (f == NULL) return EXIT_FAILURE;
 
     char line[256];
-
-    diver->liste_competences.longueur = 0;
 
     short res;
 
@@ -198,17 +192,7 @@ void freeDiverContent(Plongeur *diver) {
     }
     
     freeListeEtat(&diver->liste_etats);
-    
-    if (diver->liste_competences.competences) {
-        for (size_t i = 0; i < diver->liste_competences.longueur; i++) {
-            if (!diver->liste_competences.competences[i].nom) continue;
-            free(diver->liste_competences.competences[i].nom);
-            diver->liste_competences.competences[i].nom = NULL;
-        }
-        free(diver->liste_competences.competences);
-        diver->liste_competences.competences = NULL;
-        diver->liste_competences.longueur = 0;
-    }
+    freeListeCompetence(&diver->liste_competences);
 }
 
 void freeDiver(Plongeur *diver) {
