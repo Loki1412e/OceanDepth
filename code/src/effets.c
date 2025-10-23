@@ -218,6 +218,36 @@ int calculerDegatsSubiDebutTourEffet(ListeEtat *etats, int *pv, int maxPv, int d
 }
 
 
+int supprimerEtat(ListeEtat *listeEtat, Effets type) {
+    if (!listeEtat || listeEtat->longueur == 0) return EXIT_FAILURE;
+    
+    for (size_t i = 0; i < listeEtat->longueur; i++) {
+        if (listeEtat->etats[i].effet == type) {
+
+            // Décalage des éléments
+            for (size_t j = i; j < listeEtat->longueur - 1; j++) {
+                listeEtat->etats[j] = listeEtat->etats[j + 1];
+            }
+            
+            // Réallocation de la mémoire
+            Etat *tmp = realloc(listeEtat->etats, sizeof(Etat) * (listeEtat->longueur - 1));
+            if (!tmp && listeEtat->longueur - 1 > 0) {
+                fprintf(stderr, "Erreur: supprimerEtat(): Allocation mémoire échouée\n");
+                return EXIT_FAILURE;
+            }
+            listeEtat->etats = tmp;
+            listeEtat->longueur--;
+
+            // printf("L'effet [%s] a été retiré.\n", enumEffectToChar(type));
+            
+            i--; // Ajuster l'index après le décalage
+        }
+    }
+    
+    return EXIT_SUCCESS;
+}
+
+
 void decrementerDureesEtNettoyer(ListeEtat *listeEtat, int estFinDeTourCombat, int estFinDeZone) {
     
     int etat_a_nettoyer[listeEtat->longueur];
