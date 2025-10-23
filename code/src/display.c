@@ -98,9 +98,12 @@ void printListeAction(ListeAction actions) {
         return;
     }
 
-    printf("Actions (%zu):\n", actions.longueur);
+    printf("\t Actions (%zu):\n", actions.longueur);
     for (size_t i = 0; i < actions.longueur; i++) {
-        printf(" - Type: %s | Params (%zu): ", enumActionTypeToChar(actions.actions[i].type), actions.actions[i].longueur_params);
+        printf("\t  - Type: %s | Params (%zu): ",
+            enumActionTypeToChar(actions.actions[i].type),
+            actions.actions[i].longueur_params
+        );
         for (size_t j = 0; j < actions.actions[i].longueur_params; j++) {
             printf("%s%s", actions.actions[i].params[j], (j + 1 < actions.actions[i].longueur_params) ? ", " : "");
         }
