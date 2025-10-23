@@ -146,27 +146,40 @@ int afficherEtatOxygene(Plongeur *joueur) {
 }
 
 void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures, int attaques_restantes) {
-    printf("\n=== COMBAT SOUS-MARIN ===\n");
-    printf("Vie     : %d/%d\n", joueur->pv, joueur->pv_max);
-    printf("Oxygène : %d/%d\n", joueur->oxygene, joueur->oxygene_max);
-    printf("Fatigue : %d/%d\n", joueur->fatigue, joueur->fatigue_max);
-    printListeEtat(joueur->liste_etats);
+    printf("╔═════════════════════════════ COMBAT DANS LES ABYSSES ═════════════════════════════╗\n");
+    printf("║\n");
+
+    // --- STATS DU JOUEUR ---
+    printf("║  --- %s ---\n", joueur->nom);
+    printf("║  "); printProgressBar("Vie", joueur->pv, joueur->pv_max, 40);
+    printf("║  "); printProgressBar("Oxygène", joueur->oxygene, joueur->oxygene_max, 40);
+    printf("║  "); printProgressBar("Fatigue", joueur->fatigue, joueur->fatigue_max, 10);
+    printListeEtat(joueur->liste_etats, "║  ");
+    printf("║\n");
     
-    printf("\n--- Créatures ---\n");
-    printf("\n");
+    printf("╟───────────────────────────────────────────────────────────────────────────────────╢\n");
+    printf("║\n");
+
+    // --- CRÉATURES ENNEMIES ---
+    printf("║  --- Créatures ---\n");
     for (size_t i = 0; i < nb_creatures; i++) {
         if (creatures[i]->pv > 0) {
-            printf("[%zu] %s (%d/%d PV)\n", i+1, creatures[i]->nom, creatures[i]->pv, creatures[i]->pv_max);
-            printListeEtat(creatures[i]->liste_etats);
-            printf("\n");
+            printf("║  [%zu] %-20s | ", i + 1, creatures[i]->nom);
+            printProgressBar("PV", creatures[i]->pv, creatures[i]->pv_max, 20);
+            // On pourrait afficher les effets des créatures ici aussi
+        } else {
+            printf("║      %-20s | ☠️  VAINCU\n", creatures[i]->nom);
         }
-        else printf("☠️  %s (%d/%d PV)\n", creatures[i]->nom, creatures[i]->pv, creatures[i]->pv_max);
     }
+    printf("║\n");
 
-    printf("\nActions:\n");
-    printf("1 - Attaquer (attaques restante%s : %d)\n", attaques_restantes > 1 ? "s" : "", attaques_restantes);
+    printf("╚═══════════════════════════════════════════════════════════════════════════════════╝\n");
+
+    // --- ACTIONS DISPONIBLES ---
+    printf("\n--- ACTIONS ---\n");
+    printf("1 - Attaquer (attaques restantes : %d)\n", attaques_restantes);
     printf("2 - Utiliser compétence\n");
-    printf("3 - Consommer objet\n");
+    printf("3 - Utiliser un objet (à implémenter)\n");
     printf("4 - Terminer le tour\n");
 }
 
@@ -188,9 +201,9 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         for (size_t i = 0; i < nb_creatures; i++) {
             if (creatures[i]->pv > 0 && (creatures[i]->vitesse >= joueur->vitesse)) {
                 /* Affichage clair pour chaque créature */
-                printf("\n--- Tour de %s #%d ---\n", creatures[i]->nom, i+1);
+                printf("\n--- Tour de %s #%zu ---\n", creatures[i]->nom, i+1);
                 printf("Effets Subis au début du tour:\n");
-                printListeEtat(creatures[i]->liste_etats);
+                printListeEtat(creatures[i]->liste_etats, "  ");
 
                 int pv_before = creatures[i]->pv;
                 appliquerDegatsAvantTour(&creatures[i]->liste_etats, &creatures[i]->pv, creatures[i]->pv_max, creatures[i]->defense, NULL, false);
@@ -224,7 +237,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         /* Affichage clair pour le joueur */
         printf("\n--- Votre tour ---\n");
         printf("Effets Subis au début du tour:\n");
-        printListeEtat(joueur->liste_etats);
+        printListeEtat(joueur->liste_etats, "  ");
 
         int pv_before_player = joueur->pv;
         int oxy_before = joueur->oxygene;
@@ -426,9 +439,9 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         for (size_t i = 0; i < nb_creatures; i++) {
             if (creatures[i]->pv > 0 && (creatures[i]->vitesse < joueur->vitesse)) {
                 /* Affichage clair pour chaque créature */
-                printf("\n--- Tour de %s #%d ---\n", creatures[i]->nom, i+1);
+                printf("\n--- Tour de %s #%zu ---\n", creatures[i]->nom, i+1);
                 printf("Effets Subis au début du tour:\n");
-                printListeEtat(creatures[i]->liste_etats);
+                printListeEtat(creatures[i]->liste_etats, "  ");
 
                 int pv_before2 = creatures[i]->pv;
                 appliquerDegatsAvantTour(&creatures[i]->liste_etats, &creatures[i]->pv, creatures[i]->pv_max, creatures[i]->defense, NULL, false);

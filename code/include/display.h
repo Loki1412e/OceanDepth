@@ -16,7 +16,7 @@
     void printCreatures(CreatureMarine **creatures, size_t length);
     void printBestiary(Bestiaire *bestiary);
     void printDiver(Plongeur *diver);
-    void printListeEtat(ListeEtat etats);
+    void printListeEtat(ListeEtat etats, char* line_prefix);
     void printCompetence(Competence competence);
     void printListeCompetence(ListeCompetence competences);
 
