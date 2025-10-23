@@ -7,6 +7,8 @@
     void freeAction(Action *action);
     void freeActions(Action *actions, size_t longueur);
 
+    Action *parseActions(char *actions_str_raw, size_t *nb_actions, short *res);
+
     char *enumActionTypeToChar(ActionType type);
     ActionType charToEnumActionType(char *type);
     

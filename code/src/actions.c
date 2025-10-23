@@ -383,7 +383,7 @@ int utiliserCompetence(Competence *comp, void *lanceur_ptr, EntiteType lanceur_t
         lanceur_creature->pv -= comp->cout_pv;
     }
 
-    printf("\n>>> %s lance la compétence '%s' ! <<<\n", lanceur_plongeur ? lanceur_plongeur->nom : lanceur_creature->nom, comp->nom);
+    printf("\n>>> [%s] lance la compétence '%s' ! <<<\n", lanceur_plongeur ? lanceur_plongeur->nom : lanceur_creature->nom, comp->nom);
 
     // 3. Exécuter les actions
     if (comp->ciblage != SOI_MEME && ((lanceur_plongeur && cible_plongeur) || (lanceur_creature && cible_creature))) {
@@ -409,6 +409,202 @@ int utiliserCompetence(Competence *comp, void *lanceur_ptr, EntiteType lanceur_t
     comp->cooldown_restant = comp->cooldown_max;
 
     return EXIT_SUCCESS;
+}
+
+
+// Renvoie une liste d'Action à partir d'une chaine de caractere
+Action *parseActions(char *actions_str_raw, size_t *nb_actions, short *res) {
+    
+    *res = EXIT_SUCCESS;
+
+    if (!actions_str_raw || !nb_actions || !res) {
+        fprintf(stderr, "Erreur: parseActions(): Invalid params\n");
+        *res = EXIT_FAILURE;
+        return NULL;
+    }
+    if (strlen(actions_str_raw) == 0) {
+        fprintf(stderr, "Warning: parseActions(): strlen(actions_str_raw) == 0\n");
+        return NULL;
+    }
+
+    Action *actions = NULL;
+    *nb_actions = 0;
+
+    char *buff = NULL;
+    char *token = NULL;
+    
+    char **listActionsStrBuff = NULL;
+    
+    size_t param_index = 0;
+
+    // Init buff
+    buff = my_strdup(actions_str_raw);
+    if (!buff) {
+        fprintf(stderr, "Erreur: parseLongList(): Allocation mémoire buff = my_strdup(str)\n");
+        *res = EXIT_FAILURE;
+        return NULL;
+    }
+
+    // Compter le nombre de token
+    *nb_actions = my_countStrTokElem(actions_str_raw, ";", res);
+    if (*res == EXIT_FAILURE) {
+        fprintf(stderr, "Erreur: parseActions(): *nb_actions = my_countStrTokElem()\n");
+        free(buff);
+        return NULL;
+    }
+    if (*nb_actions == 0) {
+        fprintf(stderr, "Warning: parseActions(): *nb_actions == 0\n");
+        free(buff);
+        return NULL;
+    }
+
+    // Allocation
+    actions = calloc(*nb_actions, sizeof(Action));
+    if (!actions) {
+        fprintf(stderr, "Erreur: parseActions(): *actions = calloc()\n");
+        free(buff);
+        *res = EXIT_FAILURE;
+        return NULL;
+    }
+
+    // Init list
+
+    listActionsStrBuff = calloc(*nb_actions, sizeof(char*));
+    if (!listActionsStrBuff) {
+        fprintf(stderr, "Erreur: parseActions(): listActionsStrBuff = calloc()\n");
+        free(buff);
+        free(actions);
+        *res = EXIT_FAILURE;
+        return NULL;
+    }
+
+    token = strtok(buff, ";");
+    if (token == NULL) {
+        fprintf(stderr, "Erreur: parseActions(): first token == NULL\n");
+        free(listActionsStrBuff);
+        free(actions);
+        free(buff);
+        *res = EXIT_FAILURE;
+        return NULL;
+    }
+
+    for (size_t i = 0; i < *nb_actions; i++) {
+        listActionsStrBuff[i] = my_strdup(token);
+        if (!listActionsStrBuff[i]) {
+            fprintf(stderr, "Erreur: parseActions(): listActionsStrBuff[%zu] = my_strdup(token)\n", i);
+            for (size_t j = 0; j < i; j++)
+                free(listActionsStrBuff[j]);
+            free(listActionsStrBuff);
+            free(actions);
+            *res = EXIT_FAILURE;
+            return NULL;
+        }
+
+        token = strtok(NULL, ";");
+    }
+
+    // On a plus besoin de buff
+    free(buff);
+
+    // Parcourir les actions
+    for (size_t i = 0; i < *nb_actions; i++) {
+
+        Action *action = &actions[i];
+
+        action->longueur_params = my_countStrTokElem(listActionsStrBuff[i], ":", res);
+        if (*res == EXIT_FAILURE) {
+            fprintf(stderr, "Erreur: parseActions(): action[%zu] longueur_params = my_countStrTokElem()\n", i);
+            freeActions(actions, i+1);
+            for (size_t j = i; j < *nb_actions; j++)
+                free(listActionsStrBuff[j]);
+            free(listActionsStrBuff);
+            *res = EXIT_FAILURE;
+            return NULL;
+        }
+        // 0  = vide
+        // 1  = type d'action
+        // 2+ = type d'action (1er element) + paramètres
+        if (action->longueur_params == 0) {
+            fprintf(stderr, "Erreur: parseActions(): action[%zu] longueur_params == 0\n", i);
+            freeActions(actions, i+1);
+            for (size_t j = i; j < *nb_actions; j++)
+                free(listActionsStrBuff[j]);
+            free(listActionsStrBuff);
+            *res = EXIT_FAILURE;
+            return NULL;
+        }
+
+        // Init params
+        token = strtok(listActionsStrBuff[i], ":");
+
+        // 1er token == le type d'action
+        action->type = charToEnumActionType(token);
+        if (action->type == AUCUN_ActionType) {
+            fprintf(stderr, "Erreur: parseActions(): action[%zu] type inconnu \"%s\"\n", i, token);
+            freeActions(actions, i+1);
+            for (size_t j = i; j < *nb_actions; j++)
+                free(listActionsStrBuff[j]);
+            free(listActionsStrBuff);
+            *res = EXIT_FAILURE;
+            return NULL;
+        }
+
+        // -1 car on ne veut pas le 1er element (c'est le type d'action)
+        action->longueur_params--;
+
+        // Si pas de paramètre
+        if (action->longueur_params == 0) {
+            free(listActionsStrBuff[i]);
+            listActionsStrBuff[i] = NULL;
+            continue;
+        }
+        
+        // Tokens suivants == les params
+        token = strtok(NULL, ":");
+
+        // Allocation params
+        action->params = calloc(action->longueur_params, sizeof(char*));
+        if (!action->params) {
+            fprintf(stderr, "Erreur: parseActions(): action->params = calloc()\n");
+            freeActions(actions, i+1);
+            for (size_t j = i; j < *nb_actions; j++)
+                free(listActionsStrBuff[j]);
+            free(listActionsStrBuff);
+            *res = EXIT_FAILURE;
+            return NULL;
+        }
+        
+        param_index = 0;
+        while (token != NULL) {
+            if (param_index >= action->longueur_params) {
+                fprintf(stderr, "Warning: parseActions(): param_index >= action->longueur_params\n");
+                break;
+            }
+
+            action->params[param_index] = my_strdup(token);
+
+            if (!action->params[param_index]) {
+                fprintf(stderr, "Erreur: parseActions(): action->params[%zu] = my_strdup(token)\n", param_index);
+                action->longueur_params = param_index;
+                freeActions(actions, i+1);
+                for (size_t j = i; j < *nb_actions; j++)
+                    free(listActionsStrBuff[j]);
+                free(listActionsStrBuff);
+                *res = EXIT_FAILURE;
+                return NULL;
+            }
+
+            param_index++;
+            token = strtok(NULL, ":");
+        }
+
+        free(listActionsStrBuff[i]);
+        listActionsStrBuff[i] = NULL;
+    }
+
+    free(listActionsStrBuff);
+
+    return actions;
 }
 
 
