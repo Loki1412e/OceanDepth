@@ -82,6 +82,11 @@ long *parseLongList(char *str, size_t *length) {
         free(buff);
         return NULL;
     }
+    if (*length == 0) {
+        fprintf(stderr, "Warning: parseLongList(): *length == 0\n");
+        free(buff);
+        return NULL;
+    }
 
     // Allocation
     list = calloc(*length, sizeof(long));
