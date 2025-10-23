@@ -304,7 +304,7 @@ Action *parseActions(char *actions_str_raw, size_t *nb_actions, short *res) {
         if (*res == EXIT_FAILURE) {
             fprintf(stderr, "Erreur: parseActions(): action[%zu] longueur_params = my_countStrTokElem()\n", i);
             freeActions(actions, i+1);
-            for (size_t j = 0; j < *nb_actions; j++)
+            for (size_t j = i; j < *nb_actions; j++)
                 free(listActionsStrBuff[j]);
             free(listActionsStrBuff);
             *res = EXIT_FAILURE;
@@ -314,7 +314,7 @@ Action *parseActions(char *actions_str_raw, size_t *nb_actions, short *res) {
         if (action->longueur_params <= 1) {
             fprintf(stderr, "Erreur: parseActions(): action[%zu] longueur_params == 0\n", i);
             freeActions(actions, i+1);
-            for (size_t j = 0; j < *nb_actions; j++)
+            for (size_t j = i; j < *nb_actions; j++)
                 free(listActionsStrBuff[j]);
             free(listActionsStrBuff);
             *res = EXIT_FAILURE;
@@ -328,7 +328,7 @@ Action *parseActions(char *actions_str_raw, size_t *nb_actions, short *res) {
         if (!action->params) {
             fprintf(stderr, "Erreur: parseActions(): action->params = calloc()\n");
             freeActions(actions, i+1);
-            for (size_t j = 0; j < *nb_actions; j++)
+            for (size_t j = i; j < *nb_actions; j++)
                 free(listActionsStrBuff[j]);
             free(listActionsStrBuff);
             *res = EXIT_FAILURE;
@@ -343,7 +343,7 @@ Action *parseActions(char *actions_str_raw, size_t *nb_actions, short *res) {
         if (action->type == AUCUN_ActionType) {
             fprintf(stderr, "Erreur: parseActions(): action[%zu] type inconnu \"%s\"\n", i, token);
             freeActions(actions, i+1);
-            for (size_t j = 0; j < *nb_actions; j++)
+            for (size_t j = i; j < *nb_actions; j++)
                 free(listActionsStrBuff[j]);
             free(listActionsStrBuff);
             *res = EXIT_FAILURE;
@@ -365,7 +365,7 @@ Action *parseActions(char *actions_str_raw, size_t *nb_actions, short *res) {
                 fprintf(stderr, "Erreur: parseActions(): action->params[%zu] = my_strdup(token)\n", param_index);
                 action->longueur_params = param_index;
                 freeActions(actions, i+1);
-                for (size_t j = 0; j < *nb_actions; j++)
+                for (size_t j = i; j < *nb_actions; j++)
                     free(listActionsStrBuff[j]);
                 free(listActionsStrBuff);
                 *res = EXIT_FAILURE;
@@ -580,8 +580,10 @@ void freeAction(Action *action) {
         if (action->params[i])
             free(action->params[i]);
     }
-    
-    action->params = NULL;
+    if (action->params) {
+        free(action->params);
+        action->params = NULL;
+    }
     action->longueur_params = 0;
 }
 
@@ -593,7 +595,6 @@ void freeActions(Action *actions, size_t longueur) {
     }
     
     free(actions);
-    actions = NULL;
 }
 
 void freeCompetence(Competence *competence) {
@@ -610,8 +611,9 @@ void freeCompetence(Competence *competence) {
     }
 
     if (competence->listeAction.actions) {
-        for (size_t i = 0; i < competence->listeAction.longueur; i++)
-            freeAction(&competence->listeAction.actions[i]);
+        freeActions(competence->listeAction.actions, competence->listeAction.longueur);
+        competence->listeAction.actions = NULL;
+        competence->listeAction.longueur = 0;
     }
 }
 
