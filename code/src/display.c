@@ -92,7 +92,7 @@ void clearConsole() {
 }
 
 void pressEnterToContinue() {
-    printf("Appuyez sur Entrée pour continuer...");
+    printf("\nAppuyez sur Entrée pour continuer...");
     while (getchar() != '\n');
     clearConsole();
 }
