@@ -583,6 +583,37 @@ ListeCompetence initSkillsList(short *res) {
 }
 
 
+Competence *choisirRandomCompetence(Competence *competences, size_t longueur) {
+    if (!competences || longueur == 0) return NULL;
+    
+    size_t tab[longueur];
+    size_t indice = 0;
+    
+    for (size_t i = 0; i < longueur; i++) {
+        if (competences[i].cooldown_restant == 0)
+            tab[indice++] = i;
+    }
+
+    if (indice == 0) return NULL;
+
+    return &competences[tab[random_int(0, indice - 1)]];
+}
+
+
+int decrementerCooldownsCompetences(ListeCompetence *liste_competences) {
+    if (!liste_competences || !liste_competences->competences || liste_competences->longueur == 0)
+        return EXIT_FAILURE;
+
+    for (size_t i = 0; i < liste_competences->longueur; i++) {
+        Competence *comp = &liste_competences->competences[i];
+        if (comp->cooldown_restant > 0)
+            comp->cooldown_restant--;
+    }
+
+    return EXIT_SUCCESS;
+}
+
+
 void freeAction(Action *action) {
     if (!action) return;
 
