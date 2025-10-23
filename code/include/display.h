@@ -4,6 +4,7 @@
     #include "global.h"
     #include "conf.h"
     #include "effets.h"
+    #include "competences.h"
     
     // Temp
     size_t lireEntier();
