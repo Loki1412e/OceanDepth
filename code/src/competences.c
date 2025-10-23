@@ -27,7 +27,7 @@ ActionType charToEnumActionType(char *type) {
 }
 
 
-char *enumCiblageTypeToChar(ActionType type) {
+char *enumCiblageTypeToChar(CiblageType type) {
     switch (type) {
         case ENNEMI_UNIQUE: return "ENNEMI_UNIQUE";
         case SOI_MEME: return "SOI_MEME";
@@ -95,7 +95,7 @@ Action duplicateAction(Action *modal, short *res) {
     for (size_t i = 0; i < modal->longueur_params; i++) {
         action.params[i] = my_strdup(modal->params[i]);
         if (!action.params[i]) {
-            fprintf(stderr, "Erreur: duplicateAction(): action.params[%zu] = my_strdup(modal->params[%zu])\n", i);
+            fprintf(stderr, "Erreur: duplicateAction(): action.params[%zu] = my_strdup(modal->params[%zu])\n", i, i);
             action.longueur_params = i;
             freeAction(&action);
             *res = EXIT_FAILURE;
@@ -400,12 +400,8 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
 
     char line[512];
     size_t length = 0, index = 0;
-
-    char *buff = NULL;
+    
     short res;
-
-    char *actions_str_copy = NULL;
-    char *action_token = NULL;
 
     while (fgets(line, sizeof(line), f)) {
 
@@ -614,7 +610,7 @@ void freeCompetence(Competence *competence) {
     }
 
     if (competence->listeAction.actions) {
-        for (int i = 0; i < competence->listeAction.longueur; i++)
+        for (size_t i = 0; i < competence->listeAction.longueur; i++)
             freeAction(&competence->listeAction.actions[i]);
     }
 }

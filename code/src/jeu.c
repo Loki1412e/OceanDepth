@@ -70,7 +70,7 @@ int runGame(Sauvegarde *actualSave) {
         
         printBestiary(bestiary);
 
-        combat(diver, bestiary->creatures, bestiary->longueur_creatures);
+        // combat(diver, bestiary->creatures, bestiary->longueur_creatures);
 
         freeBestiaryContent(bestiary);
 

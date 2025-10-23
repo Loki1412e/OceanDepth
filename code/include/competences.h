@@ -11,7 +11,7 @@
     char *enumActionTypeToChar(ActionType type);
     ActionType charToEnumActionType(char *type);
 
-    char *enumCiblageTypeToChar(ActionType type);
+    char *enumCiblageTypeToChar(CiblageType type);
     CiblageType charToEnumCiblageType(char *type);
 
     ListeCompetence initSkillsList(short *res);
