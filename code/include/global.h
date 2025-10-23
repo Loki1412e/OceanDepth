@@ -71,6 +71,7 @@
 
     typedef enum {
         AUCUN_ActionType,
+        DEGAT_DEFAUT,
         DEGATS_FIXES,
         DEGATS_SCALES,
         DEGATS_PERFORANTS,

@@ -17,6 +17,11 @@ int afficherEtatOxygene(Plongeur *joueur);
 void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures, int attaques_restantes);
 
 
+/*====== Actions / Compétences ======*/
+
+
+
+
 /*====== Utils ======*/
 
 int augmenterFatigue(Plongeur *joueur, int gain) {
