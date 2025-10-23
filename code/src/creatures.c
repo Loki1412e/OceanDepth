@@ -1,7 +1,7 @@
 #include "../include/creatures.h"
 
 
-Bestiaire *initModalBestiary(ListeCompetence *skill_list);
+Bestiaire *initModalBestiary(ListeCompetence *modalCreaturesSkills);
 Bestiaire *initEmptyBestiary();
 int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary);
 int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, unsigned idConf);
@@ -11,7 +11,7 @@ void freeCreatures(CreatureMarine **creatures, size_t length);
 void freeCreature(CreatureMarine *creature);
 
 void sortCreaturesBySpeed(CreatureMarine **creatures, size_t nb_creatures);
-int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *skill_list, char *path);
+int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreaturesSkills, char *path);
 CreatureMarine *duplicateCreature(CreatureMarine *model);
 
 
@@ -141,9 +141,9 @@ Bestiaire *initEmptyBestiary() {
 }
 
 
-Bestiaire *initModalBestiary(ListeCompetence *skill_list) {
-    if (!skill_list) {
-        fprintf(stderr, "Erreur: initModalBestiary(): *skill_list == NULL\n");
+Bestiaire *initModalBestiary(ListeCompetence *modalCreaturesSkills) {
+    if (!modalCreaturesSkills) {
+        fprintf(stderr, "Erreur: initModalBestiary(): *modalCreaturesSkills == NULL\n");
         return NULL;
     }
 
@@ -184,7 +184,7 @@ Bestiaire *initModalBestiary(ListeCompetence *skill_list) {
 
     // Initialisation du Bestiaire Model
 
-    if (setBestiaryFromConf(modalBestiary, skill_list, "config/bestiaire/creatures.conf") == EXIT_FAILURE) {
+    if (setBestiaryFromConf(modalBestiary, modalCreaturesSkills, "config/bestiaire/creatures.conf") == EXIT_FAILURE) {
         fprintf(stderr, "Erreur: initModalBestiary(): setBestiaryFromConf()\n");
         return NULL;
     }
@@ -215,7 +215,7 @@ void sortCreaturesBySpeed(CreatureMarine **creatures, size_t nb_creatures) {
 }
 
 
-int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *skill_list, char *path) {
+int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreaturesSkills, char *path) {
     if (!modalBestiary || !modalBestiary->creatures || modalBestiary->longueur_creatures == 0 || !path) {
         fprintf(stderr, "Erreur: setBestiaryFromConf(): Parametre(s) mal initialisé(s)\n");
         return EXIT_FAILURE;
@@ -380,7 +380,7 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *skill_list, c
         else if (strncmp(line, "competences=", 12) == 0) {
             line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
             if (line[12] == '\0') continue; // ligne vide
-            if (!skill_list || skill_list->longueur == 0 || !skill_list->competences) continue;
+            if (!modalCreaturesSkills || modalCreaturesSkills->longueur == 0 || !modalCreaturesSkills->competences) continue;
             
             modalBestiary->creatures[index]->liste_competences.longueur = 0;
             len = 0;
@@ -396,10 +396,8 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *skill_list, c
             // On vérifie si l'id de la compétence existe
             res = false;
             for (size_t i = 0; i < len; i++) {
-                // ne sert a rien: || arrayLong[i] >= skill_list->longueur
-                // car: arrayLong[i] (unsigned) < (size_t) skill_list->longueur
-                if (arrayLong[i] < 0) {
-                    fprintf(stderr, "Erreur: setBestiaryFromConf() -> competences -> l'id [%ld] n'existe pas dans skill_list\n", arrayLong[i]);
+                if (arrayLong[i] < 0 || arrayLong[i] >= (long) modalCreaturesSkills->longueur) {
+                    fprintf(stderr, "Erreur: setBestiaryFromConf() -> competences -> l'id [%ld] n'existe pas dans modalCreaturesSkills\n", arrayLong[i]);
                     res = true;
                 }
             }
@@ -437,7 +435,7 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *skill_list, c
 
             for (size_t i = 0; i < len; i++) {
                 // On utilise la liste de tout les skill pour init ceux de la creature
-                modalBestiary->creatures[index]->liste_competences.competences[i] = duplicateCompetence(&skill_list->competences[arrayLong[i]], &res);
+                modalBestiary->creatures[index]->liste_competences.competences[i] = duplicateCompetence(&modalCreaturesSkills->competences[arrayLong[i]], &res);
                 if (res == EXIT_FAILURE) {
                     modalBestiary->creatures[index]->liste_competences.longueur = i;
                     fprintf(stderr, "Erreur: setBestiaryFromConf(): duplicateCompetence()\n");
@@ -523,7 +521,6 @@ void freeCreature(CreatureMarine *creature) {
     }
     
     freeListeEtat(&creature->liste_etats);
-
     freeListeCompetence(&creature->liste_competences);
 
     free(creature);

@@ -20,4 +20,6 @@
     Etat duplicateEtat(Etat *modal);
     ListeEtat duplicateListeEtat(ListeEtat *modal, short *res);
 
+    int supprimerEtat(ListeEtat *listeEtat, Effets type);
+
 #endif

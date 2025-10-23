@@ -5,8 +5,6 @@
 int runGame(Sauvegarde *actualSave) {
     if (!actualSave || !actualSave->diver) return EXIT_FAILURE;
 
-    printf("\nclearConsole\n");//clearConsole();
-
     /*===== Init var ====*/
 
     int runProgram = true;
@@ -14,21 +12,21 @@ int runGame(Sauvegarde *actualSave) {
     Plongeur *diver = actualSave->diver;
     Bestiaire *modalBestiary = NULL;
     Bestiaire *bestiary = NULL;
-    ListeCompetence skill_list;
+    ListeCompetence modalCreaturesSkills;
 
     short res;
 
     /*===== Init Allocation ====*/
 
-    skill_list = initSkillsList(&res);
+    modalCreaturesSkills = initSkillsList(&res, "config/bestiaire/competences.conf");
     if (res == EXIT_FAILURE) {
         fprintf(stderr, "Erreur lors du chargement des compétences.\n");
         return EXIT_FAILURE;
     }
 
-    modalBestiary = initModalBestiary(&skill_list);
+    modalBestiary = initModalBestiary(&modalCreaturesSkills);
     if (!modalBestiary) {
-        freeListeCompetence(&skill_list);
+        freeListeCompetence(&modalCreaturesSkills);
         fprintf(stderr, "Erreur lors du chargement du bestiaire modèle.\n");
         return EXIT_FAILURE;
     }
@@ -37,7 +35,7 @@ int runGame(Sauvegarde *actualSave) {
     if (!bestiary) {
         fprintf(stderr, "Erreur lors de la création du bestiaire.\n");
         freeBestiary(modalBestiary);
-        freeListeCompetence(&skill_list);
+        freeListeCompetence(&modalCreaturesSkills);
         return EXIT_FAILURE;
     }
 
@@ -46,6 +44,7 @@ int runGame(Sauvegarde *actualSave) {
 
     printSave(actualSave);
     printf("[%s] entre dans les profondeurs maritimes.\n\n", diver->nom);
+    pressEnterToContinue();
 
     while (runProgram) {
 
@@ -69,6 +68,7 @@ int runGame(Sauvegarde *actualSave) {
         ajouterEffet(&bestiary->creatures[1]->liste_etats, SAIGNEMENT, 5, 0, 0);
         
         printBestiary(bestiary);
+        pressEnterToContinue();
 
         combat(diver, bestiary->creatures, bestiary->longueur_creatures);
 
@@ -81,7 +81,7 @@ int runGame(Sauvegarde *actualSave) {
     
     freeBestiary(bestiary);
     freeBestiary(modalBestiary);
-    freeListeCompetence(&skill_list);
+    freeListeCompetence(&modalCreaturesSkills);
 
     return -1;
     

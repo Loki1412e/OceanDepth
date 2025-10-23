@@ -40,6 +40,12 @@
 
 
     /* Enum */
+    
+    typedef enum {
+        ENTITE_PLONGEUR,
+        ENTITE_CREATURE
+    } EntiteType;
+
 
     typedef enum {
         DESACTIVE,
@@ -54,7 +60,7 @@
 
 
     typedef enum {
-        AUCUN,
+        AUCUN_Effets,
         BENEDICTION_OCEAN,
         MALEDICTION_OCEAN,
         SAIGNEMENT,
@@ -65,8 +71,31 @@
         DEFENSE_AUGMENTEE,
         VOIX_DU_COURANT,
         // Suite ...
-        LENGTH_EffetsSpeciaux
+        LENGTH_Effets
     } Effets;
+
+
+    typedef enum {
+        AUCUN_ActionType,
+        DEGAT_DEFAUT,
+        DEGATS_FIXES,
+        DEGATS_SCALES,
+        DEGATS_PERFORANTS,
+        MODIFIER_STAT,
+        // VOL_DE_VIE,
+        APPLIQUER_EFFET,
+        RETIRER_EFFET,
+        // Suite ...
+        LENGTH_ActionType
+    } ActionType;
+
+    typedef enum {
+        AUCUN_CiblageType,
+        ENNEMI_UNIQUE,
+        SOI_MEME,
+        // Suite ...
+        LENGTH_CiblageType
+    } CiblageType;
 
 
     /* Struct */
@@ -85,17 +114,26 @@
 
 
     typedef struct {
+        ActionType type;
+        char **params;      // Ex: { "attaque_max", "1.3" } / { "PARALYSIE", "2", "25" }
+        size_t longueur_params;
+    } Action;
+
+    typedef struct {
+        Action *actions;
+        size_t longueur;
+    } ListeAction;
+
+    typedef struct {
         unsigned id;
         char *nom;
         char *description;
-        // Cooldown en tours
+        int cout_oxygene;
+        int cout_pv;
+        CiblageType ciblage;
         int cooldown_max;
         int cooldown_restant;
-        int multiplicateur_degats;  // ex: 110 -> degats *= 110 / 100. => degats *= 1.1
-        int chance_effet;           // ex: 30 = 30% chance d’appliquer effet
-        Effets effet;               // ex: "SAIGNEMENT"
-        int duree_effet;            // en tours
-        int sur_soi;                // 1 = s’applique à soi, 0 = sur ennemi
+        ListeAction listeAction;
     } Competence;
 
     typedef struct {
