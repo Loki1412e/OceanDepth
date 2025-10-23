@@ -17,9 +17,273 @@ int afficherEtatOxygene(Plongeur *joueur);
 void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures, int attaques_restantes);
 
 
-/*====== Actions / Compétences ======*/
+/*===================================================================================================*/
+/*====================================== Compétences > Actions ======================================*/
+
+int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, EntiteType cible_type) {
+    if (!action || !lanceur_ptr || !cible_ptr) return EXIT_FAILURE;
+
+    // Déterminer qui est le lanceur et qui est la cible
+    Plongeur* lanceur_plongeur = (lanceur_type == ENTITE_PLONGEUR) ? (Plongeur*)lanceur_ptr : NULL;
+    CreatureMarine* lanceur_creature = (lanceur_type == ENTITE_CREATURE) ? (CreatureMarine*)lanceur_ptr : NULL;
+
+    Plongeur* cible_plongeur = (cible_type == ENTITE_PLONGEUR) ? (Plongeur*)cible_ptr : NULL;
+    CreatureMarine* cible_creature = (cible_type == ENTITE_CREATURE) ? (CreatureMarine*)cible_ptr : NULL;
+
+    if ((!lanceur_plongeur && !lanceur_creature) || (!cible_plongeur && !cible_creature)) {
+        fprintf(stderr, "Erreur: executerAction(): Type d'entité invalide pour le lanceur ou la cible.\n");
+        return EXIT_FAILURE;
+    }
+
+    int res;
+
+    // --- Exécution en fonction du type d'action ---
+    switch (action->type) {
+        
+        case DEGAT_DEFAUT:
+            // Récupération des stats du lanceur
+            int att_max_lanceur = lanceur_plongeur ? lanceur_plongeur->attaque_max : lanceur_creature->attaque_max;
+            int att_min_lanceur = lanceur_plongeur ? lanceur_plongeur->attaque_min : lanceur_creature->attaque_min;
+
+            // Calcul des dégâts
+            int defense_cible = cible_plongeur ? cible_plongeur->defense : cible_creature->defense;
+            int degats = calculerDegats(att_min_lanceur, att_max_lanceur, defense_cible);
+
+            // Application des dégâts
+            if (cible_plongeur) cible_plongeur->pv -= degats;
+            if (cible_creature) cible_creature->pv -= degats;
+
+            // Affichage
+            printf(">> [%s] subit %d dégâts !\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, degats);
+            break;
+
+        
+        case DEGATS_SCALES:
+            // Vérification de la stat
+            int att_max_lanceur;
+            int att_min_lanceur;
+            
+            if (strcmp(action->params[0], "attaque") == 0) {
+                att_max_lanceur = lanceur_plongeur ? lanceur_plongeur->attaque_max : lanceur_creature->attaque_max;
+                att_min_lanceur = lanceur_plongeur ? lanceur_plongeur->attaque_min : lanceur_creature->attaque_min;
+            }
+            else if (strcmp(action->params[0], "pv_max") == 0) {
+                att_max_lanceur = lanceur_plongeur ? lanceur_plongeur->pv_max : lanceur_creature->pv_max;
+                att_min_lanceur = att_max_lanceur;
+            }
+            else if (strcmp(action->params[0], "pv") == 0) {
+                att_max_lanceur = lanceur_plongeur ? lanceur_plongeur->pv : lanceur_creature->pv;
+                att_min_lanceur = att_max_lanceur;
+            }
+            else if (strcmp(action->params[0], "defense") == 0) {
+                att_max_lanceur = lanceur_plongeur ? lanceur_plongeur->defense : lanceur_creature->defense;
+                att_min_lanceur = att_max_lanceur;
+            }
+            else {
+                fprintf(stderr, "Erreur: executerAction(): Stat invalide pour DEGATS_SCALES: \"%s\"\n", action->params[0]);
+                return EXIT_FAILURE;
+            }
+            
+            // Verification du multiplicateur
+            int getMultiplicateur = my_strToInt(action->params[1], &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: executerAction(): my_strToInt() -> action->params[1] (DEGATS_SCALES)\n");
+                return EXIT_FAILURE;
+            }
+            double multiplicateur = getMultiplicateur / 100.0;
+
+            // Calcul des dégâts
+            int defense_cible = cible_plongeur ? cible_plongeur->defense : cible_creature->defense;
+            int degats = (int)(calculerDegats(att_min_lanceur, att_max_lanceur, defense_cible) * multiplicateur);
+
+            // Application des dégâts
+            if (cible_plongeur) cible_plongeur->pv -= degats;
+            if (cible_creature) cible_creature->pv -= degats;
+
+            // Affichage
+            printf(">> [%s] subit %d dégâts !\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, degats);
+            break;
 
 
+        case APPLIQUER_EFFET:
+            // Récupération de la liste des états de la cible
+            ListeEtat *etats_cible = cible_plongeur ? &cible_plongeur->liste_etats : &cible_creature->liste_etats;
+            
+            // Récupération des paramètres
+
+            Effets effet = charToEnumEffect(action->params[0]);
+            if (effet == AUCUN_Effets) {
+                fprintf(stderr, "Erreur: executerAction(): charToEnumEffect() -> action->params[0] (APPLIQUER_EFFET)\n");
+                return EXIT_FAILURE;
+            }
+            
+            int duree = my_strToInt(action->params[1], &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: executerAction(): my_strToInt() -> action->params[1] (APPLIQUER_EFFET)\n");
+                return EXIT_FAILURE;
+            }
+            
+            int chance = my_strToInt(action->params[2], &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: executerAction(): my_strToInt() -> action->params[2] (APPLIQUER_EFFET)\n");
+                return EXIT_FAILURE;
+            }
+
+            // Application de l'effet avec la probabilité donnée
+            if (random_int(1, 100) <= chance) {
+                ajouterEffet(etats_cible, effet, duree, 0, 0);
+                printf(">> L'effet [%s] a été appliqué pour %d tours !\n", action->params[0], duree);
+            }
+            else printf(">> L'application de l'effet [%s] a échoué.\n", action->params[0]);
+            break;
+
+
+        case MODIFIER_STAT:
+            // Récupération des paramètres
+            char* stat_nom = action->params[0];
+            int valeur = my_strToInt(action->params[1], &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: executerAction(): my_strToInt() -> action->params[1] (MODIFIER_STAT)\n");
+                return EXIT_FAILURE;
+            }
+
+            // Pointeurs vers les stats à modifier
+            int *pv = cible_plongeur ? &cible_plongeur->pv : &cible_creature->pv;
+            int *pv_max = cible_plongeur ? &cible_plongeur->pv_max : &cible_creature->pv_max;
+            int *oxygene = cible_plongeur ? &cible_plongeur->oxygene : NULL;
+            int *oxygene_max = cible_plongeur ? &cible_plongeur->oxygene_max : NULL;
+            int *fatigue = cible_plongeur ? &cible_plongeur->fatigue : NULL;
+            int *fatigue_max = cible_plongeur ? &cible_plongeur->fatigue_max : NULL;
+            // int *attaque_max = cible_plongeur ? &cible_plongeur->attaque_max : &cible_creature->attaque_max;
+            // int *attaque_min = cible_plongeur ? &cible_plongeur->attaque_min : &cible_creature->attaque_min;
+            int *defense = cible_plongeur ? &cible_plongeur->defense : &cible_creature->defense;
+            int *vitesse = cible_plongeur ? &cible_plongeur->vitesse : &cible_creature->vitesse;
+
+            // Modification de la stat
+            if (strcmp(stat_nom, "pv") == 0) {
+                *pv += *pv + valeur > *pv_max ? valeur : 0;
+                printf(">> [%s] à régénéré %d PV.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
+            }
+            else if (strcmp(stat_nom, "oxygene") == 0 && cible_plongeur) {
+                 *oxygene += *oxygene + valeur > *oxygene_max ? valeur : 0;
+                 printf(">> [%s] à régénéré %d d'oxygène.\n", cible_plongeur->nom, valeur);
+            }
+            else if (strcmp(stat_nom, "fatigue") == 0 && cible_plongeur) {
+                *fatigue -= *fatigue - valeur < 0 ? *fatigue : valeur;
+                printf(">> [%s] à réduit sa fatigue de %d.\n", cible_plongeur->nom, valeur);
+            }
+            // else if (strcmp(stat_nom, "attaque_max") == 0) {
+            //     *attaque_max += valeur;
+            //     printf(">> [%s] à modifié son attaque max de %d.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
+            // }
+            // else if (strcmp(stat_nom, "attaque_min") == 0) {
+            //     *attaque_min += valeur;
+            //     printf(">> [%s] à modifié son attaque min de %d.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
+            // }
+            else if (strcmp(stat_nom, "defense") == 0) {
+                *defense += valeur;
+                printf(">> [%s] à modifié sa défense de %d.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
+            }
+            else if (strcmp(stat_nom, "vitesse") == 0) {
+                *vitesse += valeur;
+                printf(">> [%s] à modifié sa vitesse de %d.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
+            }
+            else {
+                fprintf(stderr, "Erreur: executerAction(): Stat inconnue pour MODIFIER_STAT: \"%s\"\n", stat_nom);
+                return EXIT_FAILURE;
+            }
+            break;
+
+
+        default:
+            printf("Action de type '%s' non implémentée.\n", enumActionTypeToChar(action->type));
+            break;
+    }
+}
+
+// Vérifie les conditions et lance une compétence.
+int utiliserCompetence(Competence *comp, void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, EntiteType cible_type) {
+    if (!comp || !lanceur_ptr || !cible_ptr) return EXIT_FAILURE;
+
+    // Déterminer qui est le lanceur et qui est la cible
+    Plongeur* lanceur_plongeur = (lanceur_type == ENTITE_PLONGEUR) ? (Plongeur*)lanceur_ptr : NULL;
+    CreatureMarine* lanceur_creature = (lanceur_type == ENTITE_CREATURE) ? (CreatureMarine*)lanceur_ptr : NULL;
+
+    Plongeur* cible_plongeur = (cible_type == ENTITE_PLONGEUR) ? (Plongeur*)cible_ptr : NULL;
+    CreatureMarine* cible_creature = (cible_type == ENTITE_CREATURE) ? (CreatureMarine*)cible_ptr : NULL;
+
+    int res;
+
+    if (!lanceur_plongeur && !lanceur_creature) {
+        fprintf(stderr, "Erreur: utiliserCompetence(): lanceur inconnu\n");
+        return EXIT_FAILURE;
+    }
+    if (!cible_plongeur && !cible_creature) {
+        fprintf(stderr, "Erreur: utiliserCompetence(): cible inconnue\n");
+        return EXIT_FAILURE;
+    }
+
+    // 1. Vérifier le Cooldown
+    if (comp->cooldown_restant > 0) {
+        printf("Compétence '%s' est en cours de rechargement (%d tours restants).\n", comp->nom, comp->cooldown_restant);
+        return -1;
+    }
+
+    // 2. Vérifier et appliquer les coûts (uniquement pour le joueur pour l'instant)
+    if (lanceur_plongeur) {
+        if (lanceur_plongeur->oxygene < comp->cout_oxygene) {
+            printf("Pas assez d'oxygène pour lancer '%s'.\n", comp->nom);
+            return -1;
+        }
+        lanceur_plongeur->oxygene -= comp->cout_oxygene;
+
+        if (lanceur_plongeur->pv <= comp->cout_pv) {
+            printf("Pas assez de PV pour lancer '%s'.\n", comp->nom);
+            return -1;
+        }
+        lanceur_plongeur->pv -= comp->cout_pv;
+
+        // Augmenter la fatigue du joueur
+        augmenterFatigue(lanceur_plongeur, 1);
+    }
+    else if (lanceur_creature) {
+
+        if (lanceur_creature->pv <= comp->cout_pv) {
+            printf("Pas assez de PV pour lancer '%s'.\n", comp->nom);
+            return -1;
+        }
+        lanceur_creature->pv -= comp->cout_pv;
+    }
+
+    printf("\n>>> %s lance la compétence '%s' ! <<<\n", lanceur_plongeur ? lanceur_plongeur->nom : lanceur_creature->nom, comp->nom);
+
+    // 3. Exécuter les actions
+    if (comp->ciblage != SOI_MEME && ((lanceur_plongeur && cible_plongeur) || (lanceur_creature && cible_creature))) {
+        printf("Erreur: utiliserCompetence(): le lanceur et la cible sont tous les deux des plongeurs pour une compétence non auto-ciblée.\n");
+        return EXIT_FAILURE;
+    }
+
+    for (size_t i = 0; i < comp->listeAction.longueur; i++) {
+        res = executerAction(
+            &comp->listeAction.actions[i],
+            lanceur_ptr,
+            lanceur_type,
+            cible_ptr,
+            cible_type
+        );
+        if (res == EXIT_FAILURE) {
+            fprintf(stderr, "Erreur: utiliserCompetence(): executerAction() pour l'action %zu\n", i);
+            return EXIT_FAILURE;
+        }
+    }
+
+    // 4. Update le cooldown
+    comp->cooldown_restant--;
+
+    return EXIT_SUCCESS;
+}
+
+/*===================================================================================================*/
 
 
 /*====== Utils ======*/
