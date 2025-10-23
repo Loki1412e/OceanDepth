@@ -10,6 +10,7 @@
     size_t lireEntier();
     char *lireString();
     void clearConsole();
+    void pressEnterToContinue();
 
     void printCreature(CreatureMarine *creature);
     void printCreatures(CreatureMarine **creatures, size_t length);
