@@ -357,7 +357,7 @@ int utiliserCompetence(Competence *comp, void *lanceur_ptr, EntiteType lanceur_t
     }
 
     // 4. Update le cooldown
-    comp->cooldown_restant--;
+    comp->cooldown_restant = comp->cooldown_max;
 
     return EXIT_SUCCESS;
 }
