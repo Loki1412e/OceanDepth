@@ -57,6 +57,7 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
             if (!actualSave) break;
                     
             // Lancer le jeu
+            pressEnterToContinue();
             res = runGame(actualSave);
             if (res == -1) *runProgram = false;
 
@@ -131,6 +132,7 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
             printf("\nBienvenue %s !\n", actualSave->diver->nom);
 
             // Lancer le jeu
+            pressEnterToContinue();
             res = runGame(actualSave);
             if (res == -1) *runProgram = false;
 
@@ -169,6 +171,7 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
             if (!actualSave) break;
                     
             // Lancer le jeu
+            pressEnterToContinue();
             res = runGame(actualSave);
             if (res == -1) *runProgram = false;
 
@@ -247,7 +250,7 @@ int main() {
 
     while (runProgram) {
 
-        printf("\nclearConsole\n");//clearConsole();
+        clearConsole();
 
         /*---- Init Sauvegardes ----*/
         listSaves = preLoadListSaves(SAVE_DIR);
