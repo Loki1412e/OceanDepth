@@ -187,15 +187,26 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         // Monstres autant ou plus rapides
         for (size_t i = 0; i < nb_creatures; i++) {
             if (creatures[i]->pv > 0 && (creatures[i]->vitesse >= joueur->vitesse)) {
+                /* Affichage clair pour chaque créature */
+                printf("\n--- Tour de %s #%d ---\n", creatures[i]->nom, i+1);
+                printf("Effets Subis au début du tour:\n");
+                printListeEtat(creatures[i]->liste_etats);
+
+                int pv_before = creatures[i]->pv;
                 appliquerDegatsAvantTour(&creatures[i]->liste_etats, &creatures[i]->pv, creatures[i]->pv_max, creatures[i]->defense, NULL, false);
-                
+                if (pv_before != creatures[i]->pv) {
+                    printf("%s subit %d dégâts d'effets de statut (PV: %d -> %d)\n", creatures[i]->nom, pv_before - creatures[i]->pv, pv_before, creatures[i]->pv);
+                }
+
+                printf("%s tente d'agir...\n", creatures[i]->nom);
                 res = peutAttaquer(&creatures[i]->liste_etats);
                 if (res) {
                     res = botAttaque(creatures[i], ENTITE_CREATURE, joueur, ENTITE_PLONGEUR);
                     res = res == EXIT_SUCCESS;
+                    if (res) printf("%s a réalisé une action.\n", creatures[i]->nom);
                 }
                 if (!res) printf("[%s] n'a pas pu attaquer.\n", creatures[i]->nom);
-                
+
                 decrementerDureesEtNettoyer(&creatures[i]->liste_etats, true, false);
                 decrementerCooldownsCompetences(&creatures[i]->liste_competences);
 
@@ -210,9 +221,21 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
         int attaques_restantes = calculerAttaquesMaxAvecFatigue(joueur->fatigue_max, joueur->fatigue);
 
-        appliquerConsommationOxygeneProfondeur(joueur);
+        /* Affichage clair pour le joueur */
+        printf("\n--- Votre tour ---\n");
+        printf("Effets Subis au début du tour:\n");
+        printListeEtat(joueur->liste_etats);
+
+        int pv_before_player = joueur->pv;
+        int oxy_before = joueur->oxygene;
+        int perte_oxy = appliquerConsommationOxygeneProfondeur(joueur);
+        if (perte_oxy > 0) printf("Oxygène consommé (profondeur): -%d ( %d -> %d )\n", perte_oxy, oxy_before, joueur->oxygene);
+
         afficherEtatOxygene(joueur);
         appliquerDegatsAvantTour(&joueur->liste_etats, &joueur->pv, joueur->pv_max, joueur->defense, &joueur->oxygene, joueur->oxygene_max);
+        if (pv_before_player != joueur->pv) {
+            printf("Vous subissez %d dégâts d'effets de statut (PV: %d -> %d)\n", pv_before_player - joueur->pv, pv_before_player, joueur->pv);
+        }
 
         pressEnterToContinue();
         afficherInterface(joueur, creatures, nb_creatures, attaques_restantes);
@@ -402,15 +425,26 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         // Monstres strictement moins rapides
         for (size_t i = 0; i < nb_creatures; i++) {
             if (creatures[i]->pv > 0 && (creatures[i]->vitesse < joueur->vitesse)) {
-                appliquerDegatsAvantTour(&creatures[i]->liste_etats, &creatures[i]->pv, creatures[i]->pv_max, creatures[i]->defense, NULL, false);
+                /* Affichage clair pour chaque créature */
+                printf("\n--- Tour de %s #%d ---\n", creatures[i]->nom, i+1);
+                printf("Effets Subis au début du tour:\n");
+                printListeEtat(creatures[i]->liste_etats);
 
+                int pv_before2 = creatures[i]->pv;
+                appliquerDegatsAvantTour(&creatures[i]->liste_etats, &creatures[i]->pv, creatures[i]->pv_max, creatures[i]->defense, NULL, false);
+                if (pv_before2 != creatures[i]->pv) {
+                    printf("%s subit %d dégâts d'effets de statut (PV: %d -> %d)\n", creatures[i]->nom, pv_before2 - creatures[i]->pv, pv_before2, creatures[i]->pv);
+                }
+
+                printf("%s tente d'agir...\n", creatures[i]->nom);
                 res = peutAttaquer(&creatures[i]->liste_etats);
                 if (res) {
                     res = botAttaque(creatures[i], ENTITE_CREATURE, joueur, ENTITE_PLONGEUR);
                     res = res == EXIT_SUCCESS;
+                    if (res) printf("%s a réalisé une action.\n", creatures[i]->nom);
                 }
                 if (!res) printf("[%s] n'a pas pu attaquer.\n", creatures[i]->nom);
-                
+
                 decrementerDureesEtNettoyer(&creatures[i]->liste_etats, true, false);
                 decrementerCooldownsCompetences(&creatures[i]->liste_competences);
 
