@@ -92,6 +92,21 @@ void clearConsole() {
 
 /*==================*/
 
+void printListeAction(ListeAction actions) {
+    if (actions.longueur == 0 || actions.actions == NULL) {
+        printf("Actions : Aucune\n");
+        return;
+    }
+
+    printf("Actions (%zu):\n", actions.longueur);
+    for (size_t i = 0; i < actions.longueur; i++) {
+        printf(" - Type: %s | Params (%zu): ", enumActionTypeToChar(actions.actions[i].type), actions.actions[i].longueur_params);
+        for (size_t j = 0; j < actions.actions[i].longueur_params; j++) {
+            printf("%s%s", actions.actions[i].params[j], (j + 1 < actions.actions[i].longueur_params) ? ", " : "");
+        }
+        printf("\n");
+    }
+}
 
 void printListeEtat(ListeEtat etats) {
     if (etats.longueur == 0 || etats.etats == NULL) {
@@ -116,13 +131,12 @@ void printCompetence(Competence competence) {
     printf("\t Id                   : %u\n", competence.id);
     printf("\t Nom                  : %s\n", competence.nom);
     printf("\t Description          : %s\n", competence.description);
+    printf("\t Coût en oxygène      : %d\n", competence.cout_oxygene);
+    printf("\t Coût en PV           : %d\n", competence.cout_pv);
+    printf("\t Ciblage              : %s\n", enumCiblageTypeToChar(competence.ciblage));
     printf("\t Cooldown max         : %d tours\n", competence.cooldown_max);
     printf("\t Cooldown restant     : %d tours\n", competence.cooldown_restant);
-    printf("\t Multiplicateur dégâts: x%.1f\n", competence.multiplicateur_degats / 100.0);
-    printf("\t Chance d'effet       : %d%%\n", competence.chance_effet);
-    printf("\t Effet appliqué       : %s\n", enumEffectToChar(competence.effet));
-    printf("\t Durée de l'effet     : %d tours\n", competence.duree_effet);
-    printf("\t Effet sur soi        : %s\n", competence.sur_soi ? "Oui" : "Non");
+    printListeAction(competence.listeAction);
 }
 
 void printListeCompetence(ListeCompetence competences) {
