@@ -155,10 +155,9 @@ Competence duplicateCompetence(Competence *modal, short *res) {
         Action *am = &modal->listeAction.actions[i];
         
         *ac = duplicateAction(am, res);
-        if (!ac->params) {
-            fprintf(stderr, "Erreur: duplicateCompetence(): Allocation mémoire: competence.listeAction.actions[%zu] = duplicateAction(am, res)\n", i);
+        if (*res == EXIT_FAILURE) {
+            fprintf(stderr, "Erreur: duplicateCompetence(): *ac = duplicateAction(&modal->listeAction.actions[%zu], res);\n", i);
             freeCompetence(&competence);
-            *res = EXIT_FAILURE;
             return competence;
         }
     }
