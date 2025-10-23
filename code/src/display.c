@@ -272,3 +272,16 @@ void printSave(Sauvegarde *save) {
     printSaveLastRun(save);
     printDiver(save->diver);
 }
+
+void printProgressBar(char *prefix, int actuel, int max, int longueur) {
+    printf("%-8s: [", prefix);
+    int nb_pleins = (int)(((float)actuel / max) * longueur);
+    for (int i = 0; i < longueur; i++) {
+        if (i < nb_pleins) {
+            printf("█");
+        } else {
+            printf("-");
+        }
+    }
+    printf("] %d/%d\n", actuel, max);
+}
