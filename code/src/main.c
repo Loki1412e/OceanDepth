@@ -30,7 +30,7 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
     Sauvegarde *actualSave = NULL;
 
     int maxAttemp, attemp;
-    int res;
+    short res;
     char *strBuff = NULL;
 
     switch (choice) {

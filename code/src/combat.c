@@ -35,13 +35,13 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
         return EXIT_FAILURE;
     }
 
-    int res;
+    short res;
 
     // --- Exécution en fonction du type d'action ---
     switch (action->type) {
 
         // Params: Aucun
-        case DEGAT_DEFAUT:
+        case DEGAT_DEFAUT: {
             // Récupération des stats du lanceur
             int att_max_lanceur = lanceur_plongeur ? lanceur_plongeur->attaque_max : lanceur_creature->attaque_max;
             int att_min_lanceur = lanceur_plongeur ? lanceur_plongeur->attaque_min : lanceur_creature->attaque_min;
@@ -57,10 +57,10 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
             // Affichage
             printf(">> [%s] subit %d dégâts !\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, degats);
             break;
-
+        }
 
         // Param: montant_degats (int)
-        case DEGATS_FIXES:
+        case DEGATS_FIXES: {
             int montant = my_strToInt(action->params[0], &res);
             if (res == EXIT_FAILURE) {
                 fprintf(stderr, "Erreur: executerAction(): my_strToInt() -> action->params[0] (DEGATS_FIXES)\n");
@@ -80,10 +80,10 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
 
             printf(">> [%s] subit %d dégâts !\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, degats);
             break;
-
+        }
         
         // Params: stat (int), multiplicateur_en_pourcentage (int)
-        case DEGATS_SCALES:
+        case DEGATS_SCALES: {
             // Vérification de la stat
             int att_max_lanceur;
             int att_min_lanceur;
@@ -128,10 +128,10 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
             // Affichage
             printf(">> [%s] subit %d dégâts !\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, degats);
             break;
-
+        }
         
         // Params: montant_degats (int), valeur_perforation (int)
-        case DEGATS_PERFORANTS:
+        case DEGATS_PERFORANTS: {
             int montant = my_strToInt(action->params[0], &res);
             if (res == EXIT_FAILURE) {
                 fprintf(stderr, "Erreur: executerAction(): my_strToInt() -> action->params[0] (DEGATS_PERFORANTS)\n");
@@ -158,10 +158,10 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
 
             printf(">> [%s] subit %d dégâts (perforation %d) !\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, degats, perfor);
             break;
-        
+        }
         
         // Params: stat_nom (char*), valeur (int)
-        case MODIFIER_STAT:
+        case MODIFIER_STAT: {
             // Récupération des paramètres
             char* stat_nom = action->params[0];
             int valeur = my_strToInt(action->params[1], &res);
@@ -176,7 +176,7 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
             int *oxygene = cible_plongeur ? &cible_plongeur->oxygene : NULL;
             int *oxygene_max = cible_plongeur ? &cible_plongeur->oxygene_max : NULL;
             int *fatigue = cible_plongeur ? &cible_plongeur->fatigue : NULL;
-            int *fatigue_max = cible_plongeur ? &cible_plongeur->fatigue_max : NULL;
+            // int *fatigue_max = cible_plongeur ? &cible_plongeur->fatigue_max : NULL;
             // int *attaque_max = cible_plongeur ? &cible_plongeur->attaque_max : &cible_creature->attaque_max;
             // int *attaque_min = cible_plongeur ? &cible_plongeur->attaque_min : &cible_creature->attaque_min;
             int *defense = cible_plongeur ? &cible_plongeur->defense : &cible_creature->defense;
@@ -216,10 +216,10 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
                 return EXIT_FAILURE;
             }
             break;
-
+        }
 
         // Params: nom_effet (char*), duree_tours (int), chance_pourcentage (int)
-        case APPLIQUER_EFFET:
+        case APPLIQUER_EFFET: {
             // Récupération de la liste des états de la cible
             ListeEtat *etats_cible = cible_plongeur ? &cible_plongeur->liste_etats : &cible_creature->liste_etats;
             
@@ -250,10 +250,10 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
             }
             else printf(">> L'application de l'effet [%s] a échoué.\n", action->params[0]);
             break;
-
+        }
 
         // Params: nom_effet (char*)
-        case RETIRER_EFFET:
+        case RETIRER_EFFET: {
             Effets effet = charToEnumEffect(action->params[0]);
             if (effet == AUCUN_Effets) {
                 fprintf(stderr, "Erreur: executerAction(): charToEnumEffect() -> action->params[0] (RETIRER_EFFET)\n");
@@ -270,12 +270,14 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
             }
 
             break;
-
+        }
 
         default:
             printf("Action de type '%s' non implémentée.\n", enumActionTypeToChar(action->type));
             break;
     }
+
+    return EXIT_SUCCESS;
 }
 
 // Vérifie les conditions et lance une compétence.
@@ -289,7 +291,7 @@ int utiliserCompetence(Competence *comp, void *lanceur_ptr, EntiteType lanceur_t
     Plongeur* cible_plongeur = (cible_type == ENTITE_PLONGEUR) ? (Plongeur*)cible_ptr : NULL;
     CreatureMarine* cible_creature = (cible_type == ENTITE_CREATURE) ? (CreatureMarine*)cible_ptr : NULL;
 
-    int res;
+    short res;
 
     if (!lanceur_plongeur && !lanceur_creature) {
         fprintf(stderr, "Erreur: utiliserCompetence(): lanceur inconnu\n");
@@ -443,7 +445,7 @@ void joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature) {
 int botAttaque(void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, EntiteType cible_type) {
     if (!lanceur_ptr || !cible_ptr) return EXIT_FAILURE;
 
-    int res;
+    short res;
 
     ListeCompetence *liste_competences = lanceur_type == ENTITE_CREATURE ?
         &((CreatureMarine*)lanceur_ptr)->liste_competences :
@@ -525,7 +527,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
     int choix;
     size_t cible;
 
-    int res;
+    short res;
 
     printf("\nclearConsole\n");//clearConsole();
     
@@ -632,7 +634,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     Competence *comp_choisie = &joueur->liste_competences.competences[choix_comp - 1];
                     
                     CreatureMarine *cible_creature = NULL;
-                    if (strcmp(comp_choisie->ciblage, "ENNEMI_UNIQUE") == 0) {
+                    if (comp_choisie->ciblage == ENNEMI_UNIQUE) {
                         if (!peutAttaquer(&joueur->liste_etats)) {
                             printf("Vous n'avez pas pu attaquer.\n");
                             break;

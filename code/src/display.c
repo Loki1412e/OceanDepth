@@ -85,7 +85,7 @@ void clearConsole() {
     #ifdef _WIN32
         system("cls");      // Windows
     #else
-        int res = system("clear");    // Linux + macOS
+        short res = system("clear");    // Linux + macOS
         (void) res;
     #endif
 }

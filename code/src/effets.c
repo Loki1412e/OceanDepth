@@ -117,7 +117,7 @@ int ajouterEffet(ListeEtat *listeEtat, Effets type, int dureeCombat, int dureeZo
 
 
 int peutAttaquer(ListeEtat *listeEtat) {
-    int res = true;
+    short res = true;
     for (size_t i = 0; i < listeEtat->longueur; i++) {
         switch (listeEtat->etats[i].effet) {
             
