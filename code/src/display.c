@@ -10,7 +10,7 @@ void printCreature(CreatureMarine *creature);
 void printCreatures(CreatureMarine **creatures, size_t length);
 void printBestiary(Bestiaire *bestiary);
 void printDiver(Plongeur *diver);
-void printListeEtat(ListeEtat etats, char* line_prefix);
+void printListeEtat(ListeEtat etats);
 
 void printSaveLastRun(Sauvegarde *save);
 void printListSave(ListeSauvegardes *saves);
@@ -118,18 +118,18 @@ void printListeAction(ListeAction actions) {
     }
 }
 
-void printListeEtat(ListeEtat etats, char* line_prefix) {
-    if (etats.longueur == 0 || etats.etats == NULL) return;
+void printListeEtat(ListeEtat etats) {
+    if (etats.longueur == 0 || etats.etats == NULL) {
+        return;
+    }
 
-    printf("%sEtats : ", line_prefix);
     for (size_t i = 0; i < etats.longueur; i++) {
-        printf("[%s (%d t.)]%s",
+        printf("%s (%d t.)%s",
             enumEffectToChar(etats.etats[i].effet),
             etats.etats[i].duree_combat,
             (i < etats.longueur - 1) ? ", " : ""
         );
     }
-    printf("\n");
 }
 
 void printCompetence(Competence competence) {
@@ -170,8 +170,11 @@ void printCreature(CreatureMarine *creature) {
     printf("Defense: %d\n", creature->defense);
     printf("Vitesse: %d\n", creature->vitesse);
     printf("Rarete: %s\n", enumRareteToChar(creature->rarete));
-    
-    printListeEtat(creature->liste_etats, "");
+
+    printf("Etats appliques: ");
+    printListeEtat(creature->liste_etats);
+    printf("\n");
+
     printListeCompetence(creature->liste_competences);
 }
 
@@ -218,7 +221,10 @@ void printDiver(Plongeur *diver) {
     printf("Niveau: %hu\n", diver->niveau);
     printf("Perles: %hu\n", diver->perles);
     
-    printListeEtat(diver->liste_etats, "");
+    printf("Etats appliques: ");
+    printListeEtat(diver->liste_etats);
+    printf("\n");
+
     printListeCompetence(diver->liste_competences);
 
     printf("====================================\n\n");
