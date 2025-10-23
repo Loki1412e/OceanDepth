@@ -4,6 +4,7 @@
 size_t lireEntier();
 char *lireString();
 void clearConsole();
+void pressEnterToContinue();
 
 void printCreature(CreatureMarine *creature);
 void printCreatures(CreatureMarine **creatures, size_t length);
@@ -85,44 +86,62 @@ void clearConsole() {
     #ifdef _WIN32
         system("cls");      // Windows
     #else
-        int res = system("clear");    // Linux + macOS
+        short res = system("clear");    // Linux + macOS
         (void) res;
     #endif
 }
 
+void pressEnterToContinue() {
+    printf("\nAppuyez sur Entrée pour continuer...");
+    while (getchar() != '\n');
+    clearConsole();
+}
+
 /*==================*/
 
-
-void printListeEtat(ListeEtat etats) {
-    if (etats.longueur == 0 || etats.etats == NULL) {
-        printf("Etats : Aucun\n");
+void printListeAction(ListeAction actions) {
+    if (actions.longueur == 0 || actions.actions == NULL) {
+        printf("Actions : Aucune\n");
         return;
     }
 
-    printf("Etats (%zu):\n", etats.longueur);
+    printf("\t Actions (%zu):\n", actions.longueur);
+    for (size_t i = 0; i < actions.longueur; i++) {
+        printf("\t  - Type: %s | Params (%zu): ",
+            enumActionTypeToChar(actions.actions[i].type),
+            actions.actions[i].longueur_params
+        );
+        for (size_t j = 0; j < actions.actions[i].longueur_params; j++) {
+            printf("%s%s", actions.actions[i].params[j], (j + 1 < actions.actions[i].longueur_params) ? ", " : "");
+        }
+        printf("\n");
+    }
+}
+
+void printListeEtat(ListeEtat etats) {
+    if (etats.longueur == 0 || etats.etats == NULL) {
+        return;
+    }
+
     for (size_t i = 0; i < etats.longueur; i++) {
-        printf(" - %s (%d) => estPermanent=%d / duree_zone=%d / duree_combat=%d",
-            enumEffectToChar(etats.etats[i].effet) ? enumEffectToChar(etats.etats[i].effet) : "???",
-            etats.etats[i].effet,
-            etats.etats[i].estPermanent,
-            etats.etats[i].duree_zone,
-            etats.etats[i].duree_combat
+        printf("%s (%d t.)%s",
+            enumEffectToChar(etats.etats[i].effet),
+            etats.etats[i].duree_combat,
+            (i < etats.longueur - 1) ? ", " : ""
         );
     }
-    printf("\n");
 }
 
 void printCompetence(Competence competence) {
     printf("\t Id                   : %u\n", competence.id);
     printf("\t Nom                  : %s\n", competence.nom);
     printf("\t Description          : %s\n", competence.description);
+    printf("\t Coût en oxygène      : %d\n", competence.cout_oxygene);
+    printf("\t Coût en PV           : %d\n", competence.cout_pv);
+    printf("\t Ciblage              : %s\n", enumCiblageTypeToChar(competence.ciblage));
     printf("\t Cooldown max         : %d tours\n", competence.cooldown_max);
     printf("\t Cooldown restant     : %d tours\n", competence.cooldown_restant);
-    printf("\t Multiplicateur dégâts: x%.1f\n", competence.multiplicateur_degats / 100.0);
-    printf("\t Chance d'effet       : %d%%\n", competence.chance_effet);
-    printf("\t Effet appliqué       : %s\n", enumEffectToChar(competence.effet));
-    printf("\t Durée de l'effet     : %d tours\n", competence.duree_effet);
-    printf("\t Effet sur soi        : %s\n", competence.sur_soi ? "Oui" : "Non");
+    printListeAction(competence.listeAction);
 }
 
 void printListeCompetence(ListeCompetence competences) {
@@ -151,8 +170,11 @@ void printCreature(CreatureMarine *creature) {
     printf("Defense: %d\n", creature->defense);
     printf("Vitesse: %d\n", creature->vitesse);
     printf("Rarete: %s\n", enumRareteToChar(creature->rarete));
-    
+
+    printf("Etats appliques: ");
     printListeEtat(creature->liste_etats);
+    printf("\n");
+
     printListeCompetence(creature->liste_competences);
 }
 
@@ -199,7 +221,10 @@ void printDiver(Plongeur *diver) {
     printf("Niveau: %hu\n", diver->niveau);
     printf("Perles: %hu\n", diver->perles);
     
+    printf("Etats appliques: ");
     printListeEtat(diver->liste_etats);
+    printf("\n");
+
     printListeCompetence(diver->liste_competences);
 
     printf("====================================\n\n");
@@ -247,4 +272,16 @@ void printListSave(ListeSauvegardes *saves) {
 void printSave(Sauvegarde *save) {
     printSaveLastRun(save);
     printDiver(save->diver);
+}
+
+
+void printProgressBar(char *prefix, int actuel, int max, int longueur) {
+    if (actuel < 0) actuel = 0;
+    printf("%-10s: [", prefix);
+    int nb_pleins = (int)(((float)actuel / max) * longueur);
+    for (int i = 0; i < longueur; i++) {
+        if (i < nb_pleins) printf("█");
+        else printf("▒");
+    }
+    printf("] %3d/%-3d", actuel, max);
 }

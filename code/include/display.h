@@ -4,11 +4,13 @@
     #include "global.h"
     #include "conf.h"
     #include "effets.h"
+    #include "competences.h"
     
     // Temp
     size_t lireEntier();
     char *lireString();
     void clearConsole();
+    void pressEnterToContinue();
 
     void printCreature(CreatureMarine *creature);
     void printCreatures(CreatureMarine **creatures, size_t length);
@@ -22,5 +24,7 @@
     void printListSave(ListeSauvegardes *saves);
 
     void printSave(Sauvegarde *save);
+
+    void printProgressBar(char *prefix, int actuel, int max, int longueur);
 
 #endif

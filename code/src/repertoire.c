@@ -71,7 +71,7 @@ int mkdirWin(char *path) {
 #endif
 
 int mkdir_p(char *path) {
-    int res;
+    short res;
     size_t len = strlen(path);
     char *tmp = NULL;
 

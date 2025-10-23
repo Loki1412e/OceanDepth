@@ -4,6 +4,23 @@ void freeCompetence(Competence *competence);
 void freeListeCompetence(ListeCompetence *liste_competences);
 
 
+char *enumCiblageTypeToChar(CiblageType type) {
+    switch (type) {
+        case ENNEMI_UNIQUE: return "ENNEMI_UNIQUE";
+        case SOI_MEME: return "SOI_MEME";
+        default: return "AUCUN_CiblageType";
+    }
+}
+
+CiblageType charToEnumCiblageType(char *type) {
+    for (size_t ciblageType = 0; ciblageType < LENGTH_CiblageType; ciblageType++) {
+        if (strcmp(type, enumCiblageTypeToChar((CiblageType) ciblageType)) == 0)
+            return (CiblageType) ciblageType;
+    }
+    return AUCUN_CiblageType;
+}
+
+
 ListeCompetence initEmptySkillList() {
     return (ListeCompetence) {
         .competences = NULL,
@@ -16,15 +33,15 @@ Competence initEmptySkill() {
         .id = 0,
         .nom = NULL,
         .description = NULL,
+        .cout_oxygene = 0,
+        .cout_pv = 0,
+        .ciblage = 0,
         .cooldown_max = 0,
         .cooldown_restant = 0,
-        .multiplicateur_degats = 0,
-        .chance_effet = 0,
-        .effet = 0,
-        .duree_effet = 0,
-        .sur_soi = 0
+        .listeAction = initEmptyListeAction()
     };
 }
+
 
 Competence duplicateCompetence(Competence *modal, short *res) {
     if (!modal) {
@@ -34,18 +51,14 @@ Competence duplicateCompetence(Competence *modal, short *res) {
 
     *res = EXIT_SUCCESS;
 
-    Competence competence = {
-        .id = modal->id,
-        .nom = NULL,
-        .description = NULL,
-        .cooldown_max = modal->cooldown_max,
-        .cooldown_restant = modal->cooldown_restant,
-        .multiplicateur_degats = modal->multiplicateur_degats,
-        .chance_effet = modal->chance_effet,
-        .effet = modal->effet,
-        .duree_effet = modal->duree_effet,
-        .sur_soi = modal->sur_soi,
-    };
+    Competence competence = initEmptySkill();
+    competence.id = modal->id;
+    competence.cout_oxygene = modal->cout_oxygene;
+    competence.cout_pv = modal->cout_pv;
+    competence.ciblage = modal->ciblage;
+    competence.cooldown_max = modal->cooldown_max;
+    competence.cooldown_restant = modal->cooldown_restant;
+    competence.listeAction.longueur = modal->listeAction.longueur;
 
     competence.nom = my_strdup(modal->nom);
     if (!competence.nom) {
@@ -61,6 +74,27 @@ Competence duplicateCompetence(Competence *modal, short *res) {
         freeCompetence(&competence);
         *res = EXIT_FAILURE;
         return competence;
+    }
+
+    competence.listeAction.actions = calloc(competence.listeAction.longueur, sizeof(Action));
+    if (!competence.listeAction.actions) {
+        fprintf(stderr, "Erreur: duplicateCompetence(): Allocation mémoire: competence.actions = calloc()\n");
+        freeCompetence(&competence);
+        *res = EXIT_FAILURE;
+        return competence;
+    }
+
+    for (size_t i = 0; i < competence.listeAction.longueur; i++) {
+        
+        Action *ac = &competence.listeAction.actions[i];
+        Action *am = &modal->listeAction.actions[i];
+        
+        *ac = duplicateAction(am, res);
+        if (*res == EXIT_FAILURE) {
+            fprintf(stderr, "Erreur: duplicateCompetence(): *ac = duplicateAction(&modal->listeAction.actions[%zu], res);\n", i);
+            freeCompetence(&competence);
+            return competence;
+        }
     }
 
     return competence;
@@ -103,8 +137,8 @@ ListeCompetence duplicateListeCompetence(ListeCompetence *modal, short *res) {
 }
 
 
-int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
-    if (!skill_list || !skill_list->competences || skill_list->longueur == 0 || !path)
+int setListeCompetenceFromConf(ListeCompetence *modalCreaturesSkills, char *path) {
+    if (!modalCreaturesSkills || !modalCreaturesSkills->competences || modalCreaturesSkills->longueur == 0 || !path)
         return EXIT_FAILURE;
 
     FILE *f = fopen(path, "r");
@@ -113,12 +147,11 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
         return EXIT_FAILURE;
     }
 
-    Competence *skills = skill_list->competences;
+    Competence *skills = modalCreaturesSkills->competences;
 
     char line[512];
     size_t length = 0, index = 0;
 
-    char *buff = NULL;
     short res;
 
     while (fgets(line, sizeof(line), f)) {
@@ -128,7 +161,7 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
             index = length - 1;
 
             // Si dépassement alors on arrete de load mais on garde la conf actuelle
-            if (index >= skill_list->longueur) {
+            if (index >= modalCreaturesSkills->longueur) {
                 fprintf(stderr, "Warning: setListeCompetenceFromConf(): index %zu hors des limites de creatures\n", index);
                 break;
             }
@@ -138,10 +171,10 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
             line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
             if (line[0] == '\0') continue; // ligne vide
 
-            skill_list->competences[index].id = my_strToInt(line + 3, &res);
+            modalCreaturesSkills->competences[index].id = my_strToInt(line + 3, &res);
             if (res == EXIT_FAILURE) {
                 fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"id=\"\n");
-                freeListeCompetence(skill_list);
+                freeListeCompetence(modalCreaturesSkills);
                 fclose(f);
                 return EXIT_FAILURE;
             }
@@ -154,7 +187,7 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
             skills[index].nom = my_strdup(line + 4);
             if (!skills[index].nom) {
                 fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strdup() -> \"nom=\"\n");
-                freeListeCompetence(skill_list);
+                freeListeCompetence(modalCreaturesSkills);
                 fclose(f);
                 return EXIT_FAILURE;
             }
@@ -167,7 +200,46 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
             skills[index].description = my_strdup(line + 12);
             if (!skills[index].nom) {
                 fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strdup() -> \"description=\"\n");
-                freeListeCompetence(skill_list);
+                freeListeCompetence(modalCreaturesSkills);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+
+        else if (strncmp(line, "cout_pv=", 8) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            skills[index].cout_pv = my_strToInt(line + 8, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"cout_pv=\"\n");
+                freeListeCompetence(modalCreaturesSkills);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+
+        else if (strncmp(line, "cout_oxygene=", 13) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            skills[index].cout_oxygene = my_strToInt(line + 13, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"cout_oxygene=\"\n");
+                freeListeCompetence(modalCreaturesSkills);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+
+        else if (strncmp(line, "ciblage=", 8) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            skills[index].ciblage = charToEnumCiblageType(line + 8);
+            if (skills[index].ciblage == AUCUN_CiblageType) {
+                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): charToEnumCiblageType(\"%s\") -> \"ciblage=\"\n", line + 8);
+                freeListeCompetence(modalCreaturesSkills);
                 fclose(f);
                 return EXIT_FAILURE;
             }
@@ -180,97 +252,29 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
             skills[index].cooldown_max = my_strToInt(line + 13, &res);
             if (res == EXIT_FAILURE) {
                 fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"cooldown_max=\"\n");
-                freeListeCompetence(skill_list);
+                freeListeCompetence(modalCreaturesSkills);
                 fclose(f);
                 return EXIT_FAILURE;
             }
         }
-        
-        else if (strncmp(line, "cooldown_restant=", 17) == 0) {
+
+        else if (strncmp(line, "actions=", 8) == 0) {
             line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
             if (line[0] == '\0') continue; // ligne vide
 
-            skills[index].cooldown_restant = my_strToInt(line + 17, &res);
+            skills[index].listeAction.actions = parseActions(line + 8, &skills[index].listeAction.longueur, &res);
             if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"cooldown_restant=\"\n");
-                freeListeCompetence(skill_list);
-                fclose(f);
-                return EXIT_FAILURE;
-            }
-        }
-
-        else if (strncmp(line, "multiplicateur_degats=", 22) == 0) {
-            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
-            if (line[0] == '\0') continue; // ligne vide
-
-            skills[index].multiplicateur_degats = my_strToInt(line + 22, &res);
-            if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"multiplicateur_degats=\"\n");
-                freeListeCompetence(skill_list);
-                fclose(f);
-                return EXIT_FAILURE;
-            }
-        }
-        
-        else if (strncmp(line, "chance_effet=", 13) == 0) {
-            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
-            if (line[0] == '\0') continue; // ligne vide
-
-            skills[index].chance_effet = my_strToInt(line + 13, &res);
-            if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"chance_effet=\"\n");
-                freeListeCompetence(skill_list);
-                fclose(f);
-                return EXIT_FAILURE;
-            }
-        }
-        
-        else if (strncmp(line, "effet=", 6) == 0) {
-            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
-            if (line[0] == '\0') continue; // ligne vide
-
-            buff = my_strdup(line + 6);
-            if (!buff) {
-                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strdup() -> \"effet=\"\n");
-                freeListeCompetence(skill_list);
-                fclose(f);
-                return EXIT_FAILURE;
-            }
-
-            skills[index].effet = charToEnumEffect(buff);
-            free(buff);
-        }
-        
-        else if (strncmp(line, "duree_effet=", 12) == 0) {
-            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
-            if (line[0] == '\0') continue; // ligne vide
-
-            skills[index].duree_effet = my_strToInt(line + 12, &res);
-            if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"duree_effet=\"\n");
-                freeListeCompetence(skill_list);
-                fclose(f);
-                return EXIT_FAILURE;
-            }
-        }
-        
-        else if (strncmp(line, "sur_soi=", 8) == 0) {
-            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
-            if (line[0] == '\0') continue; // ligne vide
-
-            skills[index].sur_soi = my_strToInt(line + 8, &res);
-            if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"sur_soi=\"\n");
-                freeListeCompetence(skill_list);
+                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): actions = calloc()\n");
+                freeListeCompetence(modalCreaturesSkills);
                 fclose(f);
                 return EXIT_FAILURE;
             }
         }
     }
 
-    if (skill_list->longueur < length) {
-        fprintf(stderr, "Erreur: setListeCompetenceFromConf(): longueur (%zu) < length (%zu)\n", skill_list->longueur, length);
-        freeListeCompetence(skill_list);
+    if (modalCreaturesSkills->longueur < length) {
+        fprintf(stderr, "Erreur: setListeCompetenceFromConf(): longueur (%zu) < length (%zu)\n", modalCreaturesSkills->longueur, length);
+        freeListeCompetence(modalCreaturesSkills);
         fclose(f);
         return EXIT_FAILURE;
     }
@@ -283,41 +287,72 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
 // Return:
 // - `ListeCompetence`
 // - `*res` = `EXIT_FAILURE` ou `EXIT_SUCCESS`
-ListeCompetence initSkillsList(short *res) {
+// POUR LE MOMENT : Uniquement monstre
+ListeCompetence initSkillsList(short *res, char *path) {
     if (!res) {
         return initEmptySkillList();
     }
     *res = EXIT_SUCCESS;
 
-    size_t count_all_unique_model = confCountAllUniqueId("config/bestiaire/competences.conf", res);
+    size_t count_all_unique_model = confCountAllUniqueId(path, res);
     if (*res == EXIT_FAILURE) {
         fprintf(stderr, "Erreur: initSkillsList(): confCountAllUniqueId()\n");
         return initEmptySkillList();
     }
 
     // Allocation mémoire -> calloc pour tout init 0 ou NULL
-    ListeCompetence skill_list = initEmptySkillList();
-    skill_list.competences = calloc(count_all_unique_model, sizeof(Competence));
-    if (!skill_list.competences) {
+    ListeCompetence modalCreaturesSkills = initEmptySkillList();
+    modalCreaturesSkills.competences = calloc(count_all_unique_model, sizeof(Competence));
+    if (!modalCreaturesSkills.competences) {
         fprintf(stderr, "Erreur: initSkillsList(): Allocation mémoire competences\n");
-        freeListeCompetence(&skill_list);
+        freeListeCompetence(&modalCreaturesSkills);
         *res = EXIT_FAILURE;
-        return skill_list;
+        return modalCreaturesSkills;
     }
-    skill_list.longueur = count_all_unique_model;
+    modalCreaturesSkills.longueur = count_all_unique_model;
 
     // Initialisation du Bestiaire Model
 
-    if (setListeCompetenceFromConf(&skill_list, "config/bestiaire/competences.conf")) {
+    if (setListeCompetenceFromConf(&modalCreaturesSkills, path)) {
         fprintf(stderr, "Erreur: initSkillsList(): setListeCompetenceFromConf()\n");
-        freeListeCompetence(&skill_list);
+        freeListeCompetence(&modalCreaturesSkills);
         *res = EXIT_FAILURE;
-        return skill_list;
+        return modalCreaturesSkills;
     }
     
-    return skill_list;
+    return modalCreaturesSkills;
 }
 
+
+Competence *choisirRandomCompetence(Competence *competences, size_t longueur) {
+    if (!competences || longueur == 0) return NULL;
+    
+    size_t tab[longueur];
+    size_t indice = 0;
+    
+    for (size_t i = 0; i < longueur; i++) {
+        if (competences[i].cooldown_restant == 0)
+            tab[indice++] = i;
+    }
+
+    if (indice == 0) return NULL;
+
+    return &competences[tab[random_int(0, indice - 1)]];
+}
+
+
+int decrementerCooldownsCompetences(ListeCompetence *liste_competences) {
+    if (!liste_competences || !liste_competences->competences || liste_competences->longueur == 0)
+        return EXIT_FAILURE;
+
+    for (size_t i = 0; i < liste_competences->longueur; i++) {
+        Competence *comp = &liste_competences->competences[i];
+        if (comp->cooldown_restant > 0)
+            comp->cooldown_restant--;
+    }
+
+    return EXIT_SUCCESS;
+}
 
 void freeCompetence(Competence *competence) {
     if (!competence) return;
@@ -330,6 +365,12 @@ void freeCompetence(Competence *competence) {
     if (competence->description) {
         free(competence->description);
         competence->description = NULL;
+    }
+
+    if (competence->listeAction.actions) {
+        freeActions(competence->listeAction.actions, competence->listeAction.longueur);
+        competence->listeAction.actions = NULL;
+        competence->listeAction.longueur = 0;
     }
 }
 

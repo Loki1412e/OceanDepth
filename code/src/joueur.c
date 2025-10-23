@@ -1,15 +1,15 @@
 #include "../include/joueur.h"
 
 
-Plongeur *initDiver(char *diver_name);
 void freeDiverContent(Plongeur *diver);
 void freeDiver(Plongeur *diver);
 
-int setDiverFromConf(Plongeur *diver);
+Plongeur *initDiver(char *diver_name, ListeCompetence *modalDiverSkills);
+int setDiverFromConf(Plongeur *diver, ListeCompetence *modalDiverSkills, char *path);
 
 
 // Pour init un plongeur sans nom -> initDiver(NULL)
-Plongeur *initDiver(char *diver_name) {
+Plongeur *initDiver(char *diver_name, ListeCompetence *modalDiverSkills) {
     
     // Allocation mémoire
     
@@ -29,11 +29,7 @@ Plongeur *initDiver(char *diver_name) {
     }
 
     // Initialisation du Joueur
-
-    if (setDiverFromConf(diver)) {
-        return NULL;
-    }
-
+    if (setDiverFromConf(diver, modalDiverSkills, "config/plongeur/stats.conf")) return NULL;
     diver->pv = diver->pv_max;
     diver->oxygene = diver->oxygene_max;
 
@@ -41,14 +37,15 @@ Plongeur *initDiver(char *diver_name) {
 }
 
 // Pas encore les compétences a voir plus tard...
-int setDiverFromConf(Plongeur *diver) {
-    FILE *f = fopen("config/plongeur.conf", "r");
+int setDiverFromConf(Plongeur *diver, ListeCompetence *modalDiverSkills, char *path) {
+    FILE *f = fopen(path, "r");
     if (f == NULL) return EXIT_FAILURE;
 
     char line[256];
 
-    diver->liste_competences.longueur = 0;
-
+    long *arrayLong = NULL;
+    size_t len;
+    
     short res;
 
     while (fgets(line, sizeof(line), f)) {
@@ -182,6 +179,76 @@ int setDiverFromConf(Plongeur *diver) {
                 return EXIT_FAILURE;
             }
         }
+        
+        else if (strncmp(line, "competences=", 12) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[12] == '\0') continue; // ligne vide
+            if (!modalDiverSkills || modalDiverSkills->longueur == 0 || !modalDiverSkills->competences) continue;
+
+            len = 0;
+            arrayLong = parseLongList(line + 12, &len);
+            if (!arrayLong) {
+                fprintf(stderr, "Erreur: setDiverFromConf(): parseLongList()\n");
+                freeDiver(diver);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+
+            // On vérifie si l'id de la compétence existe
+            res = false;
+            for (size_t i = 0; i < len; i++) {
+                if (arrayLong[i] < 0 || arrayLong[i] >= (long) modalDiverSkills->longueur) {
+                    fprintf(stderr, "Erreur: setDiverFromConf() -> competences -> l'id [%ld] n'existe pas dans modalDiverSkills\n", arrayLong[i]);
+                    res = true;
+                }
+            }
+            if (res) {
+                free(arrayLong);
+                freeDiver(diver);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+
+            // Enleve les doublons de la liste (et la trie)
+            len = removeDuplicateInLongList(&arrayLong, len, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setDiverFromConf(): len = removeDuplicateInLongList()\n");
+                free(arrayLong);
+                freeDiver(diver);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+
+            // Allocation et Init : liste_competences
+
+            if (diver->liste_competences.competences)
+                freeListeCompetence(&diver->liste_competences);
+
+            diver->liste_competences.competences = calloc(len, sizeof(Competence));
+            if (!diver->liste_competences.competences) {
+                fprintf(stderr, "Erreur: setDiverFromConf(): Allocation mémoire: calloc(len, sizeof(Competence))\n");
+                free(arrayLong);
+                freeDiver(diver);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+            diver->liste_competences.longueur = len;
+
+            for (size_t i = 0; i < len; i++) {
+                // On utilise la liste de tout les skill pour init ceux du plongeur
+                diver->liste_competences.competences[i] = duplicateCompetence(&modalDiverSkills->competences[arrayLong[i]], &res);
+                if (res == EXIT_FAILURE) {
+                    diver->liste_competences.longueur = i;
+                    fprintf(stderr, "Erreur: setDiverFromConf(): duplicateCompetence()\n");
+                    free(arrayLong);
+                    freeDiver(diver);
+                    fclose(f);
+                    return EXIT_FAILURE;
+                }
+            }
+
+            free(arrayLong);
+        }
     }
 
     fclose(f);
@@ -198,17 +265,7 @@ void freeDiverContent(Plongeur *diver) {
     }
     
     freeListeEtat(&diver->liste_etats);
-    
-    if (diver->liste_competences.competences) {
-        for (size_t i = 0; i < diver->liste_competences.longueur; i++) {
-            if (!diver->liste_competences.competences[i].nom) continue;
-            free(diver->liste_competences.competences[i].nom);
-            diver->liste_competences.competences[i].nom = NULL;
-        }
-        free(diver->liste_competences.competences);
-        diver->liste_competences.competences = NULL;
-        diver->liste_competences.longueur = 0;
-    }
+    freeListeCompetence(&diver->liste_competences);
 }
 
 void freeDiver(Plongeur *diver) {

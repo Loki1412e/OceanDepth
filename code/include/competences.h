@@ -4,15 +4,24 @@
     #include "global.h"
     #include "conf.h"
     #include "effets.h"
+    #include "actions.h"
 
     void freeCompetence(Competence *competence);
     void freeListeCompetence(ListeCompetence *liste_competences);
 
-    ListeCompetence initSkillsList(short *res);
+    char *enumActionTypeToChar(ActionType type);
+    ActionType charToEnumActionType(char *type);
+
+    char *enumCiblageTypeToChar(CiblageType type);
+    CiblageType charToEnumCiblageType(char *type);
+
+    ListeCompetence initSkillsList(short *res, char *path);
     ListeCompetence initEmptySkillList();
-    ListeCompetence initSkillsList();
     Competence duplicateCompetence(Competence *modal, short *res);
     ListeCompetence duplicateListeCompetence(ListeCompetence *modal, short *res);
+    
+    Competence *choisirRandomCompetence(Competence *competences, size_t longueur);
+    int decrementerCooldownsCompetences(ListeCompetence *liste_competences);
 
     // int addSkillInList(Bestiaire *modalBestiary, Bestiaire *bestiary, char *nameigned depth_level);
 

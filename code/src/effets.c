@@ -14,16 +14,16 @@ char *enumEffectToChar(Effets type) {
         case PRECISION_REDUITE: return "PRECISION_REDUITE";
         case DEFENSE_AUGMENTEE: return "DEFENSE_AUGMENTEE";
         case VOIX_DU_COURANT: return "VOIX_DU_COURANT";
-        default: return "AUCUN";
+        default: return "AUCUN_Effets";
     }
 }
 
 Effets charToEnumEffect(char *type) {
-    for (size_t effet = 0; effet < LENGTH_EffetsSpeciaux; effet++) {
+    for (size_t effet = 0; effet < LENGTH_Effets; effet++) {
         if (strcmp(type, enumEffectToChar((Effets) effet)) == 0)
             return (Effets) effet;
     }
-    return AUCUN;
+    return AUCUN_Effets;
 }
 
 
@@ -79,7 +79,7 @@ ListeEtat duplicateListeEtat(ListeEtat *modal, short *res) {
 // Vous devriez ajouter des vérifications robustes.
 int ajouterEffet(ListeEtat *listeEtat, Effets type, int dureeCombat, int dureeZone, int estPermanent) {
     if (!listeEtat) return EXIT_FAILURE;
-    if (type <= AUCUN || type >= LENGTH_EffetsSpeciaux) return EXIT_FAILURE;
+    if (type <= AUCUN_Effets || type >= LENGTH_Effets) return EXIT_FAILURE;
     
     // Vérifier si l'effet existe déjà pour le rafraîchir au lieu de le dupliquer
     for (size_t i = 0; i < listeEtat->longueur; i++) {
@@ -117,7 +117,7 @@ int ajouterEffet(ListeEtat *listeEtat, Effets type, int dureeCombat, int dureeZo
 
 
 int peutAttaquer(ListeEtat *listeEtat) {
-    int res = true;
+    short res = true;
     for (size_t i = 0; i < listeEtat->longueur; i++) {
         switch (listeEtat->etats[i].effet) {
             
@@ -215,6 +215,36 @@ int calculerDegatsSubiDebutTourEffet(ListeEtat *etats, int *pv, int maxPv, int d
         }
     }
     return degatsFinaux;
+}
+
+
+int supprimerEtat(ListeEtat *listeEtat, Effets type) {
+    if (!listeEtat || listeEtat->longueur == 0) return EXIT_FAILURE;
+    
+    for (size_t i = 0; i < listeEtat->longueur; i++) {
+        if (listeEtat->etats[i].effet == type) {
+
+            // Décalage des éléments
+            for (size_t j = i; j < listeEtat->longueur - 1; j++) {
+                listeEtat->etats[j] = listeEtat->etats[j + 1];
+            }
+            
+            // Réallocation de la mémoire
+            Etat *tmp = realloc(listeEtat->etats, sizeof(Etat) * (listeEtat->longueur - 1));
+            if (!tmp && listeEtat->longueur - 1 > 0) {
+                fprintf(stderr, "Erreur: supprimerEtat(): Allocation mémoire échouée\n");
+                return EXIT_FAILURE;
+            }
+            listeEtat->etats = tmp;
+            listeEtat->longueur--;
+
+            // printf("L'effet [%s] a été retiré.\n", enumEffectToChar(type));
+            
+            i--; // Ajuster l'index après le décalage
+        }
+    }
+    
+    return EXIT_SUCCESS;
 }
 
 
