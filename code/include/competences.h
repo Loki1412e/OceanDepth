@@ -19,6 +19,9 @@
     ListeCompetence initSkillsList();
     Competence duplicateCompetence(Competence *modal, short *res);
     ListeCompetence duplicateListeCompetence(ListeCompetence *modal, short *res);
+    
+    Competence *choisirRandomCompetence(Competence *competences, size_t longueur);
+    int decrementerCooldownsCompetences(ListeCompetence *liste_competences);
 
     // int addSkillInList(Bestiaire *modalBestiary, Bestiaire *bestiary, char *nameigned depth_level);
 
