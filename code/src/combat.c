@@ -39,7 +39,8 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
 
     // --- Exécution en fonction du type d'action ---
     switch (action->type) {
-        
+
+        // Params: Aucun
         case DEGAT_DEFAUT:
             // Récupération des stats du lanceur
             int att_max_lanceur = lanceur_plongeur ? lanceur_plongeur->attaque_max : lanceur_creature->attaque_max;
@@ -57,7 +58,31 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
             printf(">> [%s] subit %d dégâts !\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, degats);
             break;
 
+
+        // Param: montant_degats (int)
+        case DEGATS_FIXES:
+            int montant = my_strToInt(action->params[0], &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: executerAction(): my_strToInt() -> action->params[0] (DEGATS_FIXES)\n");
+                return EXIT_FAILURE;
+            }
+
+            // Application des dégâts (bruts mais affectés par les effets de la cible)
+            ListeEtat *etats_cible = cible_plongeur ? &cible_plongeur->liste_etats : &cible_creature->liste_etats;
+            int defense_cible = cible_plongeur ? cible_plongeur->defense : cible_creature->defense;
+            int degats = calculerDegats(montant, montant, defense_cible);
+            degats = calculerDegatsInfligesEffet(etats_cible, degats);
+
+            int *pv_cible = cible_plongeur ? &cible_plongeur->pv : &cible_creature->pv;
+
+            *pv_cible -= degats;
+            if (*pv_cible < 0) *pv_cible = 0;
+
+            printf(">> [%s] subit %d dégâts !\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, degats);
+            break;
+
         
+        // Params: stat (int), multiplicateur_en_pourcentage (int)
         case DEGATS_SCALES:
             // Vérification de la stat
             int att_max_lanceur;
@@ -104,40 +129,38 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
             printf(">> [%s] subit %d dégâts !\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, degats);
             break;
 
+        
+        // Params: montant_degats (int), valeur_perforation (int)
+        case DEGATS_PERFORANTS:
+            int montant = my_strToInt(action->params[0], &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: executerAction(): my_strToInt() -> action->params[0] (DEGATS_PERFORANTS)\n");
+                return EXIT_FAILURE;
+            }
+            int perfor = my_strToInt(action->params[1], &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: executerAction(): my_strToInt() -> action->params[1] (DEGATS_PERFORANTS)\n");
+                return EXIT_FAILURE;
+            }
 
-        case APPLIQUER_EFFET:
-            // Récupération de la liste des états de la cible
+            int defense_cible = cible_plongeur ? cible_plongeur->defense : cible_creature->defense;
+            int defense_effective = defense_cible - perfor;
+            if (defense_effective < 0) defense_effective = 0;
+
+            int degats = calculerDegats(montant, montant, defense_effective);
+
             ListeEtat *etats_cible = cible_plongeur ? &cible_plongeur->liste_etats : &cible_creature->liste_etats;
-            
-            // Récupération des paramètres
+            degats = calculerDegatsInfligesEffet(etats_cible, degats);
 
-            Effets effet = charToEnumEffect(action->params[0]);
-            if (effet == AUCUN_Effets) {
-                fprintf(stderr, "Erreur: executerAction(): charToEnumEffect() -> action->params[0] (APPLIQUER_EFFET)\n");
-                return EXIT_FAILURE;
-            }
-            
-            int duree = my_strToInt(action->params[1], &res);
-            if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: executerAction(): my_strToInt() -> action->params[1] (APPLIQUER_EFFET)\n");
-                return EXIT_FAILURE;
-            }
-            
-            int chance = my_strToInt(action->params[2], &res);
-            if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: executerAction(): my_strToInt() -> action->params[2] (APPLIQUER_EFFET)\n");
-                return EXIT_FAILURE;
-            }
+            int *pv_cible = cible_plongeur ? &cible_plongeur->pv : &cible_creature->pv;
+            *pv_cible -= degats;
+            if (*pv_cible < 0) *pv_cible = 0;
 
-            // Application de l'effet avec la probabilité donnée
-            if (random_int(1, 100) <= chance) {
-                ajouterEffet(etats_cible, effet, duree, 0, 0);
-                printf(">> L'effet [%s] a été appliqué pour %d tours !\n", action->params[0], duree);
-            }
-            else printf(">> L'application de l'effet [%s] a échoué.\n", action->params[0]);
+            printf(">> [%s] subit %d dégâts (perforation %d) !\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, degats, perfor);
             break;
-
-
+        
+        
+        // Params: stat_nom (char*), valeur (int)
         case MODIFIER_STAT:
             // Récupération des paramètres
             char* stat_nom = action->params[0];
@@ -192,6 +215,60 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
                 fprintf(stderr, "Erreur: executerAction(): Stat inconnue pour MODIFIER_STAT: \"%s\"\n", stat_nom);
                 return EXIT_FAILURE;
             }
+            break;
+
+
+        // Params: nom_effet (char*), duree_tours (int), chance_pourcentage (int)
+        case APPLIQUER_EFFET:
+            // Récupération de la liste des états de la cible
+            ListeEtat *etats_cible = cible_plongeur ? &cible_plongeur->liste_etats : &cible_creature->liste_etats;
+            
+            // Récupération des paramètres
+
+            Effets effet = charToEnumEffect(action->params[0]);
+            if (effet == AUCUN_Effets) {
+                fprintf(stderr, "Erreur: executerAction(): charToEnumEffect() -> action->params[0] (APPLIQUER_EFFET)\n");
+                return EXIT_FAILURE;
+            }
+            
+            int duree = my_strToInt(action->params[1], &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: executerAction(): my_strToInt() -> action->params[1] (APPLIQUER_EFFET)\n");
+                return EXIT_FAILURE;
+            }
+            
+            int chance = my_strToInt(action->params[2], &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: executerAction(): my_strToInt() -> action->params[2] (APPLIQUER_EFFET)\n");
+                return EXIT_FAILURE;
+            }
+
+            // Application de l'effet avec la probabilité donnée
+            if (random_int(1, 100) <= chance) {
+                ajouterEffet(etats_cible, effet, duree, 0, 0);
+                printf(">> L'effet [%s] a été appliqué pour %d tours !\n", action->params[0], duree);
+            }
+            else printf(">> L'application de l'effet [%s] a échoué.\n", action->params[0]);
+            break;
+
+
+        // Params: nom_effet (char*)
+        case RETIRER_EFFET:
+            Effets effet = charToEnumEffect(action->params[0]);
+            if (effet == AUCUN_Effets) {
+                fprintf(stderr, "Erreur: executerAction(): charToEnumEffect() -> action->params[0] (RETIRER_EFFET)\n");
+                return EXIT_FAILURE;
+            }
+
+            ListeEtat *etats_cible = cible_plongeur ? &cible_plongeur->liste_etats : &cible_creature->liste_etats;
+            if (!etats_cible || etats_cible->longueur == 0) break;
+
+            res = supprimerEtat(etats_cible, effet);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: executerAction(): supprimerEtat() (RETIRER_EFFET)\n");
+                return EXIT_FAILURE;
+            }
+
             break;
 
 
