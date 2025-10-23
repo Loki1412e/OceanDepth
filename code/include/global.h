@@ -82,7 +82,7 @@
         DEGATS_SCALES,
         DEGATS_PERFORANTS,
         MODIFIER_STAT,
-        VOL_DE_VIE,
+        // VOL_DE_VIE,
         APPLIQUER_EFFET,
         RETIRER_EFFET,
         // Suite ...

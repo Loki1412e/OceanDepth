@@ -85,10 +85,10 @@ Voici la liste des `TYPE` d'actions disponibles et leurs paramètres.
 - **Exemple 2 (Restauration O2)** : `actions=MODIFIER_STAT:oxygene:20` (restaure 20 points d'oxygène).
 - **Exemple 3 (Débuff)** : `actions=MODIFIER_STAT:vitesse:-5` (réduit la vitesse de la cible de 5).
 
-#### `VOL_DE_VIE`
+<!-- #### `VOL_DE_VIE`
 - **Description** : Inflige des dégâts à la cible et soigne le lanceur d'un pourcentage des dégâts infligés.
 - **Syntaxe** : `VOL_DE_VIE:<montant_degats>:<pourcentage_soin>`
-- **Exemple** : `actions=VOL_DE_VIE:15:50` (inflige 15 dégâts et soigne le lanceur de 7 PV (50% de 15)).
+- **Exemple** : `actions=VOL_DE_VIE:15:50` (inflige 15 dégâts et soigne le lanceur de 7 PV (50% de 15)). -->
 
 ---
 
