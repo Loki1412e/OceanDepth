@@ -20,7 +20,7 @@ int runGame(Sauvegarde *actualSave) {
 
     /*===== Init Allocation ====*/
 
-    modalCreaturesSkills = initSkillsList(&res);
+    modalCreaturesSkills = initSkillsList(&res, "config/bestiaire/competences.conf");
     if (res == EXIT_FAILURE) {
         fprintf(stderr, "Erreur lors du chargement des compétences.\n");
         return EXIT_FAILURE;

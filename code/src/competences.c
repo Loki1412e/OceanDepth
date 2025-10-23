@@ -288,13 +288,13 @@ int setListeCompetenceFromConf(ListeCompetence *modalCreaturesSkills, char *path
 // - `ListeCompetence`
 // - `*res` = `EXIT_FAILURE` ou `EXIT_SUCCESS`
 // POUR LE MOMENT : Uniquement monstre
-ListeCompetence initSkillsList(short *res) {
+ListeCompetence initSkillsList(short *res, char *path) {
     if (!res) {
         return initEmptySkillList();
     }
     *res = EXIT_SUCCESS;
 
-    size_t count_all_unique_model = confCountAllUniqueId("config/bestiaire/competences.conf", res);
+    size_t count_all_unique_model = confCountAllUniqueId(path, res);
     if (*res == EXIT_FAILURE) {
         fprintf(stderr, "Erreur: initSkillsList(): confCountAllUniqueId()\n");
         return initEmptySkillList();
@@ -313,7 +313,7 @@ ListeCompetence initSkillsList(short *res) {
 
     // Initialisation du Bestiaire Model
 
-    if (setListeCompetenceFromConf(&modalCreaturesSkills, "config/bestiaire/competences.conf")) {
+    if (setListeCompetenceFromConf(&modalCreaturesSkills, path)) {
         fprintf(stderr, "Erreur: initSkillsList(): setListeCompetenceFromConf()\n");
         freeListeCompetence(&modalCreaturesSkills);
         *res = EXIT_FAILURE;
