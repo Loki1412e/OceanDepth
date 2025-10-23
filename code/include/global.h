@@ -40,6 +40,12 @@
 
 
     /* Enum */
+    
+    typedef enum {
+        ENTITE_PLONGEUR,
+        ENTITE_CREATURE
+    } EntiteType;
+
 
     typedef enum {
         DESACTIVE,
@@ -54,7 +60,7 @@
 
 
     typedef enum {
-        AUCUN,
+        AUCUN_Effets,
         BENEDICTION_OCEAN,
         MALEDICTION_OCEAN,
         SAIGNEMENT,
@@ -65,7 +71,7 @@
         DEFENSE_AUGMENTEE,
         VOIX_DU_COURANT,
         // Suite ...
-        LENGTH_EffetsSpeciaux
+        LENGTH_Effets
     } Effets;
 
 

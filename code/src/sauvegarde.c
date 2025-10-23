@@ -398,9 +398,9 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
 
 /*
     typedef enum {
-        AUCUN,
+        AUCUN_Effets,
         // Suite ...
-        LENGTH_EffetsSpeciaux
+        LENGTH_Effets
     } Effets;
 
     typedef struct {
