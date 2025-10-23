@@ -6,7 +6,7 @@
     #include "effets.h"
     #include "competences.h"
     
-    Bestiaire *initModalBestiary(ListeCompetence *skill_list);
+    Bestiaire *initModalBestiary(ListeCompetence *modalSkills);
     Bestiaire *initEmptyBestiary();
     int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary);
     int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, unsigned idConf);

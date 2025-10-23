@@ -386,8 +386,8 @@ Action *parseActions(char *actions_str_raw, size_t *nb_actions, short *res) {
 }
 
 
-int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
-    if (!skill_list || !skill_list->competences || skill_list->longueur == 0 || !path)
+int setListeCompetenceFromConf(ListeCompetence *modalSkills, char *path) {
+    if (!modalSkills || !modalSkills->competences || modalSkills->longueur == 0 || !path)
         return EXIT_FAILURE;
 
     FILE *f = fopen(path, "r");
@@ -396,7 +396,7 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
         return EXIT_FAILURE;
     }
 
-    Competence *skills = skill_list->competences;
+    Competence *skills = modalSkills->competences;
 
     char line[512];
     size_t length = 0, index = 0;
@@ -410,7 +410,7 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
             index = length - 1;
 
             // Si dépassement alors on arrete de load mais on garde la conf actuelle
-            if (index >= skill_list->longueur) {
+            if (index >= modalSkills->longueur) {
                 fprintf(stderr, "Warning: setListeCompetenceFromConf(): index %zu hors des limites de creatures\n", index);
                 break;
             }
@@ -420,10 +420,10 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
             line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
             if (line[0] == '\0') continue; // ligne vide
 
-            skill_list->competences[index].id = my_strToInt(line + 3, &res);
+            modalSkills->competences[index].id = my_strToInt(line + 3, &res);
             if (res == EXIT_FAILURE) {
                 fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"id=\"\n");
-                freeListeCompetence(skill_list);
+                freeListeCompetence(modalSkills);
                 fclose(f);
                 return EXIT_FAILURE;
             }
@@ -436,7 +436,7 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
             skills[index].nom = my_strdup(line + 4);
             if (!skills[index].nom) {
                 fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strdup() -> \"nom=\"\n");
-                freeListeCompetence(skill_list);
+                freeListeCompetence(modalSkills);
                 fclose(f);
                 return EXIT_FAILURE;
             }
@@ -449,7 +449,7 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
             skills[index].description = my_strdup(line + 12);
             if (!skills[index].nom) {
                 fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strdup() -> \"description=\"\n");
-                freeListeCompetence(skill_list);
+                freeListeCompetence(modalSkills);
                 fclose(f);
                 return EXIT_FAILURE;
             }
@@ -462,7 +462,7 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
             skills[index].cout_pv = my_strToInt(line + 8, &res);
             if (res == EXIT_FAILURE) {
                 fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"cout_pv=\"\n");
-                freeListeCompetence(skill_list);
+                freeListeCompetence(modalSkills);
                 fclose(f);
                 return EXIT_FAILURE;
             }
@@ -475,7 +475,7 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
             skills[index].cout_oxygene = my_strToInt(line + 13, &res);
             if (res == EXIT_FAILURE) {
                 fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"cout_oxygene=\"\n");
-                freeListeCompetence(skill_list);
+                freeListeCompetence(modalSkills);
                 fclose(f);
                 return EXIT_FAILURE;
             }
@@ -488,7 +488,7 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
             skills[index].ciblage = charToEnumCiblageType(line + 8);
             if (skills[index].ciblage == AUCUN_CiblageType) {
                 fprintf(stderr, "Erreur: setListeCompetenceFromConf(): charToEnumCiblageType(\"%s\") -> \"ciblage=\"\n", line + 8);
-                freeListeCompetence(skill_list);
+                freeListeCompetence(modalSkills);
                 fclose(f);
                 return EXIT_FAILURE;
             }
@@ -501,7 +501,7 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
             skills[index].cooldown_max = my_strToInt(line + 13, &res);
             if (res == EXIT_FAILURE) {
                 fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"cooldown_max=\"\n");
-                freeListeCompetence(skill_list);
+                freeListeCompetence(modalSkills);
                 fclose(f);
                 return EXIT_FAILURE;
             }
@@ -514,16 +514,16 @@ int setListeCompetenceFromConf(ListeCompetence *skill_list, char *path) {
             skills[index].listeAction.actions = parseActions(line + 8, &skills[index].listeAction.longueur, &res);
             if (res == EXIT_FAILURE) {
                 fprintf(stderr, "Erreur: setListeCompetenceFromConf(): actions = calloc()\n");
-                freeListeCompetence(skill_list);
+                freeListeCompetence(modalSkills);
                 fclose(f);
                 return EXIT_FAILURE;
             }
         }
     }
 
-    if (skill_list->longueur < length) {
-        fprintf(stderr, "Erreur: setListeCompetenceFromConf(): longueur (%zu) < length (%zu)\n", skill_list->longueur, length);
-        freeListeCompetence(skill_list);
+    if (modalSkills->longueur < length) {
+        fprintf(stderr, "Erreur: setListeCompetenceFromConf(): longueur (%zu) < length (%zu)\n", modalSkills->longueur, length);
+        freeListeCompetence(modalSkills);
         fclose(f);
         return EXIT_FAILURE;
     }
@@ -550,26 +550,26 @@ ListeCompetence initSkillsList(short *res) {
     }
 
     // Allocation mémoire -> calloc pour tout init 0 ou NULL
-    ListeCompetence skill_list = initEmptySkillList();
-    skill_list.competences = calloc(count_all_unique_model, sizeof(Competence));
-    if (!skill_list.competences) {
+    ListeCompetence modalSkills = initEmptySkillList();
+    modalSkills.competences = calloc(count_all_unique_model, sizeof(Competence));
+    if (!modalSkills.competences) {
         fprintf(stderr, "Erreur: initSkillsList(): Allocation mémoire competences\n");
-        freeListeCompetence(&skill_list);
+        freeListeCompetence(&modalSkills);
         *res = EXIT_FAILURE;
-        return skill_list;
+        return modalSkills;
     }
-    skill_list.longueur = count_all_unique_model;
+    modalSkills.longueur = count_all_unique_model;
 
     // Initialisation du Bestiaire Model
 
-    if (setListeCompetenceFromConf(&skill_list, "config/bestiaire/competences.conf")) {
+    if (setListeCompetenceFromConf(&modalSkills, "config/bestiaire/competences.conf")) {
         fprintf(stderr, "Erreur: initSkillsList(): setListeCompetenceFromConf()\n");
-        freeListeCompetence(&skill_list);
+        freeListeCompetence(&modalSkills);
         *res = EXIT_FAILURE;
-        return skill_list;
+        return modalSkills;
     }
     
-    return skill_list;
+    return modalSkills;
 }
 
 
