@@ -187,19 +187,18 @@ void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_c
 }
 
 void afficherActionsDisponibles(int attaques_restantes) {
-    printf("\n--- ACTIONS ---\n");
+    printf("\n--- MENU DES ACTIONS (0 pour quitter et sauvegarder) ---\n");
     printf("1 - Attaquer (attaques restantes : %d)\n", attaques_restantes);
     printf("2 - Utiliser Compétence\n");
     printf("3 - Utiliser Objet (à implémenter)\n");
     printf("4 - Se reposer\n");
     printf("5 - Passer le tour\n");
-    printf("42 - Quitter et Sauvegarder\n");
 }
 
 /* ==== Boucle de combat ==== */
 
 // creatures deja sort by speed (voir creature.c -> generateCreatureInBestiary)
-// Renvoie 42 si le joueur a choisi de quitter et sauvegarder
+// Return `-1` si le joueur a choisi de quitter et sauvegarder
 int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
     
     int choix;
@@ -251,6 +250,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         int attaques_restantes = calculerAttaquesMaxAvecFatigue(joueur->fatigue_max, joueur->fatigue);
 
         /* Affichage clair pour le joueur */
+        afficherInterface(joueur, creatures, nb_creatures);
         printf("\n--- Votre tour ---\n");
         printf("Effets Subis au début du tour: ");
         printListeEtat(joueur->liste_etats);
@@ -278,13 +278,19 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
             
             printf("> ");
             choix = lireEntier();
-            while ((choix < 1 || choix > 5) && choix != 42) {
-                printf("Entrée invalide, veuillez taper 42 ou un nombre entre 1 et 5.\n> ");
+            while ((choix < 1 || choix > 5) && choix != 0) {
+                printf("Entrée invalide, veuillez taper 0 ou un nombre entre 1 et 5.\n> ");
                 choix = lireEntier();
             }
 
             switch (choix) {
-                
+
+                // Quitter et Sauvegarder
+                case 0:
+                    printf("→ Sauvegarde et sortie du combat...\n");
+                    return -1;
+
+
                 // Attaquer
                 case 1:
                     if (!peutAttaquer(&joueur->liste_etats)) {
@@ -445,10 +451,19 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
                 // Se reposer
                 case 4:
-                    printf("→ Vous vous reposez (fatigue -1)\n");
                     // tmp / test
+                    printf("→ Vous vous reposez (-%d attaque%s restante%s / fatigue -1)\n",
+                        attaques_restantes > 1 ? 2 : attaques_restantes,
+                        attaques_restantes > 1 ? "s" : "",
+                        attaques_restantes > 1 ? "s" : ""
+                    );
+                    
                     joueur->fatigue -= 1;
                     if (joueur->fatigue < 0) joueur->fatigue = 0;
+                    
+                    attaques_restantes -= 2;
+                    if (attaques_restantes < 0) attaques_restantes = 0;
+                    
                     pressEnterToContinue();
                     break;
 
@@ -460,11 +475,6 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     attaques_restantes = 0;
                     pressEnterToContinue();
                     break;
-                
-                // Quitter et Sauvegarder
-                case 42:
-                    printf("→ Sauvegarde et sortie du combat...\n");
-                    return 42;
             }
 
             if (attaques_restantes > 0) {

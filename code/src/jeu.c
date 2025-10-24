@@ -76,7 +76,7 @@ int runGame(Sauvegarde *actualSave) {
             pressEnterToContinue();
             break;
         }
-        if (res == 42) {
+        if (res == -1) {
             printf("Sauvegarde effectuée.\n");
             save(actualSave);
             pressEnterToContinue();
