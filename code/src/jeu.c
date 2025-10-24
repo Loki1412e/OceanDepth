@@ -70,7 +70,18 @@ int runGame(Sauvegarde *actualSave) {
         printBestiary(bestiary);
         pressEnterToContinue();
 
-        combat(diver, bestiary->creatures, bestiary->longueur_creatures);
+        res = combat(diver, bestiary->creatures, bestiary->longueur_creatures);
+        if (res == EXIT_FAILURE) {
+            fprintf(stderr, "Erreur durant le combat.\n");
+            pressEnterToContinue();
+            break;
+        }
+        if (res == 42) {
+            printf("Sauvegarde effectuée.\n");
+            save(actualSave);
+            pressEnterToContinue();
+            break;
+        }
 
         freeBestiaryContent(bestiary);
 
