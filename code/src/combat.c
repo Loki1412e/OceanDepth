@@ -14,7 +14,8 @@ void joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature);
 int botAttaque(void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, EntiteType cible_type);
 // Affichage
 int afficherEtatOxygene(Plongeur *joueur);
-void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures, int attaques_restantes);
+void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures);
+void afficherActionsDisponibles(int attaques_restantes);
 
 
 /*====== Utils ======*/
@@ -95,7 +96,10 @@ void joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature) {
 // Return -1 si n'a pas de compétence activable
 // Return EXIT_FAILURE ou EXIT_SUCCESS
 int botAttaque(void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, EntiteType cible_type) {
-    if (!lanceur_ptr || !cible_ptr) return EXIT_FAILURE;
+    if (!lanceur_ptr || !cible_ptr) {
+        fprintf(stderr, "Erreur: botAttaque(): Invalid params\n");
+        return EXIT_FAILURE;
+    }
 
     short res;
 
@@ -106,7 +110,10 @@ int botAttaque(void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, Enti
     if (!liste_competences || liste_competences->longueur == 0) return -1;
 
     Competence *comp = choisirRandomCompetence(liste_competences->competences, liste_competences->longueur);
-    if (!comp) return -1;
+    if (!comp) {
+        fprintf(stderr, "Warning: botAttaque(): No valid competence found\n");
+        return -1;
+    }
 
     res = utiliserCompetence(comp, lanceur_ptr, lanceur_type, cible_ptr, cible_type);
     if (res == EXIT_FAILURE) {
@@ -145,7 +152,7 @@ int afficherEtatOxygene(Plongeur *joueur) {
     return perte;
 }
 
-void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures, int attaques_restantes) {
+void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
     printf("╔═════════════════════════════ COMBAT DANS LES ABYSSES ═════════════════════════════╗\n\n");
 
     // --- STATS DU JOUEUR ---
@@ -177,18 +184,21 @@ void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_c
     }
 
     printf("\n\n\n╚═══════════════════════════════════════════════════════════════════════════════════╝\n");
+}
 
-    // --- ACTIONS DISPONIBLES ---
-    printf("\n--- ACTIONS ---\n");
+void afficherActionsDisponibles(int attaques_restantes) {
+    printf("\n--- MENU DES ACTIONS (0 pour quitter et sauvegarder) ---\n");
     printf("1 - Attaquer (attaques restantes : %d)\n", attaques_restantes);
-    printf("2 - Utiliser compétence\n");
-    printf("3 - Utiliser un objet (à implémenter)\n");
-    printf("4 - Terminer le tour\n");
+    printf("2 - Utiliser Compétence\n");
+    printf("3 - Utiliser Objet (à implémenter)\n");
+    printf("4 - Se reposer\n");
+    printf("5 - Passer le tour\n");
 }
 
 /* ==== Boucle de combat ==== */
 
 // creatures deja sort by speed (voir creature.c -> generateCreatureInBestiary)
+// Return `-1` si le joueur a choisi de quitter et sauvegarder
 int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
     
     int choix;
@@ -203,6 +213,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         // Monstres autant ou plus rapides
         for (size_t i = 0; i < nb_creatures; i++) {
             if (creatures[i]->pv > 0 && (creatures[i]->vitesse >= joueur->vitesse)) {
+                afficherInterface(joueur, creatures, nb_creatures);
                 /* Affichage clair pour chaque créature */
                 printf("\n--- Tour de %s #%zu ---\n", creatures[i]->nom, i+1);
                 printf("Effets Subis au début du tour: ");
@@ -213,6 +224,17 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                 appliquerDegatsAvantTour(&creatures[i]->liste_etats, &creatures[i]->pv, creatures[i]->pv_max, creatures[i]->defense, NULL, false);
                 if (pv_before != creatures[i]->pv) {
                     printf("%s subit %d dégâts d'effets de statut (PV: %d -> %d)\n", creatures[i]->nom, pv_before - creatures[i]->pv, pv_before, creatures[i]->pv);
+                }
+
+                if (creatures[i]->pv <= 0) {
+                    res = setDeathStateCreature(creatures[i]);
+                    if (res == EXIT_FAILURE) {
+                        fprintf(stderr, "Erreur: combat() // Monstres autant ou plus rapides: setDeathStateCreature()\n");
+                        return EXIT_FAILURE;
+                    }
+                    printf("[%s] est mort.\n", creatures[i]->nom);
+                    pressEnterToContinue();
+                    continue;
                 }
 
                 printf("%s tente d'agir...\n", creatures[i]->nom);
@@ -239,6 +261,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         int attaques_restantes = calculerAttaquesMaxAvecFatigue(joueur->fatigue_max, joueur->fatigue);
 
         /* Affichage clair pour le joueur */
+        afficherInterface(joueur, creatures, nb_creatures);
         printf("\n--- Votre tour ---\n");
         printf("Effets Subis au début du tour: ");
         printListeEtat(joueur->liste_etats);
@@ -256,7 +279,9 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         }
 
         pressEnterToContinue();
-        afficherInterface(joueur, creatures, nb_creatures, attaques_restantes);
+
+        afficherInterface(joueur, creatures, nb_creatures);
+        afficherActionsDisponibles(attaques_restantes);
 
         while (attaques_restantes > 0) {
 
@@ -264,17 +289,24 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
             
             printf("> ");
             choix = lireEntier();
-            while (choix < 1 || choix > 4) {
-                printf("Entrée invalide, veuillez taper un nombre entre 1 et 4.\n> ");
+            while ((choix < 1 || choix > 5) && choix != 0) {
+                printf("Entrée invalide, veuillez taper 0 ou un nombre entre 1 et 5.\n> ");
                 choix = lireEntier();
             }
 
             switch (choix) {
-                
+
+                // Quitter et Sauvegarder
+                case 0:
+                    printf("\n→ Sauvegarde et sortie du combat...\n");
+                    return -1;
+
+
                 // Attaquer
                 case 1:
                     if (!peutAttaquer(&joueur->liste_etats)) {
                         printf("Vous n'avez pas pu attaquer.\n");
+                        pressEnterToContinue();
                         break;
                     }
 
@@ -311,7 +343,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     pressEnterToContinue();
                     break;
 
-                
+
                 // Utiliser compétence
                 case 2:
                     printf("\nQuelle compétence utiliser ? (0 pour annuler)\n");
@@ -335,7 +367,8 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     if (choix_comp == 0 || choix_comp > joueur->liste_competences.longueur) {
                         printf("Action annulée.\n");
                         pressEnterToContinue();
-                        afficherInterface(joueur, creatures, nb_creatures, attaques_restantes);
+                        afficherInterface(joueur, creatures, nb_creatures);
+                        afficherActionsDisponibles(attaques_restantes);
                         continue; // Ne termine pas le tour, redemande une action
                     }
 
@@ -354,6 +387,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                         
                         if (!peutAttaquer(&joueur->liste_etats)) {
                             printf("Vous n'avez pas pu attaquer.\n");
+                            pressEnterToContinue();
                             break;
                         }
 
@@ -413,18 +447,54 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                         continue;
                     }
                     else attaques_restantes--;
-                    
-                    // break;
+
+                    if (entite_cible == ENTITE_CREATURE && ((CreatureMarine*)cible_ptr)->pv <= 0) {
+                        res = setDeathStateCreature((CreatureMarine*)cible_ptr);
+                        if (res == EXIT_FAILURE) {
+                            fprintf(stderr, "Erreur: combat(): setDeathStateCreature()\n");
+                            return EXIT_FAILURE;
+                        }
+                    }
+
                     pressEnterToContinue();
                     break;
-                
+
+
+                // Utiliser un objet (à implémenter)
                 case 3:
-                    printf("→ Utilisation d’un objet (à implémenter)\n");
+                    printf("\n→ Utilisation d’un objet (à implémenter)\n");
                     pressEnterToContinue();
                     break;
-                
+
+
+                // Se reposer
                 case 4:
-                    printf("→ Vous terminez votre tour.\n");
+                    if (peutAttaquer(&joueur->liste_etats) == false) {
+                        printf("Vous n'avez pas pu vous reposer.\n");
+                        pressEnterToContinue();
+                        break;
+                    }
+
+                    // tmp / test
+                    printf("\n→ Vous vous reposez (-%d attaque%s restante%s / fatigue -1)\n",
+                        attaques_restantes > 1 ? 2 : attaques_restantes,
+                        attaques_restantes > 1 ? "s" : "",
+                        attaques_restantes > 1 ? "s" : ""
+                    );
+                    
+                    joueur->fatigue -= 1;
+                    if (joueur->fatigue < 0) joueur->fatigue = 0;
+                    
+                    attaques_restantes -= 2;
+                    if (attaques_restantes < 0) attaques_restantes = 0;
+                    
+                    pressEnterToContinue();
+                    break;
+
+
+                // Passer le tour
+                case 5:
+                    printf("\n→ Vous passez votre tour.\n");
                     diminuerFatigue(joueur, 1); // tmp / test
                     attaques_restantes = 0;
                     pressEnterToContinue();
@@ -433,7 +503,8 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
             if (attaques_restantes > 0) {
                 clearConsole();
-                afficherInterface(joueur, creatures, nb_creatures, attaques_restantes);
+                afficherInterface(joueur, creatures, nb_creatures);
+                afficherActionsDisponibles(attaques_restantes);
             }
         }
 
@@ -443,6 +514,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         // Monstres strictement moins rapides
         for (size_t i = 0; i < nb_creatures; i++) {
             if (creatures[i]->pv > 0 && (creatures[i]->vitesse < joueur->vitesse)) {
+                afficherInterface(joueur, creatures, nb_creatures);
                 /* Affichage clair pour chaque créature */
                 printf("\n--- Tour de %s #%zu ---\n", creatures[i]->nom, i+1);
                 printf("Effets Subis au début du tour:\n");
@@ -453,6 +525,17 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                 appliquerDegatsAvantTour(&creatures[i]->liste_etats, &creatures[i]->pv, creatures[i]->pv_max, creatures[i]->defense, NULL, false);
                 if (pv_before2 != creatures[i]->pv) {
                     printf("%s subit %d dégâts d'effets de statut (PV: %d -> %d)\n", creatures[i]->nom, pv_before2 - creatures[i]->pv, pv_before2, creatures[i]->pv);
+                }
+
+                if (creatures[i]->pv <= 0) {
+                    res = setDeathStateCreature(creatures[i]);
+                    if (res == EXIT_FAILURE) {
+                        fprintf(stderr, "Erreur: combat() // Monstres strictement moins rapides: setDeathStateCreature()\n");
+                        return EXIT_FAILURE;
+                    }
+                    printf("[%s] est mort.\n", creatures[i]->nom);
+                    pressEnterToContinue();
+                    continue;
                 }
 
                 printf("%s tente d'agir...\n", creatures[i]->nom);
@@ -479,5 +562,6 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
     if (joueur->pv <= 0)
         printf("\n☠️  Vous êtes mort... GAME OVER\n");
 
+    pressEnterToContinue();
     return EXIT_SUCCESS;
 }

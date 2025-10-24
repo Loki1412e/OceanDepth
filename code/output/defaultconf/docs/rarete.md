@@ -46,11 +46,13 @@ La répartition des poids permet de donner une plus grande probabilité d'appari
 
 ### Table des Niveaux de Rareté
 
+*Si le niveau de rareté maximum ou maxmimum est dépassé alors on remet au niveau le plus proche (`0` ou `len-1`)*
+
 | `rarete=` | Nommage | Poids de Tirage | Probabilité (indicative) |
 | :-: | :-: | :-: | :-: |
-| 0 | DESACTIVE     | 0     | Nulle         |
-| 1 | COMMUN        | 100   | Très haute    |
-| 2 | PEU_COMMUN    | 67    | Haute         |
-| 3 | RARE          | 44    | Moyenne       |
-| 4 | TRES_RARE     | 30    | Faible        |
-| 5 | ABERANT       | 20    | Très faible   |
+| 0  | DESACTIVE     | 0     | Nulle         |
+| 1  | COMMUN        | 100   | Très haute    |
+| 2  | PEU_COMMUN    | 67    | Haute         |
+| 3  | RARE          | 44    | Moyenne       |
+| 4  | TRES_RARE     | 30    | Faible        |
+| 5  | ABERANT       | 20    | Très faible   |

@@ -70,7 +70,19 @@ int runGame(Sauvegarde *actualSave) {
         printBestiary(bestiary);
         pressEnterToContinue();
 
-        combat(diver, bestiary->creatures, bestiary->longueur_creatures);
+        res = combat(diver, bestiary->creatures, bestiary->longueur_creatures);
+        if (res == EXIT_FAILURE) {
+            fprintf(stderr, "Erreur: runGame(): res = combat()\n");
+            freeBestiaryContent(bestiary);
+            break;
+        }
+        if (res == -1) {
+            printf("Sauvegarde effectuée.\n");
+            save(actualSave);
+            freeBestiaryContent(bestiary);
+            pressEnterToContinue();
+            break;
+        }
 
         freeBestiaryContent(bestiary);
 
@@ -82,8 +94,6 @@ int runGame(Sauvegarde *actualSave) {
     freeBestiary(bestiary);
     freeBestiary(modalBestiary);
     freeListeCompetence(&modalCreaturesSkills);
-
-    return -1;
     
     return EXIT_SUCCESS;
 }
