@@ -10,6 +10,7 @@
     Bestiaire *initEmptyBestiary();
     int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary);
     int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, unsigned idConf);
+    int setDeathStateCreature(CreatureMarine *creature);
     void freeBestiary(Bestiaire *bestiary);
     void freeBestiaryContent(Bestiaire *bestiary);
     void freeCreatures(CreatureMarine **creatures, size_t length);

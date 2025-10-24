@@ -517,6 +517,23 @@ CreatureMarine *duplicateCreature(CreatureMarine *modal) {
 }
 
 
+int setDeathStateCreature(CreatureMarine *creature) {
+    if (!creature) {
+        fprintf(stderr, "Erreur: setDeathStateCreature(): creature == NULL\n");
+        return EXIT_FAILURE;
+    }
+    if (creature->pv > 0) {
+        fprintf(stderr, "Warning: setDeathStateCreature(): creature->pv > 0\n");
+        return -1;
+    }
+
+    freeListeEtat(&creature->liste_etats);
+    creature->liste_etats = initEmptyListeEtat();
+    
+    return EXIT_SUCCESS;
+}
+
+
 void freeCreature(CreatureMarine *creature) {
     
     if (!creature) return;
