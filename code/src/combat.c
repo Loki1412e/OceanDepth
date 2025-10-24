@@ -195,6 +195,52 @@ void afficherActionsDisponibles(int attaques_restantes) {
     printf("5 - Passer le tour\n");
 }
 
+
+// Return `-1` si la créature est morte durant son tour
+// Return `EXIT_FAILURE` ou `EXIT_SUCCESS`
+int appliquerTourCreature(CreatureMarine *creature, size_t index, Plongeur *joueur) {
+    if (!creature || !joueur) {
+        fprintf(stderr, "Erreur: appliquerTourCreature(): Invalid params\n");
+        return EXIT_FAILURE;
+    }
+    
+    short res;
+
+    printf("\n--- Tour de %s #%zu ---\n", creature->nom, index);
+    printf("Effets Subis au début du tour: ");
+    printListeEtat(creature->liste_etats);
+    printf("\n");
+
+    int pv_before = creature->pv;
+    appliquerDegatsAvantTour(&creature->liste_etats, &creature->pv, creature->pv_max, creature->defense, NULL, false);
+    if (pv_before != creature->pv) {
+        printf("%s subit %d dégâts d'effets de statut (PV: %d -> %d)\n", creature->nom, pv_before - creature->pv, pv_before, creature->pv);
+    }
+
+    if (creature->pv <= 0) {
+        res = setDeathStateCreature(creature);
+        if (res == EXIT_FAILURE) {
+            fprintf(stderr, "Erreur: appliquerTourCreature(): setDeathStateCreature()\n");
+            return EXIT_FAILURE;
+        }
+        printf("[%s] est mort.\n", creature->nom);
+        pressEnterToContinue();
+        return -1;
+    }
+
+    printf("%s tente d'agir...\n", creature->nom);
+    res = peutAttaquer(&creature->liste_etats);
+    if (res) {
+        res = botAttaque(creature, ENTITE_CREATURE, joueur, ENTITE_PLONGEUR);
+        res = res == EXIT_SUCCESS;
+        if (res) printf("%s a réalisé une action.\n", creature->nom);
+    }
+    else printf("[%s] n'a pas pu attaquer.\n", creature->nom);
+
+    return EXIT_SUCCESS;
+}
+
+
 /* ==== Boucle de combat ==== */
 
 // creatures deja sort by speed (voir creature.c -> generateCreatureInBestiary)
@@ -214,40 +260,18 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         for (size_t i = 0; i < nb_creatures; i++) {
             if (creatures[i]->pv > 0 && (creatures[i]->vitesse >= joueur->vitesse)) {
                 afficherInterface(joueur, creatures, nb_creatures);
-                /* Affichage clair pour chaque créature */
-                printf("\n--- Tour de %s #%zu ---\n", creatures[i]->nom, i+1);
-                printf("Effets Subis au début du tour: ");
-                printListeEtat(creatures[i]->liste_etats);
-                printf("\n");
 
-                int pv_before = creatures[i]->pv;
-                appliquerDegatsAvantTour(&creatures[i]->liste_etats, &creatures[i]->pv, creatures[i]->pv_max, creatures[i]->defense, NULL, false);
-                if (pv_before != creatures[i]->pv) {
-                    printf("%s subit %d dégâts d'effets de statut (PV: %d -> %d)\n", creatures[i]->nom, pv_before - creatures[i]->pv, pv_before, creatures[i]->pv);
+                res = (appliquerTourCreature(creatures[i], i+1, joueur) == -1);
+                if (res == EXIT_FAILURE) {
+                    fprintf(stderr, "Erreur: combat() // Monstres autant ou plus rapides: appliquerTourCreature()\n");
+                    return EXIT_FAILURE;
                 }
 
-                if (creatures[i]->pv <= 0) {
-                    res = setDeathStateCreature(creatures[i]);
-                    if (res == EXIT_FAILURE) {
-                        fprintf(stderr, "Erreur: combat() // Monstres autant ou plus rapides: setDeathStateCreature()\n");
-                        return EXIT_FAILURE;
-                    }
-                    printf("[%s] est mort.\n", creatures[i]->nom);
-                    pressEnterToContinue();
-                    continue;
+                // Si la créature n'est pas morte
+                if (res != -1) {
+                    decrementerDureesEtNettoyer(&creatures[i]->liste_etats, true, false);
+                    decrementerCooldownsCompetences(&creatures[i]->liste_competences);
                 }
-
-                printf("%s tente d'agir...\n", creatures[i]->nom);
-                res = peutAttaquer(&creatures[i]->liste_etats);
-                if (res) {
-                    res = botAttaque(creatures[i], ENTITE_CREATURE, joueur, ENTITE_PLONGEUR);
-                    res = res == EXIT_SUCCESS;
-                    if (res) printf("%s a réalisé une action.\n", creatures[i]->nom);
-                }
-                if (!res) printf("[%s] n'a pas pu attaquer.\n", creatures[i]->nom);
-
-                decrementerDureesEtNettoyer(&creatures[i]->liste_etats, true, false);
-                decrementerCooldownsCompetences(&creatures[i]->liste_competences);
 
                 pressEnterToContinue();
                 if (joueur->pv <= 0) break;
@@ -515,40 +539,18 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         for (size_t i = 0; i < nb_creatures; i++) {
             if (creatures[i]->pv > 0 && (creatures[i]->vitesse < joueur->vitesse)) {
                 afficherInterface(joueur, creatures, nb_creatures);
-                /* Affichage clair pour chaque créature */
-                printf("\n--- Tour de %s #%zu ---\n", creatures[i]->nom, i+1);
-                printf("Effets Subis au début du tour:\n");
-                printListeEtat(creatures[i]->liste_etats);
-                printf("\n");
 
-                int pv_before2 = creatures[i]->pv;
-                appliquerDegatsAvantTour(&creatures[i]->liste_etats, &creatures[i]->pv, creatures[i]->pv_max, creatures[i]->defense, NULL, false);
-                if (pv_before2 != creatures[i]->pv) {
-                    printf("%s subit %d dégâts d'effets de statut (PV: %d -> %d)\n", creatures[i]->nom, pv_before2 - creatures[i]->pv, pv_before2, creatures[i]->pv);
+                res = (appliquerTourCreature(creatures[i], i+1, joueur) == -1);
+                if (res == EXIT_FAILURE) {
+                    fprintf(stderr, "Erreur: combat() // Monstres autant ou plus rapides: appliquerTourCreature()\n");
+                    return EXIT_FAILURE;
                 }
 
-                if (creatures[i]->pv <= 0) {
-                    res = setDeathStateCreature(creatures[i]);
-                    if (res == EXIT_FAILURE) {
-                        fprintf(stderr, "Erreur: combat() // Monstres strictement moins rapides: setDeathStateCreature()\n");
-                        return EXIT_FAILURE;
-                    }
-                    printf("[%s] est mort.\n", creatures[i]->nom);
-                    pressEnterToContinue();
-                    continue;
+                // Si la créature n'est pas morte
+                if (res != -1) {
+                    decrementerDureesEtNettoyer(&creatures[i]->liste_etats, true, false);
+                    decrementerCooldownsCompetences(&creatures[i]->liste_competences);
                 }
-
-                printf("%s tente d'agir...\n", creatures[i]->nom);
-                res = peutAttaquer(&creatures[i]->liste_etats);
-                if (res) {
-                    res = botAttaque(creatures[i], ENTITE_CREATURE, joueur, ENTITE_PLONGEUR);
-                    res = res == EXIT_SUCCESS;
-                    if (res) printf("%s a réalisé une action.\n", creatures[i]->nom);
-                }
-                if (!res) printf("[%s] n'a pas pu attaquer.\n", creatures[i]->nom);
-
-                decrementerDureesEtNettoyer(&creatures[i]->liste_etats, true, false);
-                decrementerCooldownsCompetences(&creatures[i]->liste_competences);
 
                 pressEnterToContinue();
                 if (joueur->pv <= 0) break;
