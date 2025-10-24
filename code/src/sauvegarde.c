@@ -474,9 +474,7 @@ int save(Sauvegarde *save) {
         return EXIT_FAILURE;
     }
 
-
     // Save final && free
-
     if (finalizeSave(tmpSave) != EXIT_SUCCESS) {
         fprintf(stderr, "save : Erreur finalisation sauvegarde\n");
         return EXIT_FAILURE;

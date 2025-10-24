@@ -189,14 +189,17 @@ void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_c
 void afficherActionsDisponibles(int attaques_restantes) {
     printf("\n--- ACTIONS ---\n");
     printf("1 - Attaquer (attaques restantes : %d)\n", attaques_restantes);
-    printf("2 - Utiliser compétence\n");
-    printf("3 - Utiliser un objet (à implémenter)\n");
-    printf("4 - Terminer le tour\n");
+    printf("2 - Utiliser Compétence\n");
+    printf("3 - Utiliser Objet (à implémenter)\n");
+    printf("4 - Se reposer\n");
+    printf("5 - Passer le tour\n");
+    printf("42 - Quitter et Sauvegarder\n");
 }
 
 /* ==== Boucle de combat ==== */
 
 // creatures deja sort by speed (voir creature.c -> generateCreatureInBestiary)
+// Renvoie 42 si le joueur a choisi de quitter et sauvegarder
 int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
     
     int choix;
@@ -275,8 +278,8 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
             
             printf("> ");
             choix = lireEntier();
-            while (choix < 1 || choix > 4) {
-                printf("Entrée invalide, veuillez taper un nombre entre 1 et 4.\n> ");
+            while ((choix < 1 || choix > 5) && choix != 42) {
+                printf("Entrée invalide, veuillez taper 42 ou un nombre entre 1 et 5.\n> ");
                 choix = lireEntier();
             }
 
@@ -323,7 +326,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     pressEnterToContinue();
                     break;
 
-                
+
                 // Utiliser compétence
                 case 2:
                     printf("\nQuelle compétence utiliser ? (0 pour annuler)\n");
@@ -431,18 +434,37 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     // break;
                     pressEnterToContinue();
                     break;
-                
+
+
+                // Utiliser un objet (à implémenter)
                 case 3:
                     printf("→ Utilisation d’un objet (à implémenter)\n");
                     pressEnterToContinue();
                     break;
-                
+
+
+                // Se reposer
                 case 4:
-                    printf("→ Vous terminez votre tour.\n");
+                    printf("→ Vous vous reposez (fatigue -1)\n");
+                    // tmp / test
+                    joueur->fatigue -= 1;
+                    if (joueur->fatigue < 0) joueur->fatigue = 0;
+                    pressEnterToContinue();
+                    break;
+
+
+                // Passer le tour
+                case 5:
+                    printf("→ Vous passez votre tour.\n");
                     diminuerFatigue(joueur, 1); // tmp / test
                     attaques_restantes = 0;
                     pressEnterToContinue();
                     break;
+                
+                // Quitter et Sauvegarder
+                case 42:
+                    printf("→ Sauvegarde et sortie du combat...\n");
+                    return 42;
             }
 
             if (attaques_restantes > 0) {
