@@ -556,5 +556,6 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
     if (joueur->pv <= 0)
         printf("\n☠️  Vous êtes mort... GAME OVER\n");
 
+    pressEnterToContinue();
     return EXIT_SUCCESS;
 }
