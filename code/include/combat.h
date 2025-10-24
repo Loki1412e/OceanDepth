@@ -4,6 +4,7 @@
     #include "global.h"
     #include "display.h"
     #include "joueur.h"
+    #include "creatures.h"
     #include "effets.h"
 
     int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures);

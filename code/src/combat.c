@@ -226,6 +226,17 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     printf("%s subit %d dégâts d'effets de statut (PV: %d -> %d)\n", creatures[i]->nom, pv_before - creatures[i]->pv, pv_before, creatures[i]->pv);
                 }
 
+                if (creatures[i]->pv <= 0) {
+                    res = setDeathStateCreature(&creatures[i]);
+                    if (res == EXIT_FAILURE) {
+                        fprintf(stderr, "Erreur: combat() // Monstres autant ou plus rapides: setDeathStateCreature()\n");
+                        return EXIT_FAILURE;
+                    }
+                    printf("[%s] est mort.\n", creatures[i]->nom);
+                    pressEnterToContinue();
+                    continue;
+                }
+
                 printf("%s tente d'agir...\n", creatures[i]->nom);
                 res = peutAttaquer(&creatures[i]->liste_etats);
                 if (res) {
@@ -436,8 +447,15 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                         continue;
                     }
                     else attaques_restantes--;
-                    
-                    // break;
+
+                    if (entite_cible == ENTITE_CREATURE) {
+                        res = setDeathStateCreature(cible_ptr);
+                        if (res == EXIT_FAILURE) {
+                            fprintf(stderr, "Erreur: combat(): setDeathStateCreature()\n");
+                            return EXIT_FAILURE;
+                        }
+                    }
+
                     pressEnterToContinue();
                     break;
 
@@ -501,6 +519,17 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                 appliquerDegatsAvantTour(&creatures[i]->liste_etats, &creatures[i]->pv, creatures[i]->pv_max, creatures[i]->defense, NULL, false);
                 if (pv_before2 != creatures[i]->pv) {
                     printf("%s subit %d dégâts d'effets de statut (PV: %d -> %d)\n", creatures[i]->nom, pv_before2 - creatures[i]->pv, pv_before2, creatures[i]->pv);
+                }
+
+                if (creatures[i]->pv <= 0) {
+                    res = setDeathStateCreature(&creatures[i]);
+                    if (res == EXIT_FAILURE) {
+                        fprintf(stderr, "Erreur: combat() // Monstres strictement moins rapides: setDeathStateCreature()\n");
+                        return EXIT_FAILURE;
+                    }
+                    printf("[%s] est mort.\n", creatures[i]->nom);
+                    pressEnterToContinue();
+                    continue;
                 }
 
                 printf("%s tente d'agir...\n", creatures[i]->nom);
