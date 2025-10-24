@@ -462,7 +462,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
                 // Utiliser un objet (à implémenter)
                 case 3:
-                    printf("→ Utilisation d’un objet (à implémenter)\n");
+                    printf("\n→ Utilisation d’un objet (à implémenter)\n");
                     pressEnterToContinue();
                     break;
 
@@ -476,7 +476,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     }
 
                     // tmp / test
-                    printf("→ Vous vous reposez (-%d attaque%s restante%s / fatigue -1)\n",
+                    printf("\n→ Vous vous reposez (-%d attaque%s restante%s / fatigue -1)\n",
                         attaques_restantes > 1 ? 2 : attaques_restantes,
                         attaques_restantes > 1 ? "s" : "",
                         attaques_restantes > 1 ? "s" : ""
@@ -494,7 +494,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
                 // Passer le tour
                 case 5:
-                    printf("→ Vous passez votre tour.\n");
+                    printf("\n→ Vous passez votre tour.\n");
                     diminuerFatigue(joueur, 1); // tmp / test
                     attaques_restantes = 0;
                     pressEnterToContinue();
