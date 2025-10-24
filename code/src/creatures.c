@@ -486,6 +486,7 @@ CreatureMarine *duplicateCreature(CreatureMarine *modal) {
     creature->attaque_max = modal->attaque_max;
     creature->defense = modal->defense;
     creature->vitesse = modal->vitesse;
+    creature->rarete = modal->rarete;
 
     // Allocation / Init
 

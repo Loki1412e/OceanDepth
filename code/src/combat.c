@@ -227,7 +227,6 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                 printf("%s tente d'agir...\n", creatures[i]->nom);
                 res = peutAttaquer(&creatures[i]->liste_etats);
                 if (res) {
-                    printf("DEBUG: AAAAAAAAAAAAAAAAAAAAAA\n");
                     res = botAttaque(creatures[i], ENTITE_CREATURE, joueur, ENTITE_PLONGEUR);
                     res = res == EXIT_SUCCESS;
                     if (res) printf("%s a réalisé une action.\n", creatures[i]->nom);
@@ -475,7 +474,6 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                 printf("%s tente d'agir...\n", creatures[i]->nom);
                 res = peutAttaquer(&creatures[i]->liste_etats);
                 if (res) {
-                    printf("\nDEBUG: BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n");
                     res = botAttaque(creatures[i], ENTITE_CREATURE, joueur, ENTITE_PLONGEUR);
                     res = res == EXIT_SUCCESS;
                     if (res) printf("%s a réalisé une action.\n", creatures[i]->nom);
