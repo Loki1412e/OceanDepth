@@ -227,7 +227,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                 }
 
                 if (creatures[i]->pv <= 0) {
-                    res = setDeathStateCreature(&creatures[i]);
+                    res = setDeathStateCreature(creatures[i]);
                     if (res == EXIT_FAILURE) {
                         fprintf(stderr, "Erreur: combat() // Monstres autant ou plus rapides: setDeathStateCreature()\n");
                         return EXIT_FAILURE;
@@ -448,8 +448,8 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     }
                     else attaques_restantes--;
 
-                    if (entite_cible == ENTITE_CREATURE) {
-                        res = setDeathStateCreature(cible_ptr);
+                    if (entite_cible == ENTITE_CREATURE && ((CreatureMarine*)cible_ptr)->pv <= 0) {
+                        res = setDeathStateCreature((CreatureMarine*)cible_ptr);
                         if (res == EXIT_FAILURE) {
                             fprintf(stderr, "Erreur: combat(): setDeathStateCreature()\n");
                             return EXIT_FAILURE;
@@ -522,7 +522,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                 }
 
                 if (creatures[i]->pv <= 0) {
-                    res = setDeathStateCreature(&creatures[i]);
+                    res = setDeathStateCreature(creatures[i]);
                     if (res == EXIT_FAILURE) {
                         fprintf(stderr, "Erreur: combat() // Monstres strictement moins rapides: setDeathStateCreature()\n");
                         return EXIT_FAILURE;
