@@ -298,7 +298,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
                 // Quitter et Sauvegarder
                 case 0:
-                    printf("→ Sauvegarde et sortie du combat...\n");
+                    printf("\n→ Sauvegarde et sortie du combat...\n");
                     return -1;
 
 
@@ -469,6 +469,12 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
                 // Se reposer
                 case 4:
+                    if (peutAttaquer(&joueur->liste_etats) == false) {
+                        printf("Vous n'avez pas pu vous reposer.\n");
+                        pressEnterToContinue();
+                        break;
+                    }
+
                     // tmp / test
                     printf("→ Vous vous reposez (-%d attaque%s restante%s / fatigue -1)\n",
                         attaques_restantes > 1 ? 2 : attaques_restantes,

@@ -123,12 +123,12 @@ int peutAttaquer(ListeEtat *listeEtat) {
         switch (listeEtat->etats[i].effet) {
             
             case PARALYSIE:
-                printf("[PARALYSIE] empeche d'attaquer\n");
+                printf("[PARALYSIE] est active\n");
                 res = false;
                 break;
 
             case ETREINTE:
-                printf("[ETREINTE] empeche d'attaquer\n");
+                printf("[ETREINTE] est active\n");
                 res = false;
                 break;
             
