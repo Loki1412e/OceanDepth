@@ -19,6 +19,7 @@
     int botAttaque(void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, EntiteType cible_type);
     // Affichage
     int afficherEtatOxygene(Plongeur *joueur);
-    void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures, int attaques_restantes);
+    void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures);
+    void afficherActionsDisponibles(int attaques_restantes);
 
 #endif

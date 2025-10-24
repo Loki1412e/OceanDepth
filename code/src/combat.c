@@ -14,7 +14,8 @@ void joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature);
 int botAttaque(void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, EntiteType cible_type);
 // Affichage
 int afficherEtatOxygene(Plongeur *joueur);
-void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures, int attaques_restantes);
+void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures);
+void afficherActionsDisponibles(int attaques_restantes);
 
 
 /*====== Utils ======*/
@@ -95,7 +96,10 @@ void joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature) {
 // Return -1 si n'a pas de compétence activable
 // Return EXIT_FAILURE ou EXIT_SUCCESS
 int botAttaque(void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, EntiteType cible_type) {
-    if (!lanceur_ptr || !cible_ptr) return EXIT_FAILURE;
+    if (!lanceur_ptr || !cible_ptr) {
+        fprintf(stderr, "Erreur: botAttaque(): Invalid params\n");
+        return EXIT_FAILURE;
+    }
 
     short res;
 
@@ -106,7 +110,10 @@ int botAttaque(void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, Enti
     if (!liste_competences || liste_competences->longueur == 0) return -1;
 
     Competence *comp = choisirRandomCompetence(liste_competences->competences, liste_competences->longueur);
-    if (!comp) return -1;
+    if (!comp) {
+        fprintf(stderr, "Warning: botAttaque(): No valid competence found\n");
+        return -1;
+    }
 
     res = utiliserCompetence(comp, lanceur_ptr, lanceur_type, cible_ptr, cible_type);
     if (res == EXIT_FAILURE) {
@@ -145,7 +152,7 @@ int afficherEtatOxygene(Plongeur *joueur) {
     return perte;
 }
 
-void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures, int attaques_restantes) {
+void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
     printf("╔═════════════════════════════ COMBAT DANS LES ABYSSES ═════════════════════════════╗\n\n");
 
     // --- STATS DU JOUEUR ---
@@ -177,8 +184,9 @@ void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_c
     }
 
     printf("\n\n\n╚═══════════════════════════════════════════════════════════════════════════════════╝\n");
+}
 
-    // --- ACTIONS DISPONIBLES ---
+void afficherActionsDisponibles(int attaques_restantes) {
     printf("\n--- ACTIONS ---\n");
     printf("1 - Attaquer (attaques restantes : %d)\n", attaques_restantes);
     printf("2 - Utiliser compétence\n");
@@ -203,6 +211,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         // Monstres autant ou plus rapides
         for (size_t i = 0; i < nb_creatures; i++) {
             if (creatures[i]->pv > 0 && (creatures[i]->vitesse >= joueur->vitesse)) {
+                afficherInterface(joueur, creatures, nb_creatures);
                 /* Affichage clair pour chaque créature */
                 printf("\n--- Tour de %s #%zu ---\n", creatures[i]->nom, i+1);
                 printf("Effets Subis au début du tour: ");
@@ -218,6 +227,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                 printf("%s tente d'agir...\n", creatures[i]->nom);
                 res = peutAttaquer(&creatures[i]->liste_etats);
                 if (res) {
+                    printf("DEBUG: AAAAAAAAAAAAAAAAAAAAAA\n");
                     res = botAttaque(creatures[i], ENTITE_CREATURE, joueur, ENTITE_PLONGEUR);
                     res = res == EXIT_SUCCESS;
                     if (res) printf("%s a réalisé une action.\n", creatures[i]->nom);
@@ -256,7 +266,9 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         }
 
         pressEnterToContinue();
-        afficherInterface(joueur, creatures, nb_creatures, attaques_restantes);
+
+        afficherInterface(joueur, creatures, nb_creatures);
+        afficherActionsDisponibles(attaques_restantes);
 
         while (attaques_restantes > 0) {
 
@@ -275,6 +287,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                 case 1:
                     if (!peutAttaquer(&joueur->liste_etats)) {
                         printf("Vous n'avez pas pu attaquer.\n");
+                        pressEnterToContinue();
                         break;
                     }
 
@@ -335,7 +348,8 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     if (choix_comp == 0 || choix_comp > joueur->liste_competences.longueur) {
                         printf("Action annulée.\n");
                         pressEnterToContinue();
-                        afficherInterface(joueur, creatures, nb_creatures, attaques_restantes);
+                        afficherInterface(joueur, creatures, nb_creatures);
+                        afficherActionsDisponibles(attaques_restantes);
                         continue; // Ne termine pas le tour, redemande une action
                     }
 
@@ -354,6 +368,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                         
                         if (!peutAttaquer(&joueur->liste_etats)) {
                             printf("Vous n'avez pas pu attaquer.\n");
+                            pressEnterToContinue();
                             break;
                         }
 
@@ -433,7 +448,8 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
             if (attaques_restantes > 0) {
                 clearConsole();
-                afficherInterface(joueur, creatures, nb_creatures, attaques_restantes);
+                afficherInterface(joueur, creatures, nb_creatures);
+                afficherActionsDisponibles(attaques_restantes);
             }
         }
 
@@ -443,6 +459,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         // Monstres strictement moins rapides
         for (size_t i = 0; i < nb_creatures; i++) {
             if (creatures[i]->pv > 0 && (creatures[i]->vitesse < joueur->vitesse)) {
+                afficherInterface(joueur, creatures, nb_creatures);
                 /* Affichage clair pour chaque créature */
                 printf("\n--- Tour de %s #%zu ---\n", creatures[i]->nom, i+1);
                 printf("Effets Subis au début du tour:\n");
@@ -458,6 +475,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                 printf("%s tente d'agir...\n", creatures[i]->nom);
                 res = peutAttaquer(&creatures[i]->liste_etats);
                 if (res) {
+                    printf("\nDEBUG: BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\n");
                     res = botAttaque(creatures[i], ENTITE_CREATURE, joueur, ENTITE_PLONGEUR);
                     res = res == EXIT_SUCCESS;
                     if (res) printf("%s a réalisé une action.\n", creatures[i]->nom);
