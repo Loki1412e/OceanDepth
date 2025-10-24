@@ -83,10 +83,11 @@ int ajouterEffet(ListeEtat *listeEtat, Effets type, int dureeCombat, int dureeZo
     
     // Vérifier si l'effet existe déjà pour le rafraîchir au lieu de le dupliquer
     for (size_t i = 0; i < listeEtat->longueur; i++) {
-        if (listeEtat->etats[i].effet == type) {
-            listeEtat->etats[i].duree_combat = dureeCombat;
-            listeEtat->etats[i].duree_zone = dureeZone;
-            listeEtat->etats[i].estPermanent = estPermanent;
+        Etat *etat = &listeEtat->etats[i];
+        if (etat->effet == type) {
+            if (etat->duree_combat < dureeCombat) etat->duree_combat = dureeCombat;
+            if (etat->duree_zone < dureeZone) etat->duree_zone = dureeZone;
+            etat->estPermanent = etat->estPermanent || estPermanent;
             printf("Effet [%s] (%d) rafraîchi.\n", enumEffectToChar(type), type);
             return EXIT_SUCCESS;
         }
