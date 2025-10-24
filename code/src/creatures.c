@@ -36,7 +36,7 @@ int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary) {
     }
 
     // Tirage pondéré basé sur la rareté
-    unsigned tirage = random_int(0, totalPoids - 1);  // tirage entre 0 et totalPoids - 1
+    unsigned tirage = random_int(1, totalPoids);  // tirage entre 1 et totalPoids
     unsigned cumulPoids = 0;
 
     for (size_t i = 0; i < modalBestiary->longueur_creatures; i++) {
@@ -48,9 +48,10 @@ int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary) {
         cumulPoids += poidsRarete;
 
         // Si le tirage est inférieur au cumul des poids, la créature est sélectionnée
-        if (tirage < cumulPoids) {
+        if (tirage <= cumulPoids) {
             // On l'ajoute dans le Bestiaire
             if (addCreatureInBestiary(modalBestiary, bestiary, creature->id)) {
+                fprintf(stderr, "Erreur: generateCreatureInBestiary(): addCreatureInBestiary()\n");
                 return EXIT_FAILURE;
             }
 
@@ -370,7 +371,11 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreature
                 return EXIT_FAILURE;
             }
             if (rarete >= LENGTH_Rarete) {
-                fprintf(stderr, "Warning: setBestiaryFromConf(): rarete >= LENGTH_Rarete --> init à 0\n");
+                fprintf(stderr, "Warning: setBestiaryFromConf(): rarete >= LENGTH_Rarete --> init à max_rarete (%d)\n", LENGTH_Rarete - 1);
+                rarete = LENGTH_Rarete - 1;
+            }
+            else if (rarete < 0) {
+                fprintf(stderr, "Warning: setBestiaryFromConf(): rarete < 0 --> init à DESACTIVE (0)\n");
                 rarete = 0;
             }
 
