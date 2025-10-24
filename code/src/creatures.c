@@ -199,7 +199,7 @@ Bestiaire *initModalBestiary(ListeCompetence *modalCreaturesSkills) {
 }
 
 
-// trie à bulle par vitesse decroissant (du plus au moins rapide)
+// trie à bulles par vitesse decroissant (du plus au moins rapide)
 // A voir pour remplacer par un qsort()
 void sortCreaturesBySpeed(CreatureMarine **creatures, size_t nb_creatures) {
     CreatureMarine *tmp = NULL;
