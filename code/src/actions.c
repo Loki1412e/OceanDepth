@@ -67,6 +67,39 @@ Action duplicateAction(Action *modal, short *res) {
     return action;
 }
 
+ListeAction duplicateListeAction(ListeAction *modal, short *res) {
+    if (!modal) {
+        *res = EXIT_FAILURE;
+        return initEmptyListeAction();
+    }
+    *res = EXIT_SUCCESS;
+
+    ListeAction liste = {
+        .actions = NULL,
+        .longueur = modal->longueur
+    };
+
+    if (modal->longueur == 0) return liste;
+
+    liste.actions = calloc(modal->longueur, sizeof(Action));
+    if (!liste.actions) {
+        fprintf(stderr, "Erreur: duplicateListeAction(): Allocation mémoire calloc\n");
+        *res = EXIT_FAILURE;
+        return liste;
+    }
+
+    for (size_t i = 0; i < modal->longueur; i++) {
+        liste.actions[i] = duplicateAction(&modal->actions[i], res);
+        if (*res == EXIT_FAILURE) {
+            liste.longueur = i;
+            freeActions(liste.actions, liste.longueur);
+            return liste;
+        }
+    }
+
+    return liste;
+}
+
 
 int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, EntiteType cible_type) {
     if (!action || !lanceur_ptr || !cible_ptr) return EXIT_FAILURE;
@@ -338,91 +371,6 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
     return EXIT_SUCCESS;
 }
 
-
-// Vérifie les conditions et lance une compétence.
-int utiliserCompetence(Competence *comp, void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, EntiteType cible_type) {
-    if (!comp || !lanceur_ptr || !cible_ptr) {
-        fprintf(stderr, "Erreur: utiliserCompetence(): Invalid params\n");
-        return EXIT_FAILURE;
-    }
-
-    // Déterminer qui est le lanceur et qui est la cible
-    Plongeur* lanceur_plongeur = (lanceur_type == ENTITE_PLONGEUR) ? (Plongeur*)lanceur_ptr : NULL;
-    CreatureMarine* lanceur_creature = (lanceur_type == ENTITE_CREATURE) ? (CreatureMarine*)lanceur_ptr : NULL;
-
-    Plongeur* cible_plongeur = (cible_type == ENTITE_PLONGEUR) ? (Plongeur*)cible_ptr : NULL;
-    CreatureMarine* cible_creature = (cible_type == ENTITE_CREATURE) ? (CreatureMarine*)cible_ptr : NULL;
-
-    short res;
-
-    if (!lanceur_plongeur && !lanceur_creature) {
-        fprintf(stderr, "Erreur: utiliserCompetence(): lanceur inconnu\n");
-        return EXIT_FAILURE;
-    }
-    if (!cible_plongeur && !cible_creature) {
-        fprintf(stderr, "Erreur: utiliserCompetence(): cible inconnue\n");
-        return EXIT_FAILURE;
-    }
-
-    // 1. Vérifier le Cooldown
-    if (comp->cooldown_restant > 0) {
-        printf("Compétence '%s' est en cours de rechargement (%d tours restants).\n", comp->nom, comp->cooldown_restant);
-        return -1;
-    }
-
-    // 2. Vérifier et appliquer les coûts (uniquement pour le joueur pour l'instant)
-    if (lanceur_plongeur) {
-        if (lanceur_plongeur->oxygene < comp->cout_oxygene) {
-            printf("Pas assez d'oxygène pour lancer '%s'.\n", comp->nom);
-            return -1;
-        }
-        lanceur_plongeur->oxygene -= comp->cout_oxygene;
-
-        if (lanceur_plongeur->pv <= comp->cout_pv) {
-            printf("Pas assez de PV pour lancer '%s'.\n", comp->nom);
-            return -1;
-        }
-        lanceur_plongeur->pv -= comp->cout_pv;
-
-        // Augmenter la fatigue du joueur
-        augmenterFatigue(lanceur_plongeur, 1);
-    }
-    else if (lanceur_creature) {
-
-        if (lanceur_creature->pv <= comp->cout_pv) {
-            printf("Pas assez de PV pour lancer '%s'.\n", comp->nom);
-            return -1;
-        }
-        lanceur_creature->pv -= comp->cout_pv;
-    }
-
-    printf("\n>>> [%s] lance la compétence '%s' ! <<<\n", lanceur_plongeur ? lanceur_plongeur->nom : lanceur_creature->nom, comp->nom);
-
-    // 3. Exécuter les actions
-    if (comp->ciblage != SOI_MEME && ((lanceur_plongeur && cible_plongeur) || (lanceur_creature && cible_creature))) {
-        printf("Erreur: utiliserCompetence(): le lanceur et la cible sont tous les deux des plongeurs pour une compétence non auto-ciblée.\n");
-        return EXIT_FAILURE;
-    }
-
-    for (size_t i = 0; i < comp->listeAction.longueur; i++) {
-        res = executerAction(
-            &comp->listeAction.actions[i],
-            lanceur_ptr,
-            lanceur_type,
-            cible_ptr,
-            cible_type
-        );
-        if (res == EXIT_FAILURE) {
-            fprintf(stderr, "Erreur: utiliserCompetence(): executerAction() pour l'action %zu\n", i);
-            return EXIT_FAILURE;
-        }
-    }
-
-    // 4. Update le cooldown
-    comp->cooldown_restant = comp->cooldown_max;
-
-    return EXIT_SUCCESS;
-}
 
 
 // Renvoie une liste d'Action à partir d'une chaine de caractere
