@@ -77,7 +77,7 @@ Competence duplicateCompetence(Competence *modal, short *res) {
     }
 
     competence.listeAction = duplicateListeAction(&modal->listeAction, res);
-    if (res == EXIT_FAILURE) {
+    if (*res == EXIT_FAILURE) {
         fprintf(stderr, "Erreur: duplicateCompetence(): duplicateListeAction()\n");
         freeCompetence(&competence);
         return competence;

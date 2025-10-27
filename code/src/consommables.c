@@ -2,8 +2,9 @@
 
 void freeConsommable(Consommable *c);
 void freeListeConsommables(ListeConsommable *liste);
-int consommableInList(ListeConsommable *list, Consommable *c);
 
+int consommableInList(ListeConsommable *list, Consommable *c);
+int supprimerConsommable(ListeConsommable *list, Consommable *c);
 
 int utiliserConsommable(ListeConsommable *list, Consommable *c, void *user_ptr, EntiteType user_type) {
     if (!list || !c || !user_ptr || user_type == ENTITE_TYPE_INVALIDE) {
@@ -78,12 +79,12 @@ Consommable *duplicateConsommable(Consommable *c) {
     return new_c;
 }
 
-int ajouterConsommable(ListeConsommable *modal, ListeConsommable *list, int id_consommable) {
+int ajouterConsommable(ListeConsommable *modal, ListeConsommable *list, size_t id_consommable) {
     if (!list || !modal) {
         fprintf(stderr, "Erreur: ajouterConsommable(): arguments invalides\n");
         return EXIT_FAILURE;
     }
-    if (id_consommable < 0 || id_consommable >= modal->longueur) {
+    if (id_consommable >= modal->longueur) {
         fprintf(stderr, "Erreur: ajouterConsommable(): id_consommable invalide\n");
         return EXIT_FAILURE;
     }
