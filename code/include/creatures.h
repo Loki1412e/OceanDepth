@@ -2,11 +2,15 @@
 #define _CREATURES_H_
 
     #include "global.h"
+    #include "conf.h"
+    #include "effets.h"
+    #include "competences.h"
     
-    Bestiaire *initModelBestiary();
+    Bestiaire *initModalBestiary(ListeCompetence *modalCreaturesSkills);
     Bestiaire *initEmptyBestiary();
-    int generateCreatureInBestiary(Bestiaire *modelBestiary, Bestiaire *bestiary, unsigned depth_level);
-    int addCreatureInBestiary(Bestiaire *modelBestiary, Bestiaire *bestiary, char *type_name, unsigned depth_level);
+    int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary);
+    int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, unsigned idConf);
+    int setDeathStateCreature(CreatureMarine *creature);
     void freeBestiary(Bestiaire *bestiary);
     void freeBestiaryContent(Bestiaire *bestiary);
     void freeCreatures(CreatureMarine **creatures, size_t length);

@@ -4,10 +4,8 @@ code/output/save/*
 code/output/assets/*
 !code/output/assets/README.md
 
-# Nom de l'executable sans extension
-oceandepth
-*_arm64
-*_x86_64
+# Nom de l'executable sans extension et avec
+code/output/oceandepth*
 
 # Prerequisites
 *.d

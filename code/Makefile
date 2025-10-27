@@ -1,5 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -g
+LDFLAGS = -lm
 TARGET = oceandepth
 SRCDIR = src
 OUTDIR = output
@@ -22,7 +23,7 @@ all: $(OUTDIR)/$(TARGET)
 
 $(OUTDIR)/$(TARGET): $(SOURCES) $(RESOURCES)
 	@mkdir -p $(OUTDIR)
-	$(CC) $(SOURCES) $(RESOURCES) -o $(OUTDIR)/$(TARGET) $(CFLAGS)
+	$(CC) $(SOURCES) $(RESOURCES) -o $(OUTDIR)/$(TARGET) $(CFLAGS) $(LDFLAGS)
 
 $(RESOURCES): $(RCFILE) $(ICON)
 ifeq ($(OS),Windows_NT)

@@ -7,6 +7,7 @@
     #include <errno.h>
     #include <stdlib.h>
     #include <string.h>
+    #include <math.h>
     #include <time.h>
 
     #ifdef _WIN32
@@ -34,38 +35,131 @@
 
     #define SAVE_DIR "save"
 
+    #define RARETE_POIDS_MAX 100
+    #define RARETE_BASE_EXP 1.5
+
 
     /* Enum */
+    
+    typedef enum {
+        ENTITE_TYPE_INVALIDE,
+        ENTITE_PLONGEUR,
+        ENTITE_CREATURE
+    } EntiteType;
+
 
     typedef enum {
-        AUCUN,
-        PARALYSIE,
-        POISON,
-        SAIGNEMENT,
+        DESACTIVE,
+        COMMUN,
+        PEU_COMMUN,
+        RARE,
+        TRES_RARE,
+        ABERANT,
         // Suite ...
-        LENGTH_EffetsSpeciaux
-    } EffetsSpeciaux;
+        LENGTH_Rarete
+    } Rarete;
 
-    
+
+    typedef enum {
+        AUCUN_Effets,
+        BENEDICTION_OCEAN,
+        MALEDICTION_OCEAN,
+        SAIGNEMENT,
+        POISON,
+        PARALYSIE,
+        ETREINTE,
+        PRECISION_REDUITE,
+        DEFENSE_AUGMENTEE,
+        VOIX_DU_COURANT,
+        // Suite ...
+        LENGTH_Effets
+    } Effets;
+
+
+    typedef enum {
+        AUCUN_ActionType,
+        DEGAT_DEFAUT,
+        DEGATS_FIXES,
+        DEGATS_SCALES,
+        DEGATS_PERFORANTS,
+        MODIFIER_STAT,
+        // VOL_DE_VIE,
+        APPLIQUER_EFFET,
+        RETIRER_EFFET,
+        // Suite ...
+        LENGTH_ActionType
+    } ActionType;
+
+    typedef enum {
+        AUCUN_CiblageType,
+        ENNEMI_UNIQUE,
+        SOI_MEME,
+        // Suite ...
+        LENGTH_CiblageType
+    } CiblageType;
+
+
     /* Struct */
 
     typedef struct {
-        EffetsSpeciaux *etats;
-        size_t longueur_etats;
-    } Etats;
+        Effets effet;
+        int estPermanent;
+        int duree_zone;
+        int duree_combat;
+    } Etat;
+
+    typedef struct {
+        Etat *etats;
+        size_t longueur;
+    } ListeEtat;
+
+
+    typedef struct {
+        ActionType type;
+        char **params;      // Ex: { "attaque_max", "1.3" } / { "PARALYSIE", "2", "25" }
+        size_t longueur_params;
+    } Action;
+
+    typedef struct {
+        Action *actions;
+        size_t longueur;
+    } ListeAction;
+
+
+    typedef struct {
+        unsigned id;
+        char *nom;
+        char *description;
+        ListeAction listeAction;
+    } Consommable;
+
+    typedef struct {
+        Consommable **consommables;
+        size_t longueur;
+    } ListeConsommable;
+
+    
+    typedef struct {
+        unsigned id;
+        char *nom;
+        char *description;
+        int cout_oxygene;
+        int cout_pv;
+        CiblageType ciblage;
+        int cooldown_max;
+        int cooldown_restant;
+        ListeAction listeAction;
+    } Competence;
+
+    typedef struct {
+        Competence *competences;
+        size_t longueur;
+    } ListeCompetence;
     
 
     typedef struct {
-        unsigned *profondeurs;
-        size_t longueur_profondeurs;
-        unsigned *taux; // calculé avec niveau d'importance en comparaison avec les autres
-        size_t longueur_taux;
-    } ApparitionCreature;
-    
-
-    typedef struct {
-        unsigned id; // identifiant unique pour cibler
-        char *nom_type;
+        unsigned id;
+        char *nom;
         int pv_min;
         int pv_max;
         int pv;
@@ -73,34 +167,23 @@
         int attaque_max;
         int defense;
         int vitesse;
-        // On va attribuer des etats a partir de compétences ce sera mieux
-        // ---> // EffetsSpeciaux effet_special; // voir EffetsSpeciaux -> a modifier mettre liste d'effets speciaux
-        Etats etats_subi;
-        ApparitionCreature *apparition;
+        ListeEtat liste_etats;
+        ListeCompetence liste_competences;
+        Rarete rarete;
     } CreatureMarine;
 
     typedef struct {
-        // CreatureMarine **models;
-        // size_t longueur_models;
         CreatureMarine **creatures;
         size_t longueur_creatures;
     } Bestiaire;
 
     typedef struct {
         char *nom;
-        int cout_oxygene;
-        int gain_oxygene;
-        // A penser pour la suite,
-        // Peux etre des compétences pour les creatures...
-    } Competence;
-
-    typedef struct {
-        char *nom;
         int pv;
         int pv_max;
-        int niveau_oxygene;
-        int niveau_oxygene_max;
-        int niveau_fatigue; // 0 à 5
+        int oxygene;
+        int oxygene_max;
+        int fatigue;
         int fatigue_max;
         int attaque_max;
         int attaque_min;
@@ -108,11 +191,9 @@
         int vitesse;
         unsigned perles; // monnaie du jeu
         unsigned niveau;
-        Etats etats_subi;
-        Competence *competences; // tableau de competences (pas sur de le garder)
-        size_t longueur_competences;
-        unsigned row_X; // 0
-        unsigned col_Y; // 0
+        ListeEtat liste_etats;
+        ListeCompetence liste_competences;
+        int profondeur;
     } Plongeur;
 
     typedef struct {
