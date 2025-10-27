@@ -130,6 +130,7 @@
         unsigned id;
         char *nom;
         char *description;
+        Rarete rarete;
         ListeAction listeAction;
     } Consommable;
 
