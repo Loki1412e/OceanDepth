@@ -42,6 +42,7 @@
     /* Enum */
     
     typedef enum {
+        ENTITE_TYPE_INVALIDE,
         ENTITE_PLONGEUR,
         ENTITE_CREATURE
     } EntiteType;
@@ -124,6 +125,20 @@
         size_t longueur;
     } ListeAction;
 
+
+    typedef struct {
+        unsigned id;
+        char *nom;
+        char *description;
+        ListeAction listeAction;
+    } Consommable;
+
+    typedef struct {
+        Consommable **consommables;
+        size_t longueur;
+    } ListeConsommable;
+
+    
     typedef struct {
         unsigned id;
         char *nom;
