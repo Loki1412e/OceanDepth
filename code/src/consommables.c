@@ -215,6 +215,29 @@ int setListeConsommableFromConf(ListeConsommable *modalConsumables, char *path) 
                 return EXIT_FAILURE;
             }
         }
+
+        else if (strncmp(line, "rarete=", 7) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            int rarete = my_strToInt(line + 7, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setListeConsommableFromConf(): my_strToInt() -> \"rarete=\"\n");
+                freeListeConsommablesContent(modalConsumables);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+            if (rarete >= LENGTH_Rarete) {
+                fprintf(stderr, "Warning: setListeConsommableFromConf(): rarete >= LENGTH_Rarete --> init à max_rarete (%d)\n", LENGTH_Rarete - 1);
+                rarete = LENGTH_Rarete - 1;
+            }
+            else if (rarete < 0) {
+                fprintf(stderr, "Warning: setListeConsommableFromConf(): rarete < 0 --> init à DESACTIVE (0)\n");
+                rarete = 0;
+            }
+
+            consumables[index]->rarete = (Rarete) rarete;
+        }
         
         else if (strncmp(line, "actions=", 8) == 0) {
             line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
