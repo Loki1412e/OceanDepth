@@ -144,6 +144,7 @@ void printConsumablesList(ListeConsommable *consumables_list) {
         if (!c) continue;
 
         printf("\tConsommable ID: %u\n", c->id);
+        printf("\tQuantite: %d\n", c->quantite);
         printf("\tNom: %s\n", c->nom ? c->nom : "(null)");
         printf("\tDescription: %s\n", c->description ? c->description : "(null)");
         printf("\tRarete: %s\n", enumRareteToChar(c->rarete));
@@ -246,6 +247,8 @@ void printDiver(Plongeur *diver) {
     printf("\n");
 
     printListeCompetence(diver->liste_competences);
+    
+    printConsumablesList(diver->liste_consommables);
 
     printf("====================================\n\n");
 }

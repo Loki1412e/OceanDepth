@@ -15,7 +15,7 @@
     int utiliserConsommable(ListeConsommable *list, Consommable *c, void *user_ptr, EntiteType user_type);
     int supprimerConsommable(ListeConsommable *list, Consommable *c);
 
-    int consommableInList(ListeConsommable *list, Consommable *c);
+    int quantiteConsommableInList(ListeConsommable *list, Consommable *c);
     Consommable *duplicateConsommable(Consommable *c);
 
 #endif
