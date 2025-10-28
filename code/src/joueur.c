@@ -266,6 +266,7 @@ void freeDiverContent(Plongeur *diver) {
     
     freeListeEtat(&diver->liste_etats);
     freeListeCompetence(&diver->liste_competences);
+    freeListeConsommables(diver->liste_consommables);
 }
 
 void freeDiver(Plongeur *diver) {
