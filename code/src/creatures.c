@@ -150,9 +150,9 @@ Bestiaire *initModalBestiary(ListeCompetence *modalCreaturesSkills) {
 
     short res;
     
-    size_t count_all_unique_model = confCountAllUniqueId("config/bestiaire/creatures.conf", &res);
+    size_t count_all_unique_model = confCountAllUniqueObjet("config/bestiaire/creatures.conf", &res);
     if (res == EXIT_FAILURE) {
-        fprintf(stderr, "Erreur: initModalBestiary(): confCountAllUniqueId()\n");
+        fprintf(stderr, "Erreur: initModalBestiary(): confCountAllUniqueObjet()\n");
         return NULL;
     }
 
@@ -237,7 +237,7 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreature
 
     while (fgets(line, sizeof(line), f)) {
 
-        if (strncmp(line, "id=", 3) == 0) {
+        if (strncmp(line, "[Objet]", 7) == 0) {
             length++;
             index = length - 1;
 
@@ -255,17 +255,7 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreature
             }
 
             // Init
-
-            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
-            if (line[3] == '\0') continue; // ligne vide
-
-            modalBestiary->creatures[index]->id = my_strToInt(line + 3, &res);
-            if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strToInt() -> \"id=\"\n");
-                freeBestiary(modalBestiary);
-                fclose(f);
-                return EXIT_FAILURE;
-            }
+            modalBestiary->creatures[index]->id = index;
         }
          
         if (strncmp(line, "nom=", 4) == 0) {
