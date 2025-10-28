@@ -113,7 +113,7 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
             while (!actualSave->diver && attemp < maxAttemp) {
                 strBuff = lireString();
                 if (strBuff) {
-                    actualSave->diver = initDiver(strBuff, &modalDiverSkills);
+                    actualSave->diver = initModalDiver(strBuff, &modalDiverSkills);
                     if (!actualSave->diver)
                         fprintf(stderr, "Erreur lors de la création du Plongeur.\n> ");
                     free(strBuff);
