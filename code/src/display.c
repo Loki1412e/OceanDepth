@@ -101,11 +101,11 @@ void pressEnterToContinue() {
 
 void printListeAction(ListeAction actions) {
     if (actions.longueur == 0 || actions.actions == NULL) {
-        printf("Actions : Aucune\n");
+        printf("\tActions : Aucune\n");
         return;
     }
 
-    printf("\t Actions (%zu):\n", actions.longueur);
+    printf("\tActions (%zu):\n", actions.longueur);
     for (size_t i = 0; i < actions.longueur; i++) {
         printf("\t  - Type: %s | Params (%zu): ",
             enumActionTypeToChar(actions.actions[i].type),
@@ -143,10 +143,10 @@ void printConsumablesList(ListeConsommable *consumables_list) {
         Consommable *c = consumables_list->consommables[i];
         if (!c) continue;
 
-        printf("Consommable ID: %u\n", c->id);
-        printf("Nom: %s\n", c->nom ? c->nom : "(null)");
-        printf("Description: %s\n", c->description ? c->description : "(null)");
-        printf("Rarete: %s\n", enumRareteToChar(c->rarete));
+        printf("\tConsommable ID: %u\n", c->id);
+        printf("\tNom: %s\n", c->nom ? c->nom : "(null)");
+        printf("\tDescription: %s\n", c->description ? c->description : "(null)");
+        printf("\tRarete: %s\n", enumRareteToChar(c->rarete));
         printListeAction(c->listeAction);
         printf("\n");
     }
