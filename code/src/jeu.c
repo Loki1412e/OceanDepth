@@ -108,6 +108,7 @@ int runGame(Sauvegarde *actualSave) {
     freeBestiary(bestiary);
     freeBestiary(modalBestiary);
     freeListeCompetence(&modalCreaturesSkills);
+    freeListeConsommables(modalConsumablesList);
     
     return EXIT_SUCCESS;
 }
