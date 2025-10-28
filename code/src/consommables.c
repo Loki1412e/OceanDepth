@@ -166,7 +166,7 @@ int setListeConsommableFromConf(ListeConsommable *modalConsumables, char *path) 
 
     while (fgets(line, sizeof(line), f)) {
 
-        if (strncmp(line, "[Consommable]", 13) == 0) {
+        if (strncmp(line, "[Objet]", 7) == 0) {
             length++;
             index = length - 1;
 
@@ -262,9 +262,9 @@ ListeConsommable *initModalListeConsommable(char *path) {
 
     short res;
 
-    size_t count_all_unique_id = confCountAllUniqueId(path, &res);
+    size_t count_all_unique = confCountAllUniqueObjet(path, &res);
     if (res == EXIT_FAILURE) {
-        fprintf(stderr, "Erreur: initModalListeConsommable(): confCountAllUniqueId()\n");
+        fprintf(stderr, "Erreur: initModalListeConsommable(): confCountAllUniqueObjet()\n");
         return NULL;
     }
 
@@ -276,15 +276,15 @@ ListeConsommable *initModalListeConsommable(char *path) {
         return NULL;
     }
 
-    modalConsumables->longueur = count_all_unique_id;
-    modalConsumables->consommables = calloc(count_all_unique_id, sizeof(Consommable*));
+    modalConsumables->longueur = count_all_unique;
+    modalConsumables->consommables = calloc(count_all_unique, sizeof(Consommable*));
     if (!modalConsumables->consommables) {
         fprintf(stderr, "Erreur: initModalListeConsommable(): Allocation mémoire modalConsumables->consommables\n");
         freeListeConsommables(modalConsumables);
         return NULL;
     }
 
-    for (size_t i = 0; i < count_all_unique_id; i++) {
+    for (size_t i = 0; i < count_all_unique; i++) {
         modalConsumables->consommables[i] = calloc(1, sizeof(Consommable));
         if (!modalConsumables->consommables[i]) {
             fprintf(stderr, "Erreur: initModalListeConsommable(): Allocation mémoire modalConsumables->consommables[%zu]\n", i);
