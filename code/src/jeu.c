@@ -79,7 +79,7 @@ int runGame(Sauvegarde *actualSave) {
         printBestiary(bestiary);
         pressEnterToContinue();
 
-        ajouterConsommable(modalConsumablesList, diver->liste_consommables, 0);
+        ajouterConsommable(modalConsumablesList, diver->liste_consommables, 3);
         ajouterConsommable(modalConsumablesList, diver->liste_consommables, 1);
         printConsumablesList(diver->liste_consommables);
         pressEnterToContinue();
