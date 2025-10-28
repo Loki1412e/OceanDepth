@@ -10,6 +10,6 @@
     void freeDiverContent(Plongeur *diver);
     void freeDiver(Plongeur *diver);
 
-    Plongeur *initDiver(char *diver_name, ListeCompetence *modalDiverSkills);
+    Plongeur *initModalDiver(char *diver_name, ListeCompetence *modalDiverSkills);
 
 #endif

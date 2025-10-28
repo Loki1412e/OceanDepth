@@ -4,18 +4,17 @@
 void freeDiverContent(Plongeur *diver);
 void freeDiver(Plongeur *diver);
 
-Plongeur *initDiver(char *diver_name, ListeCompetence *modalDiverSkills);
+Plongeur *initModalDiver(char *diver_name, ListeCompetence *modalDiverSkills);
 int setDiverFromConf(Plongeur *diver, ListeCompetence *modalDiverSkills, char *path);
 
-
-// Pour init un plongeur sans nom -> initDiver(NULL)
-Plongeur *initDiver(char *diver_name, ListeCompetence *modalDiverSkills) {
+// Pour init un plongeur sans nom -> initModalDiver(NULL)
+Plongeur *initModalDiver(char *diver_name, ListeCompetence *modalDiverSkills) {
     
     // Allocation mémoire
     
     Plongeur *diver = calloc(1, sizeof(Plongeur));
     if (diver == NULL) {
-        fprintf(stderr, "Erreur: initDiver(): Allocation mémoire diver\n");
+        fprintf(stderr, "Erreur: initModalDiver(): Allocation mémoire diver\n");
         return NULL;
     }
 
@@ -23,7 +22,7 @@ Plongeur *initDiver(char *diver_name, ListeCompetence *modalDiverSkills) {
     if (diver_name) {
         diver->nom = my_strdup(diver_name);
         if (!diver->nom) {
-            fprintf(stderr, "Erreur: initDiver(): Allocation mémoire my_strdup(diver_name)\n");
+            fprintf(stderr, "Erreur: initModalDiver(): Allocation mémoire my_strdup(diver_name)\n");
             return NULL;
         }
     }
@@ -31,7 +30,7 @@ Plongeur *initDiver(char *diver_name, ListeCompetence *modalDiverSkills) {
     // Initialisation du Joueur
     diver->liste_consommables = calloc(1, sizeof(ListeConsommable));
     if (!diver->liste_consommables) {
-        fprintf(stderr, "Erreur: initDiver(): Allocation mémoire liste_consommables\n");
+        fprintf(stderr, "Erreur: initModalDiver(): Allocation mémoire liste_consommables\n");
         freeDiver(diver);
         return NULL;
     }

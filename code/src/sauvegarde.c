@@ -205,9 +205,9 @@ int loadInfo(Sauvegarde *save, FILE *file) {
 Plongeur *loadDiver(FILE *file) {
     if (!file) return NULL;
 
-    Plongeur *diver = initDiver(NULL, NULL);
+    Plongeur *diver = calloc(1, sizeof(Plongeur));
     if (!diver) {
-        fprintf(stderr, "loadDiver initDiver\n");
+        fprintf(stderr, "Erreur: loadDiver(): diver = calloc()\n");
         return NULL;
     }
     
@@ -454,7 +454,7 @@ Plongeur *loadDiver(FILE *file) {
 
         // Lire listeAction
         short res;
-        diver->liste_consommables->consommables[i]->listeAction = loadListeAction(file, &res);
+        tmp_cons->listeAction = loadListeAction(file, &res);
         if (res == EXIT_FAILURE) {
             fprintf(stderr, "Erreur: loadDiver(): loadListeAction for consommable\n");
             free(tmp_cons);
