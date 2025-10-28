@@ -29,6 +29,13 @@ Plongeur *initDiver(char *diver_name, ListeCompetence *modalDiverSkills) {
     }
 
     // Initialisation du Joueur
+    diver->liste_consommables = calloc(1, sizeof(ListeConsommable));
+    if (!diver->liste_consommables) {
+        fprintf(stderr, "Erreur: initDiver(): Allocation mémoire liste_consommables\n");
+        freeDiver(diver);
+        return NULL;
+    }
+    
     if (setDiverFromConf(diver, modalDiverSkills, "config/plongeur/stats.conf")) return NULL;
     diver->pv = diver->pv_max;
     diver->oxygene = diver->oxygene_max;
