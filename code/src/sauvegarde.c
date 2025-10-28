@@ -705,7 +705,11 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
     diver_copy.liste_etats.etats = NULL;
     diver_copy.liste_competences.longueur = diver->liste_competences.longueur;
     diver_copy.liste_competences.competences = NULL;
-    diver_copy.liste_consommables = NULL;
+    diver_copy.liste_consommables = calloc(1, sizeof(ListeConsommable));
+    if (!diver_copy.liste_consommables) {
+        fprintf(stderr, "Erreur: saveDiver(): Allocation mémoire liste_consommables\n");
+        return EXIT_FAILURE;
+    }
 
     // Bloc sans pointeurs (safe, no uninitialised bytes)
     if (addBlock(tmpSave, &diver_copy, sizeof(Plongeur)) != EXIT_SUCCESS)
