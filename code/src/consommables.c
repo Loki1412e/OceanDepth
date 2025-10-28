@@ -166,7 +166,7 @@ int setListeConsommableFromConf(ListeConsommable *modalConsumables, char *path) 
 
     while (fgets(line, sizeof(line), f)) {
 
-        if (strncmp(line, "id=", 3) == 0) {
+        if (strncmp(line, "[Consommable]", 13) == 0) {
             length++;
             index = length - 1;
 
@@ -177,17 +177,7 @@ int setListeConsommableFromConf(ListeConsommable *modalConsumables, char *path) 
             }
 
             // Init
-
-            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
-            if (line[0] == '\0') continue; // ligne vide
-            
-            consumables[index]->id = my_strToInt(line + 3, &res);
-            if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setListeConsommableFromConf(): my_strToInt() -> \"%s\"\n", line + 3);
-                freeListeConsommablesContent(modalConsumables);
-                fclose(f);
-                return EXIT_FAILURE;
-            }
+            consumables[index]->id = index;
         }
         
         else if (strncmp(line, "nom=", 4) == 0) {
