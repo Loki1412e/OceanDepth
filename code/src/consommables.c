@@ -7,7 +7,7 @@ int utiliserConsommable(ListeConsommable *list, Consommable *c, void *user_ptr, 
         return EXIT_FAILURE;
     }
     
-    if (!consommableInList(list, c)) {
+    if (quantiteConsommableInList(list, c) <= 0) {
         fprintf(stderr, "Erreur: utiliserConsommable(): le consommable n'est pas dans la liste\n");
         return EXIT_FAILURE;
     }
@@ -25,16 +25,21 @@ int utiliserConsommable(ListeConsommable *list, Consommable *c, void *user_ptr, 
 }
 
 
-int consommableInList(ListeConsommable *list, Consommable *c) {
+int quantiteConsommableInList(ListeConsommable *list, Consommable *c) {
     if (!list || !c) {
-        fprintf(stderr, "Erreur: consommableInList(): arguments invalides\n");
-        return false;
+        fprintf(stderr, "Erreur: quantiteConsommableInList(): arguments invalides\n");
+        return -1;
     }
     for (size_t i = 0; i < list->longueur; i++) {
-        if (list->consommables[i] == c)
-            return true;
+        if (list->consommables[i] == c) {
+            if (list->consommables[i]->quantite == 0) {
+                supprimerConsommable(list, c);
+                return 0;
+            }
+            return list->consommables[i]->quantite;
+        }
     }
-    return false;
+    return 0;
 }
 
 Consommable *duplicateConsommable(Consommable *c) {
@@ -53,6 +58,7 @@ Consommable *duplicateConsommable(Consommable *c) {
 
     new_c->id = c->id;
     new_c->rarete = c->rarete;
+    new_c->quantite = 1; // On initialise la quantité à 1
 
     new_c->nom = my_strdup(c->nom);
     if (!new_c->nom) {
@@ -86,6 +92,15 @@ int ajouterConsommable(ListeConsommable *modal, ListeConsommable *list, size_t i
         return EXIT_FAILURE;
     }
 
+    // Si le consommable est déjà dans la liste, on incrémente juste la quantité
+    for (size_t i = 0; i < list->longueur; i++) {
+        if (list->consommables[i]->id == id_consommable) {
+            list->consommables[i]->quantite++;
+            return EXIT_SUCCESS;
+        }
+    }
+
+    // Sinon, on l'ajoute à la liste
     Consommable *c = duplicateConsommable(modal->consommables[id_consommable]);
     if (!c) {
         fprintf(stderr, "Erreur: ajouterConsommable(): duplicateConsommable()\n");

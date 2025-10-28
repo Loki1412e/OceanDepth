@@ -131,6 +131,7 @@
         char *nom;
         char *description;
         Rarete rarete;
+        int quantite;
         ListeAction listeAction;
     } Consommable;
 
