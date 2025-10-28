@@ -195,6 +195,7 @@
         ListeEtat liste_etats;
         ListeCompetence liste_competences;
         int profondeur;
+        ListeConsommable *liste_consommables;
     } Plongeur;
 
     typedef struct {

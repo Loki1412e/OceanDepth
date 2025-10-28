@@ -132,6 +132,26 @@ void printListeEtat(ListeEtat etats) {
     }
 }
 
+void printConsumablesList(ListeConsommable *consumables_list) {
+    if (!consumables_list || consumables_list->longueur == 0 || consumables_list->consommables == NULL) {
+        printf("Consommables : Aucun\n");
+        return;
+    }
+
+    printf("Consommables (%zu):\n\n", consumables_list->longueur);
+    for (size_t i = 0; i < consumables_list->longueur; i++) {
+        Consommable *c = consumables_list->consommables[i];
+        if (!c) continue;
+
+        printf("Consommable ID: %u\n", c->id);
+        printf("Nom: %s\n", c->nom ? c->nom : "(null)");
+        printf("Description: %s\n", c->description ? c->description : "(null)");
+        printf("Rarete: %s\n", enumRareteToChar(c->rarete));
+        printListeAction(c->listeAction);
+        printf("\n");
+    }
+}
+
 void printCompetence(Competence competence) {
     printf("\t Id                   : %u\n", competence.id);
     printf("\t Nom                  : %s\n", competence.nom);
