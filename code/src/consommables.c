@@ -52,6 +52,8 @@ Consommable *duplicateConsommable(Consommable *c) {
     }
 
     new_c->id = c->id;
+    new_c->rarete = c->rarete;
+
     new_c->nom = my_strdup(c->nom);
     if (!new_c->nom) {
         fprintf(stderr, "Erreur: duplicateConsommable(): duplication du nom\n");
@@ -147,8 +149,8 @@ int supprimerConsommable(ListeConsommable *list, Consommable *c) {
     return EXIT_SUCCESS;
 }
 
-int setListeConsommableFromConf(ListeConsommable *modalConsumables, char *path) {
-    if (!modalConsumables || !modalConsumables->consommables || modalConsumables->longueur == 0 || !path)
+int setListeConsommableFromConf(ListeConsommable *modalConsumablesList, char *path) {
+    if (!modalConsumablesList || !modalConsumablesList->consommables || modalConsumablesList->longueur == 0 || !path)
         return EXIT_FAILURE;
 
     FILE *f = fopen(path, "r");
@@ -157,7 +159,7 @@ int setListeConsommableFromConf(ListeConsommable *modalConsumables, char *path) 
         return EXIT_FAILURE;
     }
 
-    Consommable **consumables = modalConsumables->consommables;
+    Consommable **consumables = modalConsumablesList->consommables;
 
     char line[512];
     size_t length = 0, index = 0;
@@ -171,7 +173,7 @@ int setListeConsommableFromConf(ListeConsommable *modalConsumables, char *path) 
             index = length - 1;
 
             // Si dépassement alors on arrete de load mais on garde la conf actuelle
-            if (index >= modalConsumables->longueur) {
+            if (index >= modalConsumablesList->longueur) {
                 fprintf(stderr, "Warning: setListeConsommableFromConf(): index %zu hors des limites de consumables\n", index);
                 break;
             }
@@ -187,7 +189,7 @@ int setListeConsommableFromConf(ListeConsommable *modalConsumables, char *path) 
             consumables[index]->nom = strdup(line + 4);
             if (!consumables[index]->nom) {
                 fprintf(stderr, "Erreur: setListeConsommableFromConf(): my_strdup() -> \"nom=\"\n");
-                freeListeConsommablesContent(modalConsumables);
+                freeListeConsommablesContent(modalConsumablesList);
                 fclose(f);
                 return EXIT_FAILURE;
             }
@@ -200,7 +202,7 @@ int setListeConsommableFromConf(ListeConsommable *modalConsumables, char *path) 
             consumables[index]->description = strdup(line + 12);
             if (!consumables[index]->description) {
                 fprintf(stderr, "Erreur: setListeConsommableFromConf(): my_strdup() -> \"description=\"\n");
-                freeListeConsommablesContent(modalConsumables);
+                freeListeConsommablesContent(modalConsumablesList);
                 fclose(f);
                 return EXIT_FAILURE;
             }
@@ -213,7 +215,7 @@ int setListeConsommableFromConf(ListeConsommable *modalConsumables, char *path) 
             int rarete = my_strToInt(line + 7, &res);
             if (res == EXIT_FAILURE) {
                 fprintf(stderr, "Erreur: setListeConsommableFromConf(): my_strToInt() -> \"rarete=\"\n");
-                freeListeConsommablesContent(modalConsumables);
+                freeListeConsommablesContent(modalConsumablesList);
                 fclose(f);
                 return EXIT_FAILURE;
             }
@@ -236,16 +238,16 @@ int setListeConsommableFromConf(ListeConsommable *modalConsumables, char *path) 
             consumables[index]->listeAction.actions = parseActions(line + 8, &consumables[index]->listeAction.longueur, &res);
             if (res == EXIT_FAILURE) {
                 fprintf(stderr, "Erreur: setListeConsommableFromConf(): actions = calloc()\n");
-                freeListeConsommablesContent(modalConsumables);
+                freeListeConsommablesContent(modalConsumablesList);
                 fclose(f);
                 return EXIT_FAILURE;
             }
         }
     }
 
-    if (modalConsumables->longueur < length) {
-        fprintf(stderr, "Erreur: setListeConsommableFromConf(): longueur (%zu) < length (%zu)\n", modalConsumables->longueur, length);
-        freeListeConsommablesContent(modalConsumables);
+    if (modalConsumablesList->longueur < length) {
+        fprintf(stderr, "Erreur: setListeConsommableFromConf(): longueur (%zu) < length (%zu)\n", modalConsumablesList->longueur, length);
+        freeListeConsommablesContent(modalConsumablesList);
         fclose(f);
         return EXIT_FAILURE;
     }
@@ -270,39 +272,39 @@ ListeConsommable *initModalListeConsommable(char *path) {
 
     // Allocation mémoire
 
-    ListeConsommable *modalConsumables = calloc(1, sizeof(ListeConsommable));
-    if (!modalConsumables) {
-        fprintf(stderr, "Erreur: initModalListeConsommable(): modalConsumables = calloc()\n");
+    ListeConsommable *modalConsumablesList = calloc(1, sizeof(ListeConsommable));
+    if (!modalConsumablesList) {
+        fprintf(stderr, "Erreur: initModalListeConsommable(): modalConsumablesList = calloc()\n");
         return NULL;
     }
 
-    modalConsumables->longueur = count_all_unique;
-    modalConsumables->consommables = calloc(count_all_unique, sizeof(Consommable*));
-    if (!modalConsumables->consommables) {
-        fprintf(stderr, "Erreur: initModalListeConsommable(): Allocation mémoire modalConsumables->consommables\n");
-        freeListeConsommables(modalConsumables);
+    modalConsumablesList->longueur = count_all_unique;
+    modalConsumablesList->consommables = calloc(count_all_unique, sizeof(Consommable*));
+    if (!modalConsumablesList->consommables) {
+        fprintf(stderr, "Erreur: initModalListeConsommable(): Allocation mémoire modalConsumablesList->consommables\n");
+        freeListeConsommables(modalConsumablesList);
         return NULL;
     }
 
     for (size_t i = 0; i < count_all_unique; i++) {
-        modalConsumables->consommables[i] = calloc(1, sizeof(Consommable));
-        if (!modalConsumables->consommables[i]) {
-            fprintf(stderr, "Erreur: initModalListeConsommable(): Allocation mémoire modalConsumables->consommables[%zu]\n", i);
-            modalConsumables->longueur = i;
-            freeListeConsommables(modalConsumables);
+        modalConsumablesList->consommables[i] = calloc(1, sizeof(Consommable));
+        if (!modalConsumablesList->consommables[i]) {
+            fprintf(stderr, "Erreur: initModalListeConsommable(): Allocation mémoire modalConsumablesList->consommables[%zu]\n", i);
+            modalConsumablesList->longueur = i;
+            freeListeConsommables(modalConsumablesList);
             return NULL;
         }
     }
 
     // Initialisation à partir du fichier de configuration
 
-    if (setListeConsommableFromConf(modalConsumables, path) == EXIT_FAILURE) {
+    if (setListeConsommableFromConf(modalConsumablesList, path) == EXIT_FAILURE) {
         fprintf(stderr, "Erreur: initModalListeConsommable(): setListeConsommableFromConf()\n");
-        freeListeConsommables(modalConsumables);
+        freeListeConsommables(modalConsumablesList);
         return NULL;
     }
 
-    return modalConsumables;
+    return modalConsumablesList;
 }
 
 void freeConsommable(Consommable *c) {
