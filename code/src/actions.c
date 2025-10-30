@@ -279,7 +279,7 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
                  printf(">> [%s] à régénéré %d d'oxygène.\n", cible_plongeur->nom, valeur);
             }
             else if (strcmp(stat_nom, "fatigue") == 0 && cible_plongeur) {
-                *fatigue -= valeur;
+                *fatigue += valeur;
                 if (*fatigue > *fatigue_max) *fatigue = *fatigue_max;
                 if (*fatigue < 0) *fatigue = 0;
                 printf(">> [%s] à réduit sa fatigue de %d.\n", cible_plongeur->nom, valeur);
