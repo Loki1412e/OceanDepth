@@ -6,17 +6,29 @@ int utiliserConsommable(ListeConsommable *list, Consommable *c, void *user_ptr, 
         fprintf(stderr, "Erreur: utiliserConsommable(): arguments invalides\n");
         return EXIT_FAILURE;
     }
-    
-    if (quantiteConsommableInList(list, c) <= 0) {
+
+    int quantite = quantiteConsommableInList(list, c);
+
+    if (quantite == -1) {
         fprintf(stderr, "Erreur: utiliserConsommable(): le consommable n'est pas dans la liste\n");
         return EXIT_FAILURE;
     }
 
-    // Appliquer les effets du consommable
-    executerAction(&c->listeAction.actions[0], user_ptr, user_type, user_ptr, user_type);
+    if (quantite > 0) {
+        // Appliquer les effets du consommable
+        printf("\n>> '%s' x1 a été consommé\n", c->nom);
+        for (size_t i = 0; i < c->listeAction.longueur; i++) {
+            if (executerAction(&c->listeAction.actions[i], user_ptr, user_type, user_ptr, user_type)) {
+                fprintf(stderr, "Erreur: utiliserConsommable(): executerAction(%zu)\n", i);
+                return EXIT_FAILURE;
+            }
+        }
+    }
 
-    // Supprimer le consommable de la liste après utilisation
-    if (supprimerConsommable(list, c)) {
+    c->quantite--;
+
+    // Supprimer le consommable de la liste si quantité <= 0
+    if (c->quantite <= 0 && supprimerConsommable(list, c) == EXIT_FAILURE) {
         fprintf(stderr, "Erreur: utiliserConsommable(): supprimerConsommable()\n");
         return EXIT_FAILURE;
     }
@@ -25,6 +37,8 @@ int utiliserConsommable(ListeConsommable *list, Consommable *c, void *user_ptr, 
 }
 
 
+// Retourne la quantité de consommable dans la liste
+// Retourne -1 en cas d'erreur
 int quantiteConsommableInList(ListeConsommable *list, Consommable *c) {
     if (!list || !c) {
         fprintf(stderr, "Erreur: quantiteConsommableInList(): arguments invalides\n");
