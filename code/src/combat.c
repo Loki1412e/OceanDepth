@@ -190,9 +190,8 @@ void afficherActionsDisponibles(int attaques_restantes) {
     printf("\n--- MENU DES ACTIONS (0 pour quitter et sauvegarder) ---\n");
     printf("1 - Attaquer (attaques restantes : %d)\n", attaques_restantes);
     printf("2 - Utiliser Compétence\n");
-    printf("3 - Utiliser Objet (à implémenter)\n");
-    printf("4 - Se reposer\n");
-    printf("5 - Passer le tour\n");
+    printf("3 - Utiliser Objet\n");
+    printf("4 - Se reposer / Passer le tour\n");
 }
 
 
@@ -313,8 +312,8 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
             
             printf("> ");
             choix = lireEntier();
-            while ((choix < 1 || choix > 5) && choix != 0) {
-                printf("Entrée invalide, veuillez taper 0 ou un nombre entre 1 et 5.\n> ");
+            while ((choix < 1 || choix > 4) && choix != 0) {
+                printf("Entrée invalide, veuillez taper 0 ou un nombre entre 1 et 4.\n> ");
                 choix = lireEntier();
             }
 
@@ -484,42 +483,54 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     break;
 
 
-                // Utiliser un objet (à implémenter)
+                // Utiliser un objet
                 case 3:
-                    printf("\n→ Utilisation d’un objet (à implémenter)\n");
-                    pressEnterToContinue();
-                    break;
+                    printf("\nQuel objet utiliser ? (0 pour annuler)\n");
+                    for (size_t i = 0; i < joueur->liste_consommables->longueur; i++) {
+                        Consommable *c = joueur->liste_consommables->consommables[i];
+                        printf("\n[%zu] %s x%d", i + 1, c->nom, c->quantite);
+                        printf("\n    %s\n", c->description);
+                    }
+                    printf("> ");
 
-
-                // Se reposer
-                case 4:
-                    if (peutAttaquer(&joueur->liste_etats) == false) {
-                        printf("Vous n'avez pas pu vous reposer.\n");
+                    size_t choix_objet = lireEntier();
+                    if (choix_objet == 0 || choix_objet > joueur->liste_consommables->longueur) {
+                        printf("Action annulée.\n");
                         pressEnterToContinue();
-                        break;
+                        afficherInterface(joueur, creatures, nb_creatures);
+                        afficherActionsDisponibles(attaques_restantes);
+                        continue; // Ne termine pas le tour, redemande une action
                     }
 
-                    // tmp / test
-                    printf("\n→ Vous vous reposez (-%d attaque%s restante%s / fatigue -1)\n",
-                        attaques_restantes > 1 ? 2 : attaques_restantes,
-                        attaques_restantes > 1 ? "s" : "",
-                        attaques_restantes > 1 ? "s" : ""
+                    res = utiliserConsommable(
+                        joueur->liste_consommables,
+                        joueur->liste_consommables->consommables[choix_objet - 1],
+                        (void*)joueur,
+                        ENTITE_PLONGEUR
                     );
-                    
-                    joueur->fatigue -= 1;
-                    if (joueur->fatigue < 0) joueur->fatigue = 0;
-                    
-                    attaques_restantes -= 2;
-                    if (attaques_restantes < 0) attaques_restantes = 0;
-                    
+                    if (res == EXIT_FAILURE) {
+                        fprintf(stderr, "Erreur: combat(): utiliserConsommable()\n");
+                        return EXIT_FAILURE;
+                    }
+
+                    attaques_restantes--;
                     pressEnterToContinue();
                     break;
 
 
-                // Passer le tour
-                case 5:
-                    printf("\n→ Vous passez votre tour.\n");
-                    diminuerFatigue(joueur, 1); // tmp / test
+                // Se reposer / Passer le tour
+                case 4:
+                    if (peutAttaquer(&joueur->liste_etats) == false) {
+                        printf(">> Vous n'avez pas pu vous reposer.\n");
+                    }
+                    else {
+                        int repos = joueur->fatigue_max * 0.1; // 10% de la fatigue max
+                        joueur->fatigue -= repos > 0 ? repos : 1;
+                        if (joueur->fatigue < 0) joueur->fatigue = 0;
+                        printf("\n→ Vous vous reposez (fatigue -%d)\n", repos > 0 ? repos : 1);
+                    }
+                    
+                    printf(">> FIN du tour.\n");
                     attaques_restantes = 0;
                     pressEnterToContinue();
                     break;
