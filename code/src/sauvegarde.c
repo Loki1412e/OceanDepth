@@ -213,14 +213,21 @@ Plongeur *loadDiver(FILE *file) {
     
     // Lire le bloc Plongeur sans les pointeurs
     if (fread(diver, sizeof(Plongeur), 1, file) != 1) {
-        perror("loadDiver fread Plongeur");
+        fprintf(stderr, "loadDiver fread Plongeur");
+        freeDiver(diver);
         return NULL;
     }
+
+    // Reset pointer fields to NULL (they contain garbage values from the file)
+    diver->nom = NULL;
+    diver->liste_etats.etats = NULL;
+    diver->liste_competences.competences = NULL;
+    diver->liste_consommables = NULL;
 
     // Lire nom
     size_t nom_len = 0;
     if (fread(&nom_len, sizeof(size_t), 1, file) != 1) {
-        perror("loadDiver fread nom_len");
+        fprintf(stderr, "loadDiver fread nom_len");
         freeDiver(diver);
         return NULL;
     }
