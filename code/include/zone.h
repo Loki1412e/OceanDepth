@@ -8,7 +8,7 @@
 #include "../include/creatures.h"
 
 typedef enum {
-    ZONE_REEF,       // récif (ennemis)
+    ZONE_REEF,       // récif 
     ZONE_EPAVE,      // trésor
     ZONE_GROTTE,     // zone de repos
     ZONE_ABYSSALE,   // profonde, plus dure

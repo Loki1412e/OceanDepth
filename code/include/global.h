@@ -115,6 +115,7 @@
         unsigned col_Y; // 0
     } Plongeur;
 
+    
     typedef struct {
         int content;
         short apparition; // bool
