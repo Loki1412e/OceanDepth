@@ -133,12 +133,12 @@
         Rarete rarete;
         int quantite;
         ListeAction listeAction;
-    } Consommable;
+    } Objet;
 
     typedef struct {
-        Consommable **consommables;
+        Objet **objets;
         size_t longueur;
-    } ListeConsommable;
+    } ListeObjet;
 
     
     typedef struct {
@@ -196,7 +196,7 @@
         ListeEtat liste_etats;
         ListeCompetence liste_competences;
         int profondeur;
-        ListeConsommable *liste_consommables;
+        ListeObjet *liste_objets;
     } Plongeur;
 
     typedef struct {

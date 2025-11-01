@@ -132,18 +132,18 @@ void printListeEtat(ListeEtat etats) {
     }
 }
 
-void printConsumablesList(ListeConsommable *consumables_list) {
-    if (!consumables_list || consumables_list->longueur == 0 || consumables_list->consommables == NULL) {
-        printf("Consommables : Aucun\n");
+void printConsumablesList(ListeObjet *consumables_list) {
+    if (!consumables_list || consumables_list->longueur == 0 || consumables_list->objets == NULL) {
+        printf("Objets : Aucun\n");
         return;
     }
 
-    printf("Consommables (%zu):\n\n", consumables_list->longueur);
+    printf("Objets (%zu):\n\n", consumables_list->longueur);
     for (size_t i = 0; i < consumables_list->longueur; i++) {
-        Consommable *c = consumables_list->consommables[i];
+        Objet *c = consumables_list->objets[i];
         if (!c) continue;
 
-        printf("\tConsommable ID: %u\n", c->id);
+        printf("\tObjet ID: %u\n", c->id);
         printf("\tQuantite: %d\n", c->quantite);
         printf("\tNom: %s\n", c->nom ? c->nom : "(null)");
         printf("\tDescription: %s\n", c->description ? c->description : "(null)");
@@ -248,7 +248,7 @@ void printDiver(Plongeur *diver) {
 
     printListeCompetence(diver->liste_competences);
     
-    printConsumablesList(diver->liste_consommables);
+    printConsumablesList(diver->liste_objets);
 
     printf("====================================\n\n");
 }

@@ -1,0 +1,403 @@
+#include "../include/objets.h"
+
+
+int appliquerActionsObjet(Objet *c, void *user_ptr, EntiteType user_type) {
+    if (!c || !user_ptr || user_type == ENTITE_TYPE_INVALIDE) {
+        fprintf(stderr, "Erreur: appliquerActionsObjet(): arguments invalides\n");
+        return EXIT_FAILURE;
+    }
+    // Appliquer les effets du objet
+    printf("\n>> L'effet de '%s' a été appliqué\n", c->nom);
+    for (size_t i = 0; i < c->listeAction.longueur; i++) {
+        if (executerAction(&c->listeAction.actions[i], user_ptr, user_type, user_ptr, user_type)) {
+            fprintf(stderr, "Erreur: appliquerActionsObjet(): executerAction(%zu)\n", i);
+            return EXIT_FAILURE;
+        }
+    }
+    return EXIT_SUCCESS;
+}
+
+// Pour utiliser sans prendre en compte la quantité
+int appliquerActionsListeObjet(ListeObjet *listeObjet, void *user_ptr, EntiteType user_type) {
+    if (!listeObjet || !user_ptr || user_type == ENTITE_TYPE_INVALIDE) {
+        fprintf(stderr, "Erreur: appliquerActionsListeObjet(): arguments invalides\n");
+        return EXIT_FAILURE;
+    }
+    for (size_t i = 0; i < listeObjet->longueur; i++) {
+        if (appliquerActionsObjet(listeObjet->objets[i], user_ptr, user_type) == EXIT_FAILURE) {
+            fprintf(stderr, "Erreur: appliquerActionsListeObjet(): appliquerActionsObjet(%zu)\n", i);
+            return EXIT_FAILURE;
+        }
+    }
+    return EXIT_SUCCESS;
+}
+
+// Pour consommer un objet (appliquer ses effets et décrémenter la quantité)
+int consommerObjet(ListeObjet *list, Objet *c, void *user_ptr, EntiteType user_type) {
+    if (!list || !c || !user_ptr || user_type == ENTITE_TYPE_INVALIDE) {
+        fprintf(stderr, "Erreur: consommerObjet(): arguments invalides\n");
+        return EXIT_FAILURE;
+    }
+
+    int quantite = quantiteObjetInList(list, c);
+
+    if (quantite == -1) {
+        fprintf(stderr, "Erreur: consommerObjet(): le objet n'est pas dans la liste\n");
+        return EXIT_FAILURE;
+    }
+
+    if (quantite > 0) {
+        // Appliquer les effets du objet
+        printf("\n>> '%s' x1 a été consommé\n", c->nom);
+        if (appliquerActionsObjet(c, user_ptr, user_type) == EXIT_FAILURE) {
+            fprintf(stderr, "Erreur: consommerObjet(): appliquerActionsObjet()\n");
+            return EXIT_FAILURE;
+        }
+    }
+
+    c->quantite--;
+
+    // Supprimer le objet de la liste si quantité <= 0
+    if (c->quantite <= 0 && supprimerObjet(list, c) == EXIT_FAILURE) {
+        fprintf(stderr, "Erreur: consommerObjet(): supprimerObjet()\n");
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
+}
+
+
+// Retourne la quantité de objet dans la liste
+// Retourne -1 en cas d'erreur
+int quantiteObjetInList(ListeObjet *list, Objet *c) {
+    if (!list || !c) {
+        fprintf(stderr, "Erreur: quantiteObjetInList(): arguments invalides\n");
+        return -1;
+    }
+    for (size_t i = 0; i < list->longueur; i++) {
+        if (list->objets[i] == c) {
+            if (list->objets[i]->quantite == 0) {
+                supprimerObjet(list, c);
+                return 0;
+            }
+            return list->objets[i]->quantite;
+        }
+    }
+    return 0;
+}
+
+Objet *duplicateObjet(Objet *c) {
+    if (!c) {
+        fprintf(stderr, "Erreur: duplicateObjet(): argument invalide\n");
+        return NULL;
+    }
+
+    short res;
+
+    Objet *new_c = calloc(1, sizeof(Objet));
+    if (!new_c) {
+        fprintf(stderr, "Erreur: duplicateObjet(): new_c = calloc()\n");
+        return NULL;
+    }
+
+    new_c->id = c->id;
+    new_c->rarete = c->rarete;
+    new_c->quantite = 1; // On initialise la quantité à 1
+
+    new_c->nom = my_strdup(c->nom);
+    if (!new_c->nom) {
+        fprintf(stderr, "Erreur: duplicateObjet(): duplication du nom\n");
+        freeObjet(new_c);
+        return NULL;
+    }
+    new_c->description = my_strdup(c->description);
+    if (!new_c->description) {
+        fprintf(stderr, "Erreur: duplicateObjet(): duplication de la description\n");
+        freeObjet(new_c);
+        return NULL;
+    }
+    new_c->listeAction = duplicateListeAction(&c->listeAction, &res);
+    if (res == EXIT_FAILURE) {
+        fprintf(stderr, "Erreur: duplicateObjet(): duplication des champs\n");
+        freeObjet(new_c);
+        return NULL;
+    }
+
+    return new_c;
+}
+
+int ajouterObjet(ListeObjet *modal, ListeObjet *list, size_t id_objet) {
+    if (!list || !modal) {
+        fprintf(stderr, "Erreur: ajouterObjet(): arguments invalides\n");
+        return EXIT_FAILURE;
+    }
+    if (id_objet >= modal->longueur) {
+        fprintf(stderr, "Erreur: ajouterObjet(): id_objet invalide\n");
+        return EXIT_FAILURE;
+    }
+
+    // Si le objet est déjà dans la liste, on incrémente juste la quantité
+    for (size_t i = 0; i < list->longueur; i++) {
+        if (list->objets[i]->id == id_objet) {
+            list->objets[i]->quantite++;
+            return EXIT_SUCCESS;
+        }
+    }
+
+    // Sinon, on l'ajoute à la liste
+    Objet *c = duplicateObjet(modal->objets[id_objet]);
+    if (!c) {
+        fprintf(stderr, "Erreur: ajouterObjet(): duplicateObjet()\n");
+        return EXIT_FAILURE;
+    }
+    
+    Objet **tmp = NULL;
+
+    tmp = realloc(list->objets, (list->longueur + 1) * sizeof(Objet *));
+    if (!tmp) {
+        fprintf(stderr, "Erreur: ajouterObjet(): tmp = realloc()\n");
+        return EXIT_FAILURE;
+    }
+    list->objets = tmp;
+    list->objets[list->longueur++] = c;
+
+    return EXIT_SUCCESS;
+}
+
+int supprimerObjet(ListeObjet *list, Objet *c) {
+    if (!list || !c) {
+        fprintf(stderr, "Erreur: supprimerObjet(): arguments invalides\n");
+        return EXIT_FAILURE;
+    }
+
+    Objet **new_objets = NULL;
+
+    short estDansLaListe = false;
+    size_t indice_c;
+    size_t new_length = list->longueur - 1;
+
+    // Trouver l'index de c dans la liste
+    for (indice_c = 0; indice_c < list->longueur; indice_c++) {
+        if (list->objets[indice_c] == c) {
+            estDansLaListe = true;
+            break;
+        }
+    }
+    if (!estDansLaListe) return EXIT_SUCCESS;
+
+    if (new_length == 0) {
+        freeListeObjetsContent(list);
+        return EXIT_SUCCESS;
+    }
+
+    new_objets = calloc((new_length), sizeof(Objet*));
+    if (!new_objets) {
+        fprintf(stderr, "Erreur: supprimerObjet(): new_objets = calloc()\n");
+        return EXIT_FAILURE;
+    }
+
+    // Copier les éléments avant et après l'élément à supprimer
+    for (size_t i = 0; i < indice_c; i++) {
+        new_objets[i] = list->objets[i];
+    }
+
+    // Décaler les éléments après l'élément supprimé
+    for (size_t i = indice_c; i < new_length; i++) {
+        new_objets[i] = list->objets[i + 1];
+    }
+
+    // Libérer le objet supprimé
+    freeObjet(c);
+    // Libérer l'ancienne liste de objets
+    free(list->objets);
+    // Mettre à jour la liste et sa longueur
+    list->objets = new_objets;
+    list->longueur = new_length;
+    return EXIT_SUCCESS;
+}
+
+int setListeObjetFromConf(ListeObjet *modalConsumablesList, char *path) {
+    if (!modalConsumablesList || !modalConsumablesList->objets || modalConsumablesList->longueur == 0 || !path)
+        return EXIT_FAILURE;
+
+    FILE *f = fopen(path, "r");
+    if (f == NULL) {
+        fprintf(stderr, "Erreur: setListeObjetFromConf(): Impossible d'ouvrir le fichier de configuration \"%s\"\n", path);
+        return EXIT_FAILURE;
+    }
+
+    Objet **consumables = modalConsumablesList->objets;
+
+    char line[512];
+    size_t length = 0, index = 0;
+
+    short res;
+
+    while (fgets(line, sizeof(line), f)) {
+
+        if (strncmp(line, "[Objet]", 7) == 0) {
+            length++;
+            index = length - 1;
+
+            // Si dépassement alors on arrete de load mais on garde la conf actuelle
+            if (index >= modalConsumablesList->longueur) {
+                fprintf(stderr, "Warning: setListeObjetFromConf(): index %zu hors des limites de consumables\n", index);
+                break;
+            }
+
+            // Init
+            consumables[index]->id = index;
+        }
+        
+        else if (strncmp(line, "nom=", 4) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            consumables[index]->nom = strdup(line + 4);
+            if (!consumables[index]->nom) {
+                fprintf(stderr, "Erreur: setListeObjetFromConf(): my_strdup() -> \"nom=\"\n");
+                freeListeObjetsContent(modalConsumablesList);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+        
+        else if (strncmp(line, "description=", 12) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            consumables[index]->description = strdup(line + 12);
+            if (!consumables[index]->description) {
+                fprintf(stderr, "Erreur: setListeObjetFromConf(): my_strdup() -> \"description=\"\n");
+                freeListeObjetsContent(modalConsumablesList);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+
+        else if (strncmp(line, "rarete=", 7) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            int rarete = my_strToInt(line + 7, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setListeObjetFromConf(): my_strToInt() -> \"rarete=\"\n");
+                freeListeObjetsContent(modalConsumablesList);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+            if (rarete >= LENGTH_Rarete) {
+                fprintf(stderr, "Warning: setListeObjetFromConf(): rarete >= LENGTH_Rarete --> init à max_rarete (%d)\n", LENGTH_Rarete - 1);
+                rarete = LENGTH_Rarete - 1;
+            }
+            else if (rarete < 0) {
+                fprintf(stderr, "Warning: setListeObjetFromConf(): rarete < 0 --> init à DESACTIVE (0)\n");
+                rarete = 0;
+            }
+
+            consumables[index]->rarete = (Rarete) rarete;
+        }
+        
+        else if (strncmp(line, "actions=", 8) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            consumables[index]->listeAction.actions = parseActions(line + 8, &consumables[index]->listeAction.longueur, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setListeObjetFromConf(): actions = calloc()\n");
+                freeListeObjetsContent(modalConsumablesList);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+    }
+
+    if (modalConsumablesList->longueur < length) {
+        fprintf(stderr, "Erreur: setListeObjetFromConf(): longueur (%zu) < length (%zu)\n", modalConsumablesList->longueur, length);
+        freeListeObjetsContent(modalConsumablesList);
+        fclose(f);
+        return EXIT_FAILURE;
+    }
+
+    fclose(f);
+    return EXIT_SUCCESS;
+}
+
+ListeObjet *initModalListeObjet(char *path) {
+    if (!path) {
+        fprintf(stderr, "Erreur: initModalListeObjet(): path == NULL\n");
+        return NULL;
+    }
+
+    short res;
+
+    size_t count_all_unique = confCountAllUniqueObjet(path, &res);
+    if (res == EXIT_FAILURE) {
+        fprintf(stderr, "Erreur: initModalListeObjet(): confCountAllUniqueObjet()\n");
+        return NULL;
+    }
+
+    // Allocation mémoire
+
+    ListeObjet *modalConsumablesList = calloc(1, sizeof(ListeObjet));
+    if (!modalConsumablesList) {
+        fprintf(stderr, "Erreur: initModalListeObjet(): modalConsumablesList = calloc()\n");
+        return NULL;
+    }
+
+    modalConsumablesList->longueur = count_all_unique;
+    modalConsumablesList->objets = calloc(count_all_unique, sizeof(Objet*));
+    if (!modalConsumablesList->objets) {
+        fprintf(stderr, "Erreur: initModalListeObjet(): Allocation mémoire modalConsumablesList->objets\n");
+        freeListeObjets(modalConsumablesList);
+        return NULL;
+    }
+
+    for (size_t i = 0; i < count_all_unique; i++) {
+        modalConsumablesList->objets[i] = calloc(1, sizeof(Objet));
+        if (!modalConsumablesList->objets[i]) {
+            fprintf(stderr, "Erreur: initModalListeObjet(): Allocation mémoire modalConsumablesList->objets[%zu]\n", i);
+            modalConsumablesList->longueur = i;
+            freeListeObjets(modalConsumablesList);
+            return NULL;
+        }
+    }
+
+    // Initialisation à partir du fichier de configuration
+
+    if (setListeObjetFromConf(modalConsumablesList, path) == EXIT_FAILURE) {
+        fprintf(stderr, "Erreur: initModalListeObjet(): setListeObjetFromConf()\n");
+        freeListeObjets(modalConsumablesList);
+        return NULL;
+    }
+
+    return modalConsumablesList;
+}
+
+void freeObjet(Objet *c) {
+    if (!c) return;
+    if (c->nom) free(c->nom);
+    c->nom = NULL;
+    if (c->description) free(c->description);
+    c->description = NULL;
+    if (c->listeAction.actions) freeActions(c->listeAction.actions, c->listeAction.longueur);
+    c->listeAction.actions = NULL;
+    c->listeAction.longueur = 0;
+    free(c);
+}
+
+void freeListeObjetsContent(ListeObjet *liste) {
+    if (!liste || !liste->objets) return;
+    for (size_t i = 0; i < liste->longueur; i++) {
+        freeObjet(liste->objets[i]);
+    }
+    free(liste->objets);
+    liste->objets = NULL;
+    liste->longueur = 0;
+}
+
+void freeListeObjets(ListeObjet *liste) {
+    if (!liste) return;
+    freeListeObjetsContent(liste);
+    free(liste);
+}

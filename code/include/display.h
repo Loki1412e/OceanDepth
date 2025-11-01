@@ -19,7 +19,7 @@
     void printListeEtat(ListeEtat etats);
     void printCompetence(Competence competence);
     void printListeCompetence(ListeCompetence competences);
-    void printConsumablesList(ListeConsommable *consumables);
+    void printConsumablesList(ListeObjet *consumables);
 
     void printSaveLastRun(Sauvegarde *save);
     void printListSave(ListeSauvegardes *saves);
