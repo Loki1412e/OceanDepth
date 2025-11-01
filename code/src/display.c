@@ -143,7 +143,7 @@ void printObjectsList(ListeObjet *objects_list) {
         Objet *c = objects_list->objets[i];
         if (!c) continue;
 
-        printf("\tObjet ID: %u\n", c->id);
+        printf("\tObjet ID: %zu\n", c->id);
         printf("\tQuantite: %d\n", c->quantite);
         printf("\tNom: %s\n", c->nom ? c->nom : "(null)");
         printf("\tDescription: %s\n", c->description ? c->description : "(null)");
@@ -154,7 +154,7 @@ void printObjectsList(ListeObjet *objects_list) {
 }
 
 void printCompetence(Competence competence) {
-    printf("\t Id                   : %u\n", competence.id);
+    printf("\t Id                   : %zu\n", competence.id);
     printf("\t Nom                  : %s\n", competence.nom);
     printf("\t Description          : %s\n", competence.description);
     printf("\t Coût en oxygène      : %d\n", competence.cout_oxygene);
@@ -184,7 +184,7 @@ void printCreature(CreatureMarine *creature) {
         printf("NULL CreatureMarine pointer\n");
         return;
     }
-    printf("CreatureMarine ID: %u\n", creature->id);
+    printf("CreatureMarine ID: %zu\n", creature->id);
     printf("Nom Type: %s\n", creature->nom ? creature->nom : "(null)");
     printf("PV: %d (Min: %d, Max: %d)\n", creature->pv, creature->pv_min, creature->pv_max);
     printf("Attaque: Min %d, Max %d\n", creature->attaque_min, creature->attaque_max);

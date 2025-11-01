@@ -1,7 +1,8 @@
 #include "../include/objets.h"
 
 
-int appliquerActionsObjet(Objet *c, void *user_ptr, EntiteType user_type) {
+// ActionReverseType type: `NO_REVERSE` = appliquer l'effet normalement / `REVERSE` = inverser l'effet de l'action (ex: soin -> dégats) -> `MODIFIER_STAT` uniquement pour le moment
+int appliquerActionsObjet(Objet *c, void *user_ptr, EntiteType user_type, ActionReverseType type) {
     if (!c || !user_ptr || user_type == ENTITE_TYPE_INVALIDE) {
         fprintf(stderr, "Erreur: appliquerActionsObjet(): arguments invalides\n");
         return EXIT_FAILURE;
@@ -9,7 +10,7 @@ int appliquerActionsObjet(Objet *c, void *user_ptr, EntiteType user_type) {
     // Appliquer les effets du objet
     printf("\n>> L'effet de '%s' a été appliqué\n", c->nom);
     for (size_t i = 0; i < c->listeAction.longueur; i++) {
-        if (executerAction(&c->listeAction.actions[i], user_ptr, user_type, user_ptr, user_type, 0) == EXIT_FAILURE) {
+        if (executerAction(&c->listeAction.actions[i], user_ptr, user_type, user_ptr, user_type, type) == EXIT_FAILURE) {
             fprintf(stderr, "Erreur: appliquerActionsObjet(): executerAction(%zu)\n", i);
             return EXIT_FAILURE;
         }
@@ -18,13 +19,14 @@ int appliquerActionsObjet(Objet *c, void *user_ptr, EntiteType user_type) {
 }
 
 // Pour utiliser sans prendre en compte la quantité
-int appliquerActionsListeObjet(ListeObjet *listeObjet, void *user_ptr, EntiteType user_type) {
+// ActionReverseType type: `NO_REVERSE` = appliquer l'effet normalement / `REVERSE` = inverser l'effet de l'action (ex: soin -> dégats) -> `MODIFIER_STAT` uniquement pour le moment
+int appliquerActionsListeObjet(ListeObjet *listeObjet, void *user_ptr, EntiteType user_type, ActionReverseType type) {
     if (!listeObjet || !user_ptr || user_type == ENTITE_TYPE_INVALIDE) {
         fprintf(stderr, "Erreur: appliquerActionsListeObjet(): arguments invalides\n");
         return EXIT_FAILURE;
     }
     for (size_t i = 0; i < listeObjet->longueur; i++) {
-        if (appliquerActionsObjet(listeObjet->objets[i], user_ptr, user_type) == EXIT_FAILURE) {
+        if (appliquerActionsObjet(listeObjet->objets[i], user_ptr, user_type, type) == EXIT_FAILURE) {
             fprintf(stderr, "Erreur: appliquerActionsListeObjet(): appliquerActionsObjet(%zu)\n", i);
             return EXIT_FAILURE;
         }
@@ -49,7 +51,7 @@ int consommerObjet(ListeObjet *list, Objet *c, void *user_ptr, EntiteType user_t
     if (quantite > 0) {
         // Appliquer les effets du objet
         printf("\n>> '%s' x1 a été consommé\n", c->nom);
-        if (appliquerActionsObjet(c, user_ptr, user_type) == EXIT_FAILURE) {
+        if (appliquerActionsObjet(c, user_ptr, user_type, NO_REVERSE) == EXIT_FAILURE) {
             fprintf(stderr, "Erreur: consommerObjet(): appliquerActionsObjet()\n");
             return EXIT_FAILURE;
         }

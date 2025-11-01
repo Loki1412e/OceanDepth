@@ -14,8 +14,8 @@
     int ajouterObjet(ListeObjet *modal, ListeObjet *list, size_t id_objet);
     int supprimerObjet(ListeObjet *list, Objet *c);
 
-    int appliquerActionsObjet(Objet *c, void *user_ptr, EntiteType user_type);
-    int appliquerActionsListeObjet(ListeObjet *listeObjet, void *user_ptr, EntiteType user_type);
+    int appliquerActionsObjet(Objet *c, void *user_ptr, EntiteType user_type, ActionReverseType type);
+    int appliquerActionsListeObjet(ListeObjet *listeObjet, void *user_ptr, EntiteType user_type, ActionReverseType type);
     int consommerObjet(ListeObjet *list, Objet *c, void *user_ptr, EntiteType user_type);
 
     int quantiteObjetInList(ListeObjet *list, Objet *c);

@@ -101,8 +101,8 @@ ListeAction duplicateListeAction(ListeAction *modal, short *res) {
 }
 
 
-// reverseAction: 1 = inverser l'effet de l'action (ex: soin -> dégats) / MODIFIER_STAT uniquement pour le moment
-int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, EntiteType cible_type, short reverseAction) {
+// ActionReverseType type: `NO_REVERSE` = appliquer l'effet normalement / `REVERSE` = inverser l'effet de l'action (ex: soin -> dégats) -> `MODIFIER_STAT` uniquement pour le moment
+int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, EntiteType cible_type, ActionReverseType type) {
     if (!action || !lanceur_ptr || !cible_ptr) return EXIT_FAILURE;
 
     // Déterminer qui est le lanceur et qui est la cible
@@ -249,7 +249,7 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
             // Récupération des paramètres
             char* stat_nom = action->params[0];
             int valeur = my_strToInt(action->params[1], &res);
-            if (reverseAction == 1) valeur = -valeur;
+            if (type == REVERSE) valeur = -valeur;
             if (res == EXIT_FAILURE) {
                 fprintf(stderr, "Erreur: executerAction(): my_strToInt() -> action->params[1] (MODIFIER_STAT)\n");
                 return EXIT_FAILURE;
