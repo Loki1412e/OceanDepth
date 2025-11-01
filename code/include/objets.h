@@ -9,7 +9,7 @@
     void freeListeObjetsContent(ListeObjet *liste);
     
     ListeObjet *initModalListeObjet(char *path);
-    int setListeObjetFromConf(ListeObjet *modalConsumables, char *path);
+    int setListeObjetFromConf(ListeObjet *modalObjects, char *path);
     
     int ajouterObjet(ListeObjet *modal, ListeObjet *list, size_t id_objet);
     int supprimerObjet(ListeObjet *list, Objet *c);
