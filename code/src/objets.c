@@ -216,8 +216,8 @@ int supprimerObjet(ListeObjet *list, Objet *c) {
     return EXIT_SUCCESS;
 }
 
-int setListeObjetFromConf(ListeObjet *modalConsumablesList, char *path) {
-    if (!modalConsumablesList || !modalConsumablesList->objets || modalConsumablesList->longueur == 0 || !path)
+int setListeObjetFromConf(ListeObjet *modalObjectsList, char *path) {
+    if (!modalObjectsList || !modalObjectsList->objets || modalObjectsList->longueur == 0 || !path)
         return EXIT_FAILURE;
 
     FILE *f = fopen(path, "r");
@@ -226,7 +226,7 @@ int setListeObjetFromConf(ListeObjet *modalConsumablesList, char *path) {
         return EXIT_FAILURE;
     }
 
-    Objet **consumables = modalConsumablesList->objets;
+    Objet **objects = modalObjectsList->objets;
 
     char line[512];
     size_t length = 0, index = 0;
@@ -240,23 +240,23 @@ int setListeObjetFromConf(ListeObjet *modalConsumablesList, char *path) {
             index = length - 1;
 
             // Si dépassement alors on arrete de load mais on garde la conf actuelle
-            if (index >= modalConsumablesList->longueur) {
-                fprintf(stderr, "Warning: setListeObjetFromConf(): index %zu hors des limites de consumables\n", index);
+            if (index >= modalObjectsList->longueur) {
+                fprintf(stderr, "Warning: setListeObjetFromConf(): index %zu hors des limites de objects\n", index);
                 break;
             }
 
             // Init
-            consumables[index]->id = index;
+            objects[index]->id = index;
         }
         
         else if (strncmp(line, "nom=", 4) == 0) {
             line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
             if (line[0] == '\0') continue; // ligne vide
 
-            consumables[index]->nom = strdup(line + 4);
-            if (!consumables[index]->nom) {
+            objects[index]->nom = strdup(line + 4);
+            if (!objects[index]->nom) {
                 fprintf(stderr, "Erreur: setListeObjetFromConf(): my_strdup() -> \"nom=\"\n");
-                freeListeObjetsContent(modalConsumablesList);
+                freeListeObjetsContent(modalObjectsList);
                 fclose(f);
                 return EXIT_FAILURE;
             }
@@ -266,10 +266,10 @@ int setListeObjetFromConf(ListeObjet *modalConsumablesList, char *path) {
             line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
             if (line[0] == '\0') continue; // ligne vide
 
-            consumables[index]->description = strdup(line + 12);
-            if (!consumables[index]->description) {
+            objects[index]->description = strdup(line + 12);
+            if (!objects[index]->description) {
                 fprintf(stderr, "Erreur: setListeObjetFromConf(): my_strdup() -> \"description=\"\n");
-                freeListeObjetsContent(modalConsumablesList);
+                freeListeObjetsContent(modalObjectsList);
                 fclose(f);
                 return EXIT_FAILURE;
             }
@@ -282,7 +282,7 @@ int setListeObjetFromConf(ListeObjet *modalConsumablesList, char *path) {
             int rarete = my_strToInt(line + 7, &res);
             if (res == EXIT_FAILURE) {
                 fprintf(stderr, "Erreur: setListeObjetFromConf(): my_strToInt() -> \"rarete=\"\n");
-                freeListeObjetsContent(modalConsumablesList);
+                freeListeObjetsContent(modalObjectsList);
                 fclose(f);
                 return EXIT_FAILURE;
             }
@@ -295,26 +295,26 @@ int setListeObjetFromConf(ListeObjet *modalConsumablesList, char *path) {
                 rarete = 0;
             }
 
-            consumables[index]->rarete = (Rarete) rarete;
+            objects[index]->rarete = (Rarete) rarete;
         }
         
         else if (strncmp(line, "actions=", 8) == 0) {
             line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
             if (line[0] == '\0') continue; // ligne vide
 
-            consumables[index]->listeAction.actions = parseActions(line + 8, &consumables[index]->listeAction.longueur, &res);
+            objects[index]->listeAction.actions = parseActions(line + 8, &objects[index]->listeAction.longueur, &res);
             if (res == EXIT_FAILURE) {
                 fprintf(stderr, "Erreur: setListeObjetFromConf(): actions = calloc()\n");
-                freeListeObjetsContent(modalConsumablesList);
+                freeListeObjetsContent(modalObjectsList);
                 fclose(f);
                 return EXIT_FAILURE;
             }
         }
     }
 
-    if (modalConsumablesList->longueur < length) {
-        fprintf(stderr, "Erreur: setListeObjetFromConf(): longueur (%zu) < length (%zu)\n", modalConsumablesList->longueur, length);
-        freeListeObjetsContent(modalConsumablesList);
+    if (modalObjectsList->longueur < length) {
+        fprintf(stderr, "Erreur: setListeObjetFromConf(): longueur (%zu) < length (%zu)\n", modalObjectsList->longueur, length);
+        freeListeObjetsContent(modalObjectsList);
         fclose(f);
         return EXIT_FAILURE;
     }
@@ -339,39 +339,39 @@ ListeObjet *initModalListeObjet(char *path) {
 
     // Allocation mémoire
 
-    ListeObjet *modalConsumablesList = calloc(1, sizeof(ListeObjet));
-    if (!modalConsumablesList) {
-        fprintf(stderr, "Erreur: initModalListeObjet(): modalConsumablesList = calloc()\n");
+    ListeObjet *modalObjectsList = calloc(1, sizeof(ListeObjet));
+    if (!modalObjectsList) {
+        fprintf(stderr, "Erreur: initModalListeObjet(): modalObjectsList = calloc()\n");
         return NULL;
     }
 
-    modalConsumablesList->longueur = count_all_unique;
-    modalConsumablesList->objets = calloc(count_all_unique, sizeof(Objet*));
-    if (!modalConsumablesList->objets) {
-        fprintf(stderr, "Erreur: initModalListeObjet(): Allocation mémoire modalConsumablesList->objets\n");
-        freeListeObjets(modalConsumablesList);
+    modalObjectsList->longueur = count_all_unique;
+    modalObjectsList->objets = calloc(count_all_unique, sizeof(Objet*));
+    if (!modalObjectsList->objets) {
+        fprintf(stderr, "Erreur: initModalListeObjet(): Allocation mémoire modalObjectsList->objets\n");
+        freeListeObjets(modalObjectsList);
         return NULL;
     }
 
     for (size_t i = 0; i < count_all_unique; i++) {
-        modalConsumablesList->objets[i] = calloc(1, sizeof(Objet));
-        if (!modalConsumablesList->objets[i]) {
-            fprintf(stderr, "Erreur: initModalListeObjet(): Allocation mémoire modalConsumablesList->objets[%zu]\n", i);
-            modalConsumablesList->longueur = i;
-            freeListeObjets(modalConsumablesList);
+        modalObjectsList->objets[i] = calloc(1, sizeof(Objet));
+        if (!modalObjectsList->objets[i]) {
+            fprintf(stderr, "Erreur: initModalListeObjet(): Allocation mémoire modalObjectsList->objets[%zu]\n", i);
+            modalObjectsList->longueur = i;
+            freeListeObjets(modalObjectsList);
             return NULL;
         }
     }
 
     // Initialisation à partir du fichier de configuration
 
-    if (setListeObjetFromConf(modalConsumablesList, path) == EXIT_FAILURE) {
+    if (setListeObjetFromConf(modalObjectsList, path) == EXIT_FAILURE) {
         fprintf(stderr, "Erreur: initModalListeObjet(): setListeObjetFromConf()\n");
-        freeListeObjets(modalConsumablesList);
+        freeListeObjets(modalObjectsList);
         return NULL;
     }
 
-    return modalConsumablesList;
+    return modalObjectsList;
 }
 
 void freeObjet(Objet *c) {
