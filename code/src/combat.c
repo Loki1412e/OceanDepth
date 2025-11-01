@@ -398,6 +398,9 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     Competence *comp_choisie = &joueur->liste_competences.competences[choix_comp - 1];
                     if (!comp_choisie) {
                         printf("Erreur interne: compétence introuvable.\n");
+                        pressEnterToContinue();
+                        afficherInterface(joueur, creatures, nb_creatures);
+                        afficherActionsDisponibles(attaques_restantes);
                         continue;
                     }
 
@@ -445,6 +448,9 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                         cible_ptr = creatures[cible - 1];
                         if (!cible_ptr) {
                             printf("Erreur interne: cible introuvable.\n");
+                            pressEnterToContinue();
+                            afficherInterface(joueur, creatures, nb_creatures);
+                            afficherActionsDisponibles(attaques_restantes);
                             continue;
                         }
                     }
@@ -456,6 +462,9 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     
                     else {
                         printf("Ciblage de compétence non géré dans l'interface.\n");
+                        pressEnterToContinue();
+                        afficherInterface(joueur, creatures, nb_creatures);
+                        afficherActionsDisponibles(attaques_restantes);
                         continue;
                     }
                     
@@ -467,6 +476,9 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     }    
                     else if (res == -1) {
                         printf("Vous pouvez choisir une autre action.\n");
+                        pressEnterToContinue();
+                        afficherInterface(joueur, creatures, nb_creatures);
+                        afficherActionsDisponibles(attaques_restantes);
                         continue;
                     }
                     else attaques_restantes--;
