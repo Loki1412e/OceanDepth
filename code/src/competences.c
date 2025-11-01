@@ -401,7 +401,8 @@ int utiliserCompetence(Competence *comp, void *lanceur_ptr, EntiteType lanceur_t
             lanceur_ptr,
             lanceur_type,
             cible_ptr,
-            cible_type
+            cible_type,
+            0
         );
         if (res == EXIT_FAILURE) {
             fprintf(stderr, "Erreur: utiliserCompetence(): executerAction() pour l'action %zu\n", i);
