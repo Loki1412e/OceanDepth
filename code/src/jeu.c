@@ -14,6 +14,7 @@ int runGame(Sauvegarde *actualSave) {
     Bestiaire *bestiary = NULL;
     ListeCompetence modalCreaturesSkills = {0};
     ListeConsommable *modalConsumablesList = NULL;
+    Arsenal *modalArsenal = NULL;
 
     short res;
 
@@ -48,9 +49,9 @@ int runGame(Sauvegarde *actualSave) {
         fprintf(stderr, "runGame(): Erreur lors du chargement de la liste des consommables.\n");
         return EXIT_FAILURE;
     }
-    // Chargement des armes
-    Arsenal *arsenal = chargerArmesDepuisFichier("config/objets/armes.conf");
-    if (!arsenal) {
+
+    modalArsenal = chargerArmesDepuisFichier("config/objets/armes.conf");
+    if (!modalArsenal) {
         fprintf(stderr, "runGame(): Erreur lors du chargement des armes.\n");
         freeBestiary(bestiary);
         freeBestiary(modalBestiary);
@@ -59,8 +60,16 @@ int runGame(Sauvegarde *actualSave) {
         return EXIT_FAILURE;
     }
 
-    printf("\nVous découvrez un coffre contenant des armes ! (trop fort)\n");
-    equiperArme(diver, arsenal);
+    // Joueur choisi son arme parmis son arsenal
+    afficherArmes(diver->arsenal);
+    printf("\nChoisissez une arme à équiper :\n> ");
+    size_t choix = lireEntier();
+    while (choix >= diver->arsenal->longueur_armes) {
+        printf("\nChoix invalide. Veuillez réessayer :\n> ");
+        choix = lireEntier();
+    }
+    equiperArme(diver, choix);
+    printf("\n✅ %s équipée !\n", diver->arme_equipee->nom);
     pressEnterToContinue();
 
     /* ========================== */
@@ -124,7 +133,7 @@ int runGame(Sauvegarde *actualSave) {
     freeBestiary(modalBestiary);
     freeListeCompetence(&modalCreaturesSkills);
     freeListeConsommables(modalConsumablesList);
-    freeArsenal(arsenal);
+    freeArsenal(modalArsenal);
     
     return EXIT_SUCCESS;
 }
