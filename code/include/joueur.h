@@ -6,6 +6,7 @@
     #include "effets.h"
     #include "competences.h"
     #include "consommables.h"
+    #include "armes.h"
 
     void freeDiverContent(Plongeur *diver);
     void freeDiver(Plongeur *diver);

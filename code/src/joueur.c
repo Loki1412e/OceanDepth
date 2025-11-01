@@ -34,7 +34,14 @@ Plongeur *initModalDiver(char *diver_name, ListeCompetence *modalDiverSkills) {
         freeDiver(diver);
         return NULL;
     }
-    
+
+    diver->arsenal = calloc(1, sizeof(Arsenal));
+    if (!diver->arsenal) {
+        fprintf(stderr, "Erreur: initModalDiver(): Allocation mémoire arsenal\n");
+        freeDiver(diver);
+        return NULL;
+    }
+
     if (setDiverFromConf(diver, modalDiverSkills, "config/plongeur/stats.conf")) return NULL;
     diver->pv = diver->pv_max;
     diver->oxygene = diver->oxygene_max;
@@ -273,6 +280,7 @@ void freeDiverContent(Plongeur *diver) {
     freeListeEtat(&diver->liste_etats);
     freeListeCompetence(&diver->liste_competences);
     freeListeConsommables(diver->liste_consommables);
+    freeArsenal(diver->arsenal);
 }
 
 void freeDiver(Plongeur *diver) {

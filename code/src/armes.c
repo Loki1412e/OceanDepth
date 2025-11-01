@@ -54,6 +54,8 @@ Arsenal *chargerArmesDepuisFichier(char *filename) {
 
             // Init
             arme = arsenal->armes[index];
+            arme->id = index;
+            continue;
         }
 
         if (strncmp(line, "nom=", 4) == 0) {
@@ -112,15 +114,52 @@ void afficherArmes(Arsenal *arsenal) {
     printf("\n=== Arsenal disponible ===\n");
     for (size_t i = 0; i < arsenal->longueur_armes; i++) {
         Arme *a = arsenal->armes[i];
-        printf("[%zu] %s (ATK %d-%d | O2: %d | DEF+%d)\n",
-               i, a->nom, a->attaque_min, a->attaque_max, a->cout_oxygene,
+        printf("[%zu] %s (id=%zu) (ATK %d-%d | O2: %d | DEF+%d)\n",
+               i, a->nom, a->id, a->attaque_min, a->attaque_max, a->cout_oxygene,
                a->bonus_defense);
         printListeAction(a->listeAction);
     }
 }
 
-void equiperArme(Plongeur *joueur, Arsenal *arsenal) {
-    if (!joueur || !arsenal || arsenal->longueur_armes == 0) return;
+int ajouterArme(Arsenal *modal, Arsenal *arsenal, size_t id_arme) {
+    if (!modal || !arsenal || id_arme >= modal->longueur_armes) {
+        fprintf(stderr, "Erreur: ajouterArme(): paramètres invalides\n");
+        return EXIT_FAILURE;
+    }
+
+    if (id_arme > modal->longueur_armes) {
+        fprintf(stderr, "Erreur: ajouterArme(): id_arme (%zu) hors limites (%zu)\n", id_arme, modal->longueur_armes);
+        return EXIT_FAILURE;
+    }
+
+    Arme *arme = modal->armes[id_arme];
+    if (!arme) return EXIT_FAILURE;
+
+    for (size_t i = 0; i < arsenal->longueur_armes; i++) {
+        if (arsenal->armes[i]->id == arme->id) {
+            printf("⚠️ Vous possédez déjà cette arme (%s) dans votre arsenal.\n", arme->nom);
+            return EXIT_FAILURE;
+        }
+    }
+
+    Arme **nouvelles_armes = realloc(arsenal->armes, (arsenal->longueur_armes + 1) * sizeof(Arme *));
+    if (!nouvelles_armes) {
+        fprintf(stderr, "Erreur: ajouterArme(): realloc()\n");
+        return EXIT_FAILURE;
+    }
+
+    arsenal->armes = nouvelles_armes;
+    arsenal->armes[arsenal->longueur_armes] = arme;
+    arsenal->longueur_armes++;
+
+    return EXIT_SUCCESS;
+}
+
+void equiperArme(Plongeur *joueur, size_t id_arme) {
+    if (!joueur || joueur->arsenal->longueur_armes == 0 || id_arme >= joueur->arsenal->longueur_armes) {
+        fprintf(stderr, "Erreur: equiperArme(): paramètres invalides\n");
+        return;
+    }
 
     if (joueur->arme_equipee) {
         // Retirer les bonus de l'ancienne arme
@@ -128,21 +167,11 @@ void equiperArme(Plongeur *joueur, Arsenal *arsenal) {
         joueur->attaque_min -= joueur->arme_equipee->attaque_min;
     }
 
-    afficherArmes(arsenal);
-    printf("\nChoisissez une arme à équiper :\n> ");
-    size_t choix = lireEntier();
-    while (choix < 0 || choix >= arsenal->longueur_armes) {
-        printf("\nChoix invalide. Veuillez réessayer :\n> ");
-        choix = lireEntier();
-    }
-
-    joueur->arme_equipee = arsenal->armes[choix];
+    joueur->arme_equipee = joueur->arsenal->armes[id_arme];
     
     // Ajouter les bonus de la nouvelle arme
     joueur->attaque_max += joueur->arme_equipee->attaque_max;
     joueur->attaque_min += joueur->arme_equipee->attaque_min;
-
-    printf("\n✅ %s équipée !\n", joueur->arme_equipee->nom);
 }
 
 void freeArsenal(Arsenal *arsenal) {

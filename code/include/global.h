@@ -142,6 +142,7 @@
     
 
     typedef struct Arme {
+        size_t id;
         char *nom;
         int attaque_min;
         int attaque_max;
@@ -213,9 +214,7 @@
         int profondeur;
         ListeConsommable *liste_consommables;
         Arme *arme_equipee;   // arme actuelle du joueur
-        Arme **armes_possedees;
-        size_t nb_armes;
-
+        Arsenal *arsenal;
     } Plongeur;
 
     typedef struct {
