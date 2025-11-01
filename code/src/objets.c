@@ -9,7 +9,7 @@ int appliquerActionsObjet(Objet *c, void *user_ptr, EntiteType user_type) {
     // Appliquer les effets du objet
     printf("\n>> L'effet de '%s' a été appliqué\n", c->nom);
     for (size_t i = 0; i < c->listeAction.longueur; i++) {
-        if (executerAction(&c->listeAction.actions[i], user_ptr, user_type, user_ptr, user_type)) {
+        if (executerAction(&c->listeAction.actions[i], user_ptr, user_type, user_ptr, user_type, 0) == EXIT_FAILURE) {
             fprintf(stderr, "Erreur: appliquerActionsObjet(): executerAction(%zu)\n", i);
             return EXIT_FAILURE;
         }
