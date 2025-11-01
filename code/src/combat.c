@@ -486,15 +486,15 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                 // Utiliser un objet
                 case 3:
                     printf("\nQuel objet utiliser ? (0 pour annuler)\n");
-                    for (size_t i = 0; i < joueur->liste_objets->longueur; i++) {
-                        Objet *c = joueur->liste_objets->objets[i];
+                    for (size_t i = 0; i < joueur->liste_consommables->longueur; i++) {
+                        Objet *c = joueur->liste_consommables->objets[i];
                         printf("\n[%zu] %s x%d", i + 1, c->nom, c->quantite);
                         printf("\n    %s\n", c->description);
                     }
                     printf("> ");
 
                     size_t choix_objet = lireEntier();
-                    if (choix_objet == 0 || choix_objet > joueur->liste_objets->longueur) {
+                    if (choix_objet == 0 || choix_objet > joueur->liste_consommables->longueur) {
                         printf("Action annulée.\n");
                         pressEnterToContinue();
                         afficherInterface(joueur, creatures, nb_creatures);
@@ -503,8 +503,8 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     }
 
                     res = consommerObjet(
-                        joueur->liste_objets,
-                        joueur->liste_objets->objets[choix_objet - 1],
+                        joueur->liste_consommables,
+                        joueur->liste_consommables->objets[choix_objet - 1],
                         (void*)joueur,
                         ENTITE_PLONGEUR
                     );
