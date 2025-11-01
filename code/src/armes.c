@@ -121,6 +121,44 @@ void afficherArmes(Arsenal *arsenal) {
     }
 }
 
+
+Arme *duplicateArme(Arme *a) {
+    if (!a) {
+        fprintf(stderr, "Erreur: duplicateArme(): argument invalide\n");
+        return NULL;
+    }
+
+    short res;
+
+    Arme *new_a = calloc(1, sizeof(Arme));
+    if (!new_a) {
+        fprintf(stderr, "Erreur: duplicateArme(): new_a = calloc()\n");
+        return NULL;
+    }
+
+    new_a->id = a->id;
+    new_a->attaque_min = a->attaque_min;
+    new_a->attaque_max = a->attaque_max;
+    new_a->cout_oxygene = a->cout_oxygene;
+    new_a->bonus_defense = a->bonus_defense;
+
+    new_a->nom = my_strdup(a->nom);
+    if (!new_a->nom) {
+        fprintf(stderr, "Erreur: duplicateArme(): duplication du nom\n");
+        freeArme(new_a);
+        return NULL;
+    }
+    new_a->listeAction = duplicateListeAction(&a->listeAction, &res);
+    if (res == EXIT_FAILURE) {
+        fprintf(stderr, "Erreur: duplicateArme(): duplication des champs\n");
+        freeArme(new_a);
+        return NULL;
+    }
+
+    return new_a;
+}
+
+
 int ajouterArme(Arsenal *modal, Arsenal *arsenal, size_t id_arme) {
     if (!modal || !arsenal || id_arme >= modal->longueur_armes) {
         fprintf(stderr, "Erreur: ajouterArme(): paramètres invalides\n");
@@ -132,8 +170,11 @@ int ajouterArme(Arsenal *modal, Arsenal *arsenal, size_t id_arme) {
         return EXIT_FAILURE;
     }
 
-    Arme *arme = modal->armes[id_arme];
-    if (!arme) return EXIT_FAILURE;
+    Arme *arme = duplicateArme(modal->armes[id_arme]);
+    if (!arme) {
+        fprintf(stderr, "Erreur: ajouterArme(): duplicateArme()\n");
+        return EXIT_FAILURE;
+    }
 
     for (size_t i = 0; i < arsenal->longueur_armes; i++) {
         if (arsenal->armes[i]->id == arme->id) {
@@ -174,14 +215,21 @@ void equiperArme(Plongeur *joueur, size_t id_arme) {
     joueur->attaque_min += joueur->arme_equipee->attaque_min;
 }
 
+void freeArme(Arme *arme) {
+    if (!arme) return;
+    if (arme->nom) free(arme->nom);
+    arme->nom = NULL;
+    freeActions(arme->listeAction.actions, arme->listeAction.longueur);
+    free(arme);
+}
+
 void freeArsenal(Arsenal *arsenal) {
     if (!arsenal) return;
     for (size_t i = 0; i < arsenal->longueur_armes; i++) {
-        Arme *a = arsenal->armes[i];
-        if (a->nom) free(a->nom);
-        freeActions(a->listeAction.actions, a->listeAction.longueur);
-        free(a);
+        freeArme(arsenal->armes[i]);
+        arsenal->armes[i] = NULL;
     }
     free(arsenal->armes);
+    arsenal->armes = NULL;
     free(arsenal);
 }

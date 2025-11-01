@@ -10,6 +10,8 @@ Arsenal *chargerArmesDepuisFichier(char  *filename);
 void afficherArmes(Arsenal *arsenal);
 int ajouterArme(Arsenal *modal, Arsenal *arsenal, size_t id_arme);
 void equiperArme(Plongeur *joueur, size_t id_arme);
+
+void freeArme(Arme *arme);
 void freeArsenal(Arsenal *arsenal);
 
 #endif
