@@ -14,6 +14,7 @@ int runGame(Sauvegarde *actualSave) {
     Bestiaire *bestiary = NULL;
     ListeCompetence modalCreaturesSkills = {0};
     ListeObjet *modalConsumablesList = NULL;
+    ListeObjet *modalOrnamentsList = NULL;
 
     short res;
 
@@ -45,7 +46,17 @@ int runGame(Sauvegarde *actualSave) {
         freeBestiary(bestiary);
         freeBestiary(modalBestiary);
         freeListeCompetence(&modalCreaturesSkills);
-        fprintf(stderr, "runGame(): Erreur lors du chargement de la liste des objets.\n");
+        fprintf(stderr, "runGame(): Erreur lors du chargement de la liste des consommables.\n");
+        return EXIT_FAILURE;
+    }
+
+    modalOrnamentsList = initModalListeObjet("config/objets/bibelots.conf");
+    if (!modalOrnamentsList) {
+        freeObjetList(modalConsumablesList);
+        freeBestiary(bestiary);
+        freeBestiary(modalBestiary);
+        freeListeCompetence(&modalCreaturesSkills);
+        fprintf(stderr, "runGame(): Erreur lors du chargement de la liste des bibelots.\n");
         return EXIT_FAILURE;
     }
 
@@ -56,11 +67,9 @@ int runGame(Sauvegarde *actualSave) {
     pressEnterToContinue();
 
     while (runProgram) {
-
-        // TEMP / TEST
-
+        
+        // Génération aléatoire de créatures
         size_t longueur_creatures = 2;
-
         for (size_t i = 0; i < longueur_creatures; i++) {
             if (generateCreatureInBestiary(modalBestiary, bestiary)) {
                 runProgram = false;
@@ -69,21 +78,24 @@ int runGame(Sauvegarde *actualSave) {
         }
         if (!runProgram) break;
 
-        diver->profondeur = 1;
-
+        // Test ajout effets
         ajouterEffet(&diver->liste_etats, POISON, 3, 0, 0);
-
         ajouterEffet(&bestiary->creatures[0]->liste_etats, PARALYSIE, 5, 0, 0);
         ajouterEffet(&bestiary->creatures[1]->liste_etats, SAIGNEMENT, 5, 0, 0);
 
-        printBestiary(bestiary);
+        // Test ajout objets
+        ajouterObjet(modalConsumablesList, diver->liste_consommables, 3);
+        ajouterObjet(modalConsumablesList, diver->liste_consommables, 1);
+        printObjectsList(diver->liste_consommables);
         pressEnterToContinue();
 
-        ajouterObjet(modalConsumablesList, diver->liste_objets, 3);
-        ajouterObjet(modalConsumablesList, diver->liste_objets, 1);
-        printConsumablesList(diver->liste_objets);
+        // Test ajout bibelots
+        ajouterObjet(modalOrnamentsList, diver->liste_bibelots, 2);
+        ajouterObjet(modalOrnamentsList, diver->liste_bibelots, 5);
+        printObjectsList(diver->liste_bibelots);
         pressEnterToContinue();
 
+        // Lancer le combat
         res = combat(diver, bestiary->creatures, bestiary->longueur_creatures);
         if (res == EXIT_FAILURE) {
             fprintf(stderr, "Erreur: runGame(): res = combat()\n");
@@ -99,7 +111,6 @@ int runGame(Sauvegarde *actualSave) {
         }
 
         freeBestiaryContent(bestiary);
-
         runProgram = false;
     }
 
@@ -109,6 +120,7 @@ int runGame(Sauvegarde *actualSave) {
     freeBestiary(modalBestiary);
     freeListeCompetence(&modalCreaturesSkills);
     freeListeObjets(modalConsumablesList);
-    
+    freeListeObjets(modalOrnamentsList);
+
     return EXIT_SUCCESS;
 }
