@@ -5,6 +5,12 @@
     #include "joueur.h"
     #include "objets.h"
 
+    typedef struct {
+        FILE *file;
+        char *tmp_filepath;
+        char *final_filepath;
+    } SaveTmpFile;
+
     Sauvegarde *initSave();
     void freeSauvegarde(Sauvegarde *save);
     void freeSauvegardes(ListeSauvegardes *saves);
@@ -17,12 +23,10 @@
     ListeAction loadListeAction(FILE *file, short *res);
     ListeObjet *loadListeObjet(FILE *file);
 
+    int saveInfo(Sauvegarde *save, SaveTmpFile *tmpSave);
+    int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave);
+    
+    int saveListeActions(ListeAction *liste, SaveTmpFile *tmpSave);
     int saveListeObjet(ListeObjet *liste, SaveTmpFile *tmpSave);
-
-    typedef struct {
-        FILE *file;
-        char *tmp_filepath;
-        char *final_filepath;
-    } SaveTmpFile;
 
 #endif

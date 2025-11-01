@@ -732,8 +732,8 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
     diver_copy.niveau = diver->niveau;
     diver_copy.profondeur = diver->profondeur;
     // On garde la longueur des listes mais pas les pointeurs
-    diver_copy.liste_etats.longueur = &diver->liste_etats ? diver->liste_etats.longueur : 0;
-    diver_copy.liste_competences.longueur = &diver->liste_competences ? diver->liste_competences.longueur : 0;
+    diver_copy.liste_etats.longueur = diver->liste_etats.etats ? diver->liste_etats.longueur : 0;
+    diver_copy.liste_competences.longueur = diver->liste_competences.competences ? diver->liste_competences.longueur : 0;
 
     // Bloc sans pointeurs (safe, no uninitialised bytes)
     if (addBlock(tmpSave, &diver_copy, sizeof(Plongeur)) != EXIT_SUCCESS)
@@ -917,7 +917,7 @@ int saveListeObjet(ListeObjet *liste, SaveTmpFile *tmpSave) {
             return EXIT_FAILURE;
 
         // Liste des actions
-        if (saveListeAction(&objet->listeAction, tmpSave) != EXIT_SUCCESS)
+        if (saveListeActions(&objet->listeAction, tmpSave) != EXIT_SUCCESS)
             return EXIT_FAILURE;
     }
 

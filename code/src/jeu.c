@@ -52,7 +52,7 @@ int runGame(Sauvegarde *actualSave) {
 
     modalOrnamentsList = initModalListeObjet("config/objets/bibelots.conf");
     if (!modalOrnamentsList) {
-        freeObjetList(modalConsumablesList);
+        freeListeObjets(modalConsumablesList);
         freeBestiary(bestiary);
         freeBestiary(modalBestiary);
         freeListeCompetence(&modalCreaturesSkills);
@@ -118,6 +118,7 @@ int runGame(Sauvegarde *actualSave) {
     
     freeBestiary(bestiary);
     freeBestiary(modalBestiary);
+    
     freeListeCompetence(&modalCreaturesSkills);
     freeListeObjets(modalConsumablesList);
     freeListeObjets(modalOrnamentsList);
