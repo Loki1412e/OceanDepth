@@ -7,6 +7,7 @@
     #include "creatures.h"
     #include "combat.h"
     #include "objets.h"
+    #include "bibelots.h"
     #include "effets.h"
     #include "sauvegarde.h"
 

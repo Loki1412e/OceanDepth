@@ -83,15 +83,15 @@ int runGame(Sauvegarde *actualSave) {
         ajouterEffet(&bestiary->creatures[0]->liste_etats, PARALYSIE, 5, 0, 0);
         ajouterEffet(&bestiary->creatures[1]->liste_etats, SAIGNEMENT, 5, 0, 0);
 
-        // Test ajout objets
+        // Test ajout objets (consommables)
         ajouterObjet(modalConsumablesList, diver->liste_consommables, 3);
         ajouterObjet(modalConsumablesList, diver->liste_consommables, 1);
         printObjectsList(diver->liste_consommables);
         pressEnterToContinue();
 
         // Test ajout bibelots
-        ajouterObjet(modalOrnamentsList, diver->liste_bibelots, 2);
-        ajouterObjet(modalOrnamentsList, diver->liste_bibelots, 5);
+        ajouterBibelot(modalOrnamentsList, diver->liste_bibelots, 2);
+        ajouterBibelot(modalOrnamentsList, diver->liste_bibelots, 5);
         printObjectsList(diver->liste_bibelots);
         pressEnterToContinue();
 
@@ -109,6 +109,11 @@ int runGame(Sauvegarde *actualSave) {
             pressEnterToContinue();
             break;
         }
+
+        // Test suppression bibelots
+        supprimerBibelot(modalOrnamentsList, diver->liste_bibelots->objets[2]);
+        printObjectsList(diver->liste_bibelots);
+        pressEnterToContinue();
 
         freeBestiaryContent(bestiary);
         runProgram = false;
