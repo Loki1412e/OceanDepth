@@ -547,16 +547,25 @@ Plongeur *loadDiver(FILE *file) {
     }
     
     // Lire arme_equipee
-    size_t index_arme_equipee = diver->arsenal->longueur_armes; // Valeur par défaut invalide
     diver->arme_equipee = NULL;
-
+    size_t index_arme_equipee;
     if (fread(&index_arme_equipee, sizeof(size_t), 1, file) != 1) {
         fprintf(stderr, "loadDiver fread index_arme_equipee\n");
         freeDiverContent(diver);
         return NULL;
     }
-    if (index_arme_equipee < diver->arsenal->longueur_armes)
-        diver->arme_equipee = diver->arsenal->armes[index_arme_equipee];
+    short arme_found = false;
+    for (size_t i = 0; i < diver->arsenal->longueur_armes; i++) {
+        // On a trouvé l'arme équipée
+        if (i == index_arme_equipee) {
+            diver->arme_equipee = diver->arsenal->armes[i];
+            arme_found = true;
+            break;
+        }
+    }
+    if (!arme_found) {
+        diver->arme_equipee = NULL;
+    }
 
     return diver;
 }
@@ -1025,7 +1034,13 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
     }
 
     // Arme en equipement
-    size_t index_arme_equipee = diver->arme_equipee ? diver->arme_equipee->id : diver->arsenal->longueur_armes;
+    size_t invalid_index = 0;
+    for (size_t i = 0; i < diver->arsenal->longueur_armes; i++) {
+        Arme *arme = diver->arsenal->armes[i];
+        if (arme->id > invalid_index)
+            invalid_index = arme->id + 1;
+    }
+    size_t index_arme_equipee = diver->arme_equipee ? diver->arme_equipee->id : invalid_index;
     if (addBlock(tmpSave, &index_arme_equipee, sizeof(size_t)) != EXIT_SUCCESS)
         return EXIT_FAILURE;
 
@@ -1035,11 +1050,7 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
             fprintf(stderr, "saveDiver : erreur rééquipement arme\n");
             return EXIT_FAILURE;
         }
-        printf("WARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNING 1/3: saveDiver : index_arme_equipee (%zu) < diver->arsenal->longueur_armes (%zu)\n", index_arme_equipee, diver->arsenal->longueur_armes);
     }
-    else printf("WARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNING 2/3: saveDiver : index_arme_equipee (%zu) >= diver->arsenal->longueur_armes (%zu)\n", index_arme_equipee, diver->arsenal->longueur_armes);
-
-    printf("WARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNING 3/3: saveDiver : sauvegarde réussie\n");
 
     return EXIT_SUCCESS;
 }
