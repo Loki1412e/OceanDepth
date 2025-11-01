@@ -42,7 +42,7 @@ int consommerObjet(ListeObjet *list, Objet *c, void *user_ptr, EntiteType user_t
     int quantite = quantiteObjetInList(list, c);
 
     if (quantite == -1) {
-        fprintf(stderr, "Erreur: consommerObjet(): le objet n'est pas dans la liste\n");
+        fprintf(stderr, "Erreur: consommerObjet(): l'objet n'est pas dans la liste\n");
         return EXIT_FAILURE;
     }
 
@@ -57,7 +57,7 @@ int consommerObjet(ListeObjet *list, Objet *c, void *user_ptr, EntiteType user_t
 
     c->quantite--;
 
-    // Supprimer le objet de la liste si quantité <= 0
+    // Supprimer l'objet de la liste si quantité <= 0
     if (c->quantite <= 0 && supprimerObjet(list, c) == EXIT_FAILURE) {
         fprintf(stderr, "Erreur: consommerObjet(): supprimerObjet()\n");
         return EXIT_FAILURE;
@@ -136,7 +136,7 @@ int ajouterObjet(ListeObjet *modal, ListeObjet *list, size_t id_objet) {
         return EXIT_FAILURE;
     }
 
-    // Si le objet est déjà dans la liste, on incrémente juste la quantité
+    // Si l'objet est déjà dans la liste, on incrémente juste la quantité
     for (size_t i = 0; i < list->longueur; i++) {
         if (list->objets[i]->id == id_objet) {
             list->objets[i]->quantite++;
@@ -206,7 +206,7 @@ int supprimerObjet(ListeObjet *list, Objet *c) {
         new_objets[i] = list->objets[i + 1];
     }
 
-    // Libérer le objet supprimé
+    // Libérer l'objet supprimé
     freeObjet(c);
     // Libérer l'ancienne liste de objets
     free(list->objets);

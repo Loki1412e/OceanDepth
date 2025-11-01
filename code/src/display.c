@@ -241,14 +241,19 @@ void printDiver(Plongeur *diver) {
     printf("Vitesse: %d\n", diver->vitesse);
     printf("Niveau: %hu\n", diver->niveau);
     printf("Perles: %hu\n", diver->perles);
+
+    printf("Bibelots:\n");
+    printObjectsList(diver->liste_bibelots);
+    printf("\n");
     
     printf("Etats appliques: ");
     printListeEtat(diver->liste_etats);
     printf("\n");
 
     printListeCompetence(diver->liste_competences);
-    
-    printObjectsList(diver->liste_objets);
+
+    printf("Consommables:\n");
+    printObjectsList(diver->liste_consommables);
 
     printf("====================================\n\n");
 }
