@@ -26,6 +26,8 @@
     #include "random.h"
     #include "repertoire.h"
     #include "utils.h"
+    #include "armes.h"
+
 
 
     /* Define */
@@ -197,6 +199,10 @@
         ListeCompetence liste_competences;
         int profondeur;
         ListeConsommable *liste_consommables;
+        Arme *arme_equipee;   // arme actuelle du joueur
+        Arme **armes_possedees;
+        size_t nb_armes;
+
     } Plongeur;
 
     typedef struct {
@@ -221,5 +227,7 @@
         Sauvegarde **sauvegardes;
         size_t longueur_sauvegardes;
     } ListeSauvegardes;
+
+
 
 #endif

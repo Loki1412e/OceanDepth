@@ -48,6 +48,22 @@ int runGame(Sauvegarde *actualSave) {
         fprintf(stderr, "runGame(): Erreur lors du chargement de la liste des consommables.\n");
         return EXIT_FAILURE;
     }
+    // Chargement des armes
+    Arsenal *arsenal = chargerArmesDepuisFichier("config/objets/armes.conf");
+    if (!arsenal) {
+    fprintf(stderr, "runGame(): Erreur lors du chargement des armes.\n");
+    freeBestiary(bestiary);
+    freeBestiary(modalBestiary);
+    freeListeCompetence(&modalCreaturesSkills);
+    freeListeConsommables(modalConsumablesList);
+    return EXIT_FAILURE;
+}
+
+printf("\nVous découvrez un coffre contenant des armes !\n");
+equiperArme(diver, arsenal);
+pressEnterToContinue();
+
+/* ========================== */
 
     /*===== Boucle principale ====*/
 
