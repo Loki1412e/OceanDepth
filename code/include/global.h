@@ -26,8 +26,6 @@
     #include "random.h"
     #include "repertoire.h"
     #include "utils.h"
-    #include "armes.h"
-
 
 
     /* Define */
@@ -141,6 +139,21 @@
         Consommable **consommables;
         size_t longueur;
     } ListeConsommable;
+    
+
+    typedef struct Arme {
+        char *nom;
+        int attaque_min;
+        int attaque_max;
+        int cout_oxygene;
+        int bonus_defense;
+        ListeAction listeAction;
+    } Arme;
+
+    typedef struct {
+        Arme **armes;
+        size_t longueur_armes;
+    } Arsenal;
 
     
     typedef struct {
