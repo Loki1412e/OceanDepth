@@ -2,6 +2,10 @@
 
 
 int ajouterBibelot(ListeObjet *modal, ListeObjet *list, size_t id_objet) {
+    if (!modal || !modal->objets || !list) {
+        fprintf(stderr, "Erreur: ajouterBibelot(): arguments invalides\n");
+        return EXIT_FAILURE;
+    }
     if (id_objet >= modal->longueur) {
         fprintf(stderr, "Erreur: ajouterBibelot(): L'objet avec l'id %zu n'existe pas dans la liste des bibelots modaux.\n", id_objet);
         return EXIT_FAILURE;
@@ -10,6 +14,11 @@ int ajouterBibelot(ListeObjet *modal, ListeObjet *list, size_t id_objet) {
     for (size_t i = 0; i < list->longueur; i++) {
         // Si l'objet est déjà présent dans la liste des bibelots
         if (list->objets[i]->id == id_objet) return EXIT_SUCCESS;
+    }
+
+    if (ajouterObjet(modal, list, id_objet) != EXIT_SUCCESS) {
+        fprintf(stderr, "Erreur: ajouterBibelot(): ajouterObjet(): Impossible d'ajouter l'objet avec l'id %zu à la liste des bibelots.\n", id_objet);
+        return EXIT_FAILURE;
     }
 
     if (appliquerActionsObjet(list->objets[list->longueur - 1], NULL, ENTITE_TYPE_INVALIDE, NO_REVERSE) != EXIT_SUCCESS) {
