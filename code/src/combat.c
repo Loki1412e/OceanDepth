@@ -75,22 +75,64 @@ int finDuCombat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creature
 /*====== Actions ======*/
 
 void joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature) {
-    int defenseCible = calculerDefenseEffet(creature->defense, &creature->liste_etats);
-    int degats = calculerDegats(joueur->attaque_min, joueur->attaque_max, defenseCible);
-    degats = calculerDegatsInfligesEffet(&creature->liste_etats, degats);
+   int defenseCible = calculerDefenseEffet(creature->defense, &creature->liste_etats);
 
-    creature->pv -= degats;
-    if (creature->pv < 0) creature->pv = 0;
+int degats = calculerDegats(
+    joueur->arme_equipee ? joueur->arme_equipee->attaque_min : joueur->attaque_min,
+    joueur->arme_equipee ? joueur->arme_equipee->attaque_max : joueur->attaque_max,
+    defenseCible
+);
 
-    int perteOxygene = random_int(2, 4); // attaque normal
-    joueur->oxygene -= perteOxygene;
-    if (joueur->oxygene < 0) joueur->oxygene = 0;
+degats = calculerDegatsInfligesEffet(&creature->liste_etats, degats);
 
-    int gainFatigue = augmenterFatigue(joueur, 1); // de 1 pour le moment
+creature->pv -= degats;
+if (creature->pv < 0) creature->pv = 0;
 
-    printf("Vous attaquez %s → %d dégâts (PV restants: %d)\n", creature->nom, degats, creature->pv);
-    printf("Oxygène consommé: -%d (action de combat)\n", perteOxygene);
-    printf("Fatigue augmentée: +%d (effort physique)\n", gainFatigue);
+// oxygène consommé selon l’arme équipée
+int perteOxygene = joueur->arme_equipee ? joueur->arme_equipee->cout_oxygene : 2;
+joueur->oxygene -= perteOxygene;
+if (joueur->oxygene < 0) joueur->oxygene = 0;
+
+// fatigue
+int gainFatigue = augmenterFatigue(joueur, 1);
+
+printf("Vous attaquez %s avec %s → %d dégâts (PV restants: %d)\n",
+       creature->nom,
+       joueur->arme_equipee ? joueur->arme_equipee->nom : "vos poings",
+       degats, creature->pv);
+
+printf("Oxygène consommé: -%d (arme)\n", perteOxygene);
+printf("Fatigue augmentée: +%d\n", gainFatigue);
+// === Application des effets spéciaux de l'arme ===
+if (joueur->arme_equipee && joueur->arme_equipee->effet_special) {
+
+    // ⚡ Effet ÉLECTRIQUE : chance de paralysie
+    if (strcmp(joueur->arme_equipee->effet_special, "ÉLECTRIQUE") == 0) {
+        if (random_int(1, 100) <= 25) { // 25% de chance
+            ajouterEffet(&creature->liste_etats, PARALYSIE, 2, 0, 0);
+            printf("⚡ %s est paralysée par un choc électrique !\n", creature->nom);
+        }
+    }
+
+    // 🔱 Effet PERFORANT : ignore partiellement la défense
+    else if (strcmp(joueur->arme_equipee->effet_special, "PERFORANT") == 0) {
+        printf("🔱 %s perce la défense de %s ! (Dégâts améliorés)\n",
+               joueur->arme_equipee->nom, creature->nom);
+        // déjà pris en compte si tu veux réduire la défense avant le calcul
+    }
+
+    // 💥 Effet CHOC : réduit la vitesse de la créature
+    else if (strcmp(joueur->arme_equipee->effet_special, "CHOC") == 0) {
+        if (random_int(1, 100) <= 40) { // 40% de chance
+            creature->vitesse -= 5;
+            if (creature->vitesse < 0) creature->vitesse = 0;
+            printf("💥 Le coup de %s désoriente %s ! Vitesse réduite !\n",
+                   joueur->arme_equipee->nom, creature->nom);
+        }
+    }
+}
+
+
 }
 
 // Return -1 si n'a pas de compétence activable
