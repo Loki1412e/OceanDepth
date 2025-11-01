@@ -144,6 +144,7 @@ int supprimerConsommable(ListeConsommable *list, Consommable *c) {
 
     short estDansLaListe = false;
     size_t indice_c;
+    size_t new_length = list->longueur - 1;
 
     // Trouver l'index de c dans la liste
     for (indice_c = 0; indice_c < list->longueur; indice_c++) {
@@ -154,27 +155,29 @@ int supprimerConsommable(ListeConsommable *list, Consommable *c) {
     }
     if (!estDansLaListe) return EXIT_SUCCESS;
 
-    new_consommables = calloc((list->longueur - 1), sizeof(Consommable*));
+    new_consommables = calloc((new_length), sizeof(Consommable*));
     if (!new_consommables) {
         fprintf(stderr, "Erreur: supprimerConsommable(): new_consommables = calloc()\n");
         return EXIT_FAILURE;
     }
 
     // Copier les éléments avant et après l'élément à supprimer
-    for (size_t j = 0; j < indice_c; j++) {
-        new_consommables[j] = list->consommables[j];
+    for (size_t i = 0; i < indice_c; i++) {
+        new_consommables[i] = list->consommables[i];
     }
 
     // Décaler les éléments après l'élément supprimé
-    for (size_t j = indice_c; j < list->longueur - 1; j++) {
-        new_consommables[j] = list->consommables[j + 1];
+    for (size_t i = indice_c; i < new_length; i++) {
+        new_consommables[i] = list->consommables[i + 1];
     }
 
-    // Libérer l'ancien element c
+    // Libérer le consommable supprimé
     freeConsommable(c);
-
+    // Libérer l'ancienne liste de consommables
+    free(list->consommables);
+    // Mettre à jour la liste et sa longueur
     list->consommables = new_consommables;
-    list->longueur--;
+    list->longueur = new_length;
     return EXIT_SUCCESS;
 }
 
