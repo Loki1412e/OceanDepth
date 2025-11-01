@@ -25,6 +25,15 @@ Arsenal *chargerArmesDepuisFichier(char *filename) {
         fclose(f);
         return NULL;
     }
+    for (size_t i = 0; i < arsenal->longueur_armes; i++) {
+        arsenal->armes[i] = calloc(1, sizeof(Arme));
+        if (!arsenal->armes[i]) {
+            fprintf(stderr, "Erreur: chargerArmesDepuisFichier(): arsenal->armes[%zu] = calloc()\n", i);
+            freeArsenal(arsenal);
+            fclose(f);
+            return NULL;
+        }
+    }
 
     char line[256];
     size_t length = 0, index = 0;
@@ -122,7 +131,10 @@ void equiperArme(Plongeur *joueur, Arsenal *arsenal) {
     afficherArmes(arsenal);
     printf("\nChoisissez une arme à équiper :\n> ");
     size_t choix = lireEntier();
-    if (choix >= arsenal->longueur_armes) choix = 0;
+    while (choix < 0 || choix >= arsenal->longueur_armes) {
+        printf("\nChoix invalide. Veuillez réessayer :\n> ");
+        choix = lireEntier();
+    }
 
     joueur->arme_equipee = arsenal->armes[choix];
     
