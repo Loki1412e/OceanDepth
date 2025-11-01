@@ -170,17 +170,15 @@ int ajouterArme(Arsenal *modal, Arsenal *arsenal, size_t id_arme) {
         return EXIT_FAILURE;
     }
 
+    for (size_t i = 0; i < arsenal->longueur_armes; i++) {
+        // On l'a déjà
+        if (arsenal->armes[i]->id == id_arme) return EXIT_SUCCESS;
+    }
+
     Arme *arme = duplicateArme(modal->armes[id_arme]);
     if (!arme) {
         fprintf(stderr, "Erreur: ajouterArme(): duplicateArme()\n");
         return EXIT_FAILURE;
-    }
-
-    for (size_t i = 0; i < arsenal->longueur_armes; i++) {
-        if (arsenal->armes[i]->id == arme->id) {
-            printf("⚠️ Vous possédez déjà cette arme (%s) dans votre arsenal.\n", arme->nom);
-            return EXIT_FAILURE;
-        }
     }
 
     Arme **nouvelles_armes = realloc(arsenal->armes, (arsenal->longueur_armes + 1) * sizeof(Arme *));
