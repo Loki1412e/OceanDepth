@@ -557,7 +557,7 @@ Plongeur *loadDiver(FILE *file) {
     short arme_found = false;
     for (size_t i = 0; i < diver->arsenal->longueur_armes; i++) {
         // On a trouvé l'arme équipée
-        if (i == index_arme_equipee) {
+        if (diver->arsenal->armes[i]->id == index_arme_equipee) {
             diver->arme_equipee = diver->arsenal->armes[i];
             arme_found = true;
             break;
