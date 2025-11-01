@@ -15,6 +15,9 @@
     int setNewSaveName(Sauvegarde *save, char *save_name);
 
     ListeAction loadListeAction(FILE *file, short *res);
+    ListeObjet *loadListeObjet(FILE *file);
+
+    int saveListeObjet(ListeObjet *liste, SaveTmpFile *tmpSave);
 
     typedef struct {
         FILE *file;
