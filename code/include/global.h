@@ -42,6 +42,12 @@
     /* Enum */
     
     typedef enum {
+        NO_REVERSE,
+        REVERSE
+    } ActionReverseType;
+
+    
+    typedef enum {
         ENTITE_TYPE_INVALIDE,
         ENTITE_PLONGEUR,
         ENTITE_CREATURE
@@ -127,7 +133,7 @@
 
 
     typedef struct {
-        unsigned id;
+        size_t id;
         char *nom;
         char *description;
         Rarete rarete;
@@ -142,7 +148,7 @@
 
     
     typedef struct {
-        unsigned id;
+        size_t id;
         char *nom;
         char *description;
         int cout_oxygene;
@@ -160,7 +166,7 @@
     
 
     typedef struct {
-        unsigned id;
+        size_t id;
         char *nom;
         int pv_min;
         int pv_max;
