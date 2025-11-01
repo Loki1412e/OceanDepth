@@ -222,7 +222,7 @@ Plongeur *loadDiver(FILE *file) {
     diver->nom = NULL;
     diver->liste_etats.etats = NULL;
     diver->liste_competences.competences = NULL;
-    diver->liste_consommables = NULL;
+    diver->liste_objets = NULL;
 
     // Lire nom
     size_t nom_len = 0;
@@ -372,10 +372,10 @@ Plongeur *loadDiver(FILE *file) {
         }
     }
 
-    // Lire consommables
-    diver->liste_consommables = calloc(1, sizeof(ListeConsommable));
-    if (!diver->liste_consommables) {
-        fprintf(stderr, "Erreur: loadDiver(): liste_consommables = calloc()\n");
+    // Lire objets
+    diver->liste_objets = calloc(1, sizeof(ListeObjet));
+    if (!diver->liste_objets) {
+        fprintf(stderr, "Erreur: loadDiver(): liste_objets = calloc()\n");
         freeDiverContent(diver);
         return NULL;
     }
@@ -385,25 +385,25 @@ Plongeur *loadDiver(FILE *file) {
         freeDiverContent(diver);
         return NULL;
     }
-    diver->liste_consommables->longueur = cons_len;
+    diver->liste_objets->longueur = cons_len;
     if (cons_len > 0) {
-        diver->liste_consommables->consommables = calloc(cons_len, sizeof(Consommable*));
-        if (!diver->liste_consommables->consommables) {
-            fprintf(stderr, "Erreur: loadDiver(): liste_consommables->consommables = calloc()\n");
+        diver->liste_objets->objets = calloc(cons_len, sizeof(Objet*));
+        if (!diver->liste_objets->objets) {
+            fprintf(stderr, "Erreur: loadDiver(): liste_objets->objets = calloc()\n");
             freeDiverContent(diver);
             return NULL;
         }
     }
     for (size_t i = 0; i < cons_len; i++) {
-        Consommable *tmp_cons = calloc(1, sizeof(Consommable));
+        Objet *tmp_cons = calloc(1, sizeof(Objet));
         if (!tmp_cons) {
             fprintf(stderr, "Erreur: loadDiver(): tmp_cons = calloc()\n");
             freeDiverContent(diver);
             return NULL;
         }
-        // Lire le consommable sans pointeurs
-        if (fread(tmp_cons, sizeof(Consommable), 1, file) != 1) {
-            fprintf(stderr, "Erreur: loadDiver(): fread Consommable\n");
+        // Lire le objet sans pointeurs
+        if (fread(tmp_cons, sizeof(Objet), 1, file) != 1) {
+            fprintf(stderr, "Erreur: loadDiver(): fread Objet\n");
             free(tmp_cons);
             freeDiverContent(diver);
             return NULL;
@@ -463,14 +463,14 @@ Plongeur *loadDiver(FILE *file) {
         short res;
         tmp_cons->listeAction = loadListeAction(file, &res);
         if (res == EXIT_FAILURE) {
-            fprintf(stderr, "Erreur: loadDiver(): loadListeAction for consommable\n");
+            fprintf(stderr, "Erreur: loadDiver(): loadListeAction for objet\n");
             free(tmp_cons);
             freeDiverContent(diver);
             return NULL;
         }
 
-        // Attribuer le consommable à la liste
-        diver->liste_consommables->consommables[i] = tmp_cons;
+        // Attribuer le objet à la liste
+        diver->liste_objets->objets[i] = tmp_cons;
     }
 
     return diver;
@@ -688,7 +688,7 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
         ListeEtat liste_etats;
         ListeCompetence liste_competences;
         int profondeur;
-        ListeConsommable *liste_consommables;
+        ListeObjet *liste_objets;
     } Plongeur;
 */
 
@@ -712,7 +712,7 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
     diver_copy.liste_etats.etats = NULL;
     diver_copy.liste_competences.longueur = diver->liste_competences.longueur;
     diver_copy.liste_competences.competences = NULL;
-    diver_copy.liste_consommables = NULL;
+    diver_copy.liste_objets = NULL;
 
     // Bloc sans pointeurs (safe, no uninitialised bytes)
     if (addBlock(tmpSave, &diver_copy, sizeof(Plongeur)) != EXIT_SUCCESS)
@@ -811,39 +811,39 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
         }
     }
 
-    size_t consommables_len = diver->liste_consommables ? diver->liste_consommables->longueur : 0;
-    // taille consommables
-    if (addBlock(tmpSave, &consommables_len, sizeof(size_t)) != EXIT_SUCCESS)
+    size_t objets_len = diver->liste_objets ? diver->liste_objets->longueur : 0;
+    // taille objets
+    if (addBlock(tmpSave, &objets_len, sizeof(size_t)) != EXIT_SUCCESS)
         return EXIT_FAILURE;
-    // tab consommables
-    for (size_t i = 0; i < consommables_len; i++) {
-        Consommable *consommable = diver->liste_consommables->consommables[i];
-        if (addBlock(tmpSave, consommable, sizeof(Consommable)) != EXIT_SUCCESS)
+    // tab objets
+    for (size_t i = 0; i < objets_len; i++) {
+        Objet *objet = diver->liste_objets->objets[i];
+        if (addBlock(tmpSave, objet, sizeof(Objet)) != EXIT_SUCCESS)
             return EXIT_FAILURE;
 
-        size_t nom_len = consommable->nom ? strlen(consommable->nom) + 1 : 0;
+        size_t nom_len = objet->nom ? strlen(objet->nom) + 1 : 0;
         // taille nom
         if (addBlock(tmpSave, &nom_len, sizeof(size_t)) != EXIT_SUCCESS)
             return EXIT_FAILURE;
         // tab nom
-        if (nom_len > 0 && addBlock(tmpSave, consommable->nom, nom_len) != EXIT_SUCCESS)
+        if (nom_len > 0 && addBlock(tmpSave, objet->nom, nom_len) != EXIT_SUCCESS)
             return EXIT_FAILURE;
 
-        size_t desc_len = consommable->description ? strlen(consommable->description) + 1 : 0;
+        size_t desc_len = objet->description ? strlen(objet->description) + 1 : 0;
         // taille description
         if (addBlock(tmpSave, &desc_len, sizeof(size_t)) != EXIT_SUCCESS)
             return EXIT_FAILURE;
         // tab description
-        if (desc_len > 0 && addBlock(tmpSave, consommable->description, desc_len) != EXIT_SUCCESS)
+        if (desc_len > 0 && addBlock(tmpSave, objet->description, desc_len) != EXIT_SUCCESS)
             return EXIT_FAILURE;
 
-        size_t action_len = consommable->listeAction.longueur;
+        size_t action_len = objet->listeAction.longueur;
         // taille actions
         if (addBlock(tmpSave, &action_len, sizeof(size_t)) != EXIT_SUCCESS)
             return EXIT_FAILURE;
         // tab actions
         for (size_t j = 0; j < action_len; j++) {
-            Action *action = &consommable->listeAction.actions[j];
+            Action *action = &objet->listeAction.actions[j];
             Action action_copy = {0};
             action_copy.type = action->type;
             action_copy.params = NULL;

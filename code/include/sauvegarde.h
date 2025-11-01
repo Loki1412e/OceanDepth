@@ -3,7 +3,7 @@
 
     #include "global.h"
     #include "joueur.h"
-    #include "consommables.h"
+    #include "objets.h"
 
     Sauvegarde *initSave();
     void freeSauvegarde(Sauvegarde *save);

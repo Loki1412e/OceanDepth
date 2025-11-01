@@ -28,9 +28,9 @@ Plongeur *initModalDiver(char *diver_name, ListeCompetence *modalDiverSkills) {
     }
 
     // Initialisation du Joueur
-    diver->liste_consommables = calloc(1, sizeof(ListeConsommable));
-    if (!diver->liste_consommables) {
-        fprintf(stderr, "Erreur: initModalDiver(): Allocation mémoire liste_consommables\n");
+    diver->liste_objets = calloc(1, sizeof(ListeObjet));
+    if (!diver->liste_objets) {
+        fprintf(stderr, "Erreur: initModalDiver(): Allocation mémoire liste_objets\n");
         freeDiver(diver);
         return NULL;
     }
@@ -272,7 +272,7 @@ void freeDiverContent(Plongeur *diver) {
     
     freeListeEtat(&diver->liste_etats);
     freeListeCompetence(&diver->liste_competences);
-    freeListeConsommables(diver->liste_consommables);
+    freeListeObjets(diver->liste_objets);
 }
 
 void freeDiver(Plongeur *diver) {

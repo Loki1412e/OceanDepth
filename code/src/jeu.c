@@ -13,7 +13,7 @@ int runGame(Sauvegarde *actualSave) {
     Bestiaire *modalBestiary = NULL;
     Bestiaire *bestiary = NULL;
     ListeCompetence modalCreaturesSkills = {0};
-    ListeConsommable *modalConsumablesList = NULL;
+    ListeObjet *modalConsumablesList = NULL;
 
     short res;
 
@@ -40,12 +40,12 @@ int runGame(Sauvegarde *actualSave) {
         return EXIT_FAILURE;
     }
 
-    modalConsumablesList = initModalListeConsommable("config/objets/consommables.conf");
+    modalConsumablesList = initModalListeObjet("config/objets/consommables.conf");
     if (!modalConsumablesList) {
         freeBestiary(bestiary);
         freeBestiary(modalBestiary);
         freeListeCompetence(&modalCreaturesSkills);
-        fprintf(stderr, "runGame(): Erreur lors du chargement de la liste des consommables.\n");
+        fprintf(stderr, "runGame(): Erreur lors du chargement de la liste des objets.\n");
         return EXIT_FAILURE;
     }
 
@@ -79,9 +79,9 @@ int runGame(Sauvegarde *actualSave) {
         printBestiary(bestiary);
         pressEnterToContinue();
 
-        ajouterConsommable(modalConsumablesList, diver->liste_consommables, 3);
-        ajouterConsommable(modalConsumablesList, diver->liste_consommables, 1);
-        printConsumablesList(diver->liste_consommables);
+        ajouterObjet(modalConsumablesList, diver->liste_objets, 3);
+        ajouterObjet(modalConsumablesList, diver->liste_objets, 1);
+        printConsumablesList(diver->liste_objets);
         pressEnterToContinue();
 
         res = combat(diver, bestiary->creatures, bestiary->longueur_creatures);
@@ -108,7 +108,7 @@ int runGame(Sauvegarde *actualSave) {
     freeBestiary(bestiary);
     freeBestiary(modalBestiary);
     freeListeCompetence(&modalCreaturesSkills);
-    freeListeConsommables(modalConsumablesList);
+    freeListeObjets(modalConsumablesList);
     
     return EXIT_SUCCESS;
 }
