@@ -60,21 +60,21 @@ int runGame(Sauvegarde *actualSave) {
         return EXIT_FAILURE;
     }
     
-    // On ajoute des armes de base au joueur
-    ajouterArme(modalArsenal, diver->arsenal, 0);
-    ajouterArme(modalArsenal, diver->arsenal, 3);
+    // // On ajoute des armes de base au joueur
+    // ajouterArme(modalArsenal, diver->arsenal, 0);
+    // ajouterArme(modalArsenal, diver->arsenal, 3);
 
-    // Joueur choisi son arme parmis son arsenal
-    afficherArmes(diver->arsenal);
-    printf("\nChoisissez une arme à équiper :\n> ");
-    size_t choix = lireEntier();
-    while (choix >= diver->arsenal->longueur_armes) {
-        printf("\nChoix invalide. Veuillez réessayer :\n> ");
-        choix = lireEntier();
-    }
-    equiperArme(diver, choix);
-    printf("\n✅ %s équipée !\n", diver->arme_equipee->nom);
-    pressEnterToContinue();
+    // // Joueur choisi son arme parmis son arsenal
+    // afficherArmes(diver->arsenal);
+    // printf("\nChoisissez une arme à équiper :\n> ");
+    // size_t choix = lireEntier();
+    // while (choix >= diver->arsenal->longueur_armes) {
+    //     printf("\nChoix invalide. Veuillez réessayer :\n> ");
+    //     choix = lireEntier();
+    // }
+    // equiperArme(diver, choix);
+    // printf("\n✅ %s équipée !\n", diver->arme_equipee->nom);
+    // pressEnterToContinue();
 
     /* ========================== */
     /*===== Boucle principale ====*/
