@@ -155,6 +155,11 @@ int supprimerConsommable(ListeConsommable *list, Consommable *c) {
     }
     if (!estDansLaListe) return EXIT_SUCCESS;
 
+    if (new_length == 0) {
+        freeListeConsommablesContent(list);
+        return EXIT_SUCCESS;
+    }
+
     new_consommables = calloc((new_length), sizeof(Consommable*));
     if (!new_consommables) {
         fprintf(stderr, "Erreur: supprimerConsommable(): new_consommables = calloc()\n");
