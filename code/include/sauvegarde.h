@@ -2,8 +2,8 @@
 #define _SAUVEGARDE_H_
 
     #include "global.h"
-    #include "joueur.h"
     #include "consommables.h"
+    #include "armes.h"
 
     Sauvegarde *initSave();
     void freeSauvegarde(Sauvegarde *save);

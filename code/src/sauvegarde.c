@@ -1029,6 +1029,18 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
     if (addBlock(tmpSave, &index_arme_equipee, sizeof(size_t)) != EXIT_SUCCESS)
         return EXIT_FAILURE;
 
+    // Si arme equipee valide, on la rééquipe
+    if (index_arme_equipee < diver->arsenal->longueur_armes) {
+        if (equiperArme(diver, index_arme_equipee) == EXIT_FAILURE) {
+            fprintf(stderr, "saveDiver : erreur rééquipement arme\n");
+            return EXIT_FAILURE;
+        }
+        printf("WARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNING 1/3: saveDiver : index_arme_equipee (%zu) < diver->arsenal->longueur_armes (%zu)\n", index_arme_equipee, diver->arsenal->longueur_armes);
+    }
+    else printf("WARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNING 2/3: saveDiver : index_arme_equipee (%zu) >= diver->arsenal->longueur_armes (%zu)\n", index_arme_equipee, diver->arsenal->longueur_armes);
+
+    printf("WARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNINGWARNING 3/3: saveDiver : sauvegarde réussie\n");
+
     return EXIT_SUCCESS;
 }
 
