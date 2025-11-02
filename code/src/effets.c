@@ -206,6 +206,7 @@ int calculerDegatsSubiDebutTourEffet(ListeEtat *etats, int *pv, int maxPv, int d
                 if (oxygene) {
                     degats = maxOxygene * 0.05;
                     *oxygene -= degats;
+                    if (*oxygene < 0) *oxygene = 0;
                     printf(" et -%d oxygene", degats);
                 }
                 printf("\n");

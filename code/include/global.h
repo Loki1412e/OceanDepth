@@ -130,6 +130,8 @@
         unsigned id;
         char *nom;
         char *description;
+        Rarete rarete;
+        int quantite;
         ListeAction listeAction;
     } Consommable;
 
@@ -137,6 +139,22 @@
         Consommable **consommables;
         size_t longueur;
     } ListeConsommable;
+    
+
+    typedef struct Arme {
+        size_t id;
+        char *nom;
+        int attaque_min;
+        int attaque_max;
+        int cout_oxygene;
+        int bonus_defense;
+        ListeAction listeAction;
+    } Arme;
+
+    typedef struct {
+        Arme **armes;
+        size_t longueur_armes;
+    } Arsenal;
 
     
     typedef struct {
@@ -194,6 +212,9 @@
         ListeEtat liste_etats;
         ListeCompetence liste_competences;
         int profondeur;
+        ListeConsommable *liste_consommables;
+        Arme *arme_equipee;   // arme actuelle du joueur
+        Arsenal *arsenal;
     } Plongeur;
 
     typedef struct {
@@ -218,5 +239,7 @@
         Sauvegarde **sauvegardes;
         size_t longueur_sauvegardes;
     } ListeSauvegardes;
+
+
 
 #endif

@@ -30,7 +30,7 @@ unsigned rareteToPoids(Rarete rarete) {
 // Return :
 // - `size_t count`
 // - `short *res` = `EXIT_FAILURE` ou `EXIT_SUCCESS`
-size_t confCountAllUniqueId(char *path, short *res) {
+size_t confCountAllUniqueObjet(char *path, short *res) {
     if (!path || !res) return 0;
     *res = EXIT_SUCCESS;
     
@@ -39,12 +39,12 @@ size_t confCountAllUniqueId(char *path, short *res) {
 
     FILE *f = fopen(path, "r");
     if (f == NULL) {
-        fprintf(stderr, "Erreur: confCountAllUniqueId()\n");
+        fprintf(stderr, "Erreur: confCountAllUniqueObjet()\n");
         return EXIT_FAILURE;
     }
 
     while (fgets(line, sizeof(line), f)) {
-        if (strncmp(line, "id=", 3) == 0) count++;
+        if (strncmp(line, "[Objet]", 7) == 0) count++;
     }
 
     fclose(f);

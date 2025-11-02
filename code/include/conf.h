@@ -7,7 +7,7 @@
     Rarete charToEnumRarete(char *type);
     unsigned rareteToPoids(Rarete rarete);
     
-    size_t confCountAllUniqueId(char *path, short *res);
+    size_t confCountAllUniqueObjet(char *path, short *res);
     long *parseLongList(char *str, size_t *length);
 
 #endif

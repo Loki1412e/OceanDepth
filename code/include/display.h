@@ -17,8 +17,10 @@
     void printBestiary(Bestiaire *bestiary);
     void printDiver(Plongeur *diver);
     void printListeEtat(ListeEtat etats);
+    void printListeAction(ListeAction actions);
     void printCompetence(Competence competence);
     void printListeCompetence(ListeCompetence competences);
+    void printConsumablesList(ListeConsommable *consumables);
 
     void printSaveLastRun(Sauvegarde *save);
     void printListSave(ListeSauvegardes *saves);

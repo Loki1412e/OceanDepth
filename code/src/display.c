@@ -101,11 +101,11 @@ void pressEnterToContinue() {
 
 void printListeAction(ListeAction actions) {
     if (actions.longueur == 0 || actions.actions == NULL) {
-        printf("Actions : Aucune\n");
+        printf("\tActions : Aucune\n");
         return;
     }
 
-    printf("\t Actions (%zu):\n", actions.longueur);
+    printf("\tActions (%zu):\n", actions.longueur);
     for (size_t i = 0; i < actions.longueur; i++) {
         printf("\t  - Type: %s | Params (%zu): ",
             enumActionTypeToChar(actions.actions[i].type),
@@ -129,6 +129,27 @@ void printListeEtat(ListeEtat etats) {
             etats.etats[i].duree_combat,
             (i < etats.longueur - 1) ? ", " : ""
         );
+    }
+}
+
+void printConsumablesList(ListeConsommable *consumables_list) {
+    if (!consumables_list || consumables_list->longueur == 0 || consumables_list->consommables == NULL) {
+        printf("Consommables : Aucun\n");
+        return;
+    }
+
+    printf("Consommables (%zu):\n\n", consumables_list->longueur);
+    for (size_t i = 0; i < consumables_list->longueur; i++) {
+        Consommable *c = consumables_list->consommables[i];
+        if (!c) continue;
+
+        printf("\tConsommable ID: %u\n", c->id);
+        printf("\tQuantite: %d\n", c->quantite);
+        printf("\tNom: %s\n", c->nom ? c->nom : "(null)");
+        printf("\tDescription: %s\n", c->description ? c->description : "(null)");
+        printf("\tRarete: %s\n", enumRareteToChar(c->rarete));
+        printListeAction(c->listeAction);
+        printf("\n");
     }
 }
 
@@ -226,6 +247,27 @@ void printDiver(Plongeur *diver) {
     printf("\n");
 
     printListeCompetence(diver->liste_competences);
+    
+    printConsumablesList(diver->liste_consommables);
+
+    printf("\nArsenal:\n");
+    if (diver->arsenal && diver->arsenal->longueur_armes > 0) {
+        for (size_t i = 0; i < diver->arsenal->longueur_armes; i++) {
+            Arme *arme = diver->arsenal->armes[i];
+            if (!arme) continue;
+            printf("\tArme ID: %zu\n", arme->id);
+            printf("\tNom: %s\n", arme->nom ? arme->nom : "(null)");
+            printf("\tAttaque: %d - %d\n", arme->attaque_min, arme->attaque_max);
+            printf("\tCoût en oxygène: %d\n", arme->cout_oxygene);
+            printf("\tBonus défense: %d\n", arme->bonus_defense);
+            printListeAction(arme->listeAction);
+            printf("\n");
+        }
+    } else {
+        printf("\tAucune arme dans l'arsenal.\n");
+    }
+
+    printf("Arme équipée: %s\n", diver->arme_equipee ? diver->arme_equipee->nom : "Aucune");
 
     printf("====================================\n\n");
 }
