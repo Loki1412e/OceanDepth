@@ -44,7 +44,10 @@ int supprimerBibelot(Plongeur *joueur, size_t id) {
     short estDansLaListe = false;
 
     for (indice_id = 0; indice_id < list->longueur; indice_id++) {
-        if (list->objets[indice_id]->id == id) estDansLaListe = true;
+        if (list->objets[indice_id]->id == id) {
+            estDansLaListe = true;
+            break;
+        }
     }
     if (!estDansLaListe) return EXIT_SUCCESS;
 
