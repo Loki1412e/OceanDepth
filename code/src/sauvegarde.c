@@ -523,6 +523,11 @@ Plongeur *loadDiver(FILE *file) {
             freeDiverContent(diver);
             return NULL;
         }
+        if (arme_nom_len == 0) {
+            fprintf(stderr, "loadDiver arme_nom_len == 0\n");
+            freeDiverContent(diver);
+            return NULL;
+        }
         arme->nom = calloc(arme_nom_len, sizeof(char));
         if (!arme->nom) {
             fprintf(stderr, "loadDiver calloc arme->nom\n");
