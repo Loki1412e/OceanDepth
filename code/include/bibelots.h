@@ -4,7 +4,7 @@
     #include "global.h"
     #include "objets.h"
 
-    int ajouterBibelot(ListeObjet *modal, ListeObjet *list, size_t id_objet);
-    int supprimerBibelot(ListeObjet *list, size_t id);
+    int ajouterBibelot(ListeObjet *modal, Plongeur *joueur, size_t id_objet);
+    int supprimerBibelot(Plongeur *joueur, size_t id);
 
 #endif

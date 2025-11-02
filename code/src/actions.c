@@ -262,8 +262,8 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
             int *oxygene_max = cible_plongeur ? &cible_plongeur->oxygene_max : NULL;
             int *fatigue = cible_plongeur ? &cible_plongeur->fatigue : NULL;
             int *fatigue_max = cible_plongeur ? &cible_plongeur->fatigue_max : NULL;
-            // int *attaque_max = cible_plongeur ? &cible_plongeur->attaque_max : &cible_creature->attaque_max;
-            // int *attaque_min = cible_plongeur ? &cible_plongeur->attaque_min : &cible_creature->attaque_min;
+            int *attaque_max = cible_plongeur ? &cible_plongeur->attaque_max : &cible_creature->attaque_max;
+            int *attaque_min = cible_plongeur ? &cible_plongeur->attaque_min : &cible_creature->attaque_min;
             int *defense = cible_plongeur ? &cible_plongeur->defense : &cible_creature->defense;
             int *vitesse = cible_plongeur ? &cible_plongeur->vitesse : &cible_creature->vitesse;
 
@@ -280,20 +280,30 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
                  if (*oxygene < 0) *oxygene = 0;
                  printf(">> [%s] à régénéré %d d'oxygène.\n", cible_plongeur->nom, valeur);
             }
+            else if (strcmp(stat_nom, "oxygene_max") == 0 && cible_plongeur) {
+                *oxygene_max += valeur;
+                if (*oxygene_max < 0) *oxygene_max = 0;
+                printf(">> [%s] à modifié son oxygène max de %d.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
+            }
             else if (strcmp(stat_nom, "fatigue") == 0 && cible_plongeur) {
                 *fatigue += valeur;
                 if (*fatigue > *fatigue_max) *fatigue = *fatigue_max;
                 if (*fatigue < 0) *fatigue = 0;
                 printf(">> [%s] à réduit sa fatigue de %d.\n", cible_plongeur->nom, valeur);
             }
-            // else if (strcmp(stat_nom, "attaque_max") == 0) {
-            //     *attaque_max += valeur;
-            //     printf(">> [%s] à modifié son attaque max de %d.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
-            // }
-            // else if (strcmp(stat_nom, "attaque_min") == 0) {
-            //     *attaque_min += valeur;
-            //     printf(">> [%s] à modifié son attaque min de %d.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
-            // }
+            else if (strcmp(stat_nom, "fatigue_max") == 0 && cible_plongeur) {
+                *fatigue_max += valeur;
+                if (*fatigue_max < 0) *fatigue_max = 0;
+                printf(">> [%s] à modifié sa fatigue max de %d.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
+            }
+            else if (strcmp(stat_nom, "attaque_max") == 0) {
+                *attaque_max += valeur;
+                printf(">> [%s] à modifié son attaque max de %d.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
+            }
+            else if (strcmp(stat_nom, "attaque_min") == 0) {
+                *attaque_min += valeur;
+                printf(">> [%s] à modifié son attaque min de %d.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
+            }
             else if (strcmp(stat_nom, "defense") == 0) {
                 *defense += valeur;
                 if (*defense < 0) *defense = 0;
