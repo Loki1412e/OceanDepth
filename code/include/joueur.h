@@ -5,10 +5,12 @@
     #include "conf.h"
     #include "effets.h"
     #include "competences.h"
+    #include "consommables.h"
+    #include "armes.h"
 
     void freeDiverContent(Plongeur *diver);
     void freeDiver(Plongeur *diver);
 
-    Plongeur *initDiver(char *diver_name, ListeCompetence *modalDiverSkills);
+    Plongeur *initModalDiver(char *diver_name, ListeCompetence *modalDiverSkills);
 
 #endif

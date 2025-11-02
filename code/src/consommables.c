@@ -1,27 +1,34 @@
 #include "../include/consommables.h"
 
-void freeConsommable(Consommable *c);
-void freeListeConsommables(ListeConsommable *liste);
-
-int consommableInList(ListeConsommable *list, Consommable *c);
-int supprimerConsommable(ListeConsommable *list, Consommable *c);
 
 int utiliserConsommable(ListeConsommable *list, Consommable *c, void *user_ptr, EntiteType user_type) {
     if (!list || !c || !user_ptr || user_type == ENTITE_TYPE_INVALIDE) {
         fprintf(stderr, "Erreur: utiliserConsommable(): arguments invalides\n");
         return EXIT_FAILURE;
     }
-    
-    if (!consommableInList(list, c)) {
+
+    int quantite = quantiteConsommableInList(list, c);
+
+    if (quantite == -1) {
         fprintf(stderr, "Erreur: utiliserConsommable(): le consommable n'est pas dans la liste\n");
         return EXIT_FAILURE;
     }
 
-    // Appliquer les effets du consommable
-    executerAction(&c->listeAction.actions[0], user_ptr, user_type, user_ptr, user_type);
+    if (quantite > 0) {
+        // Appliquer les effets du consommable
+        printf("\n>> '%s' x1 a été consommé\n", c->nom);
+        for (size_t i = 0; i < c->listeAction.longueur; i++) {
+            if (executerAction(&c->listeAction.actions[i], user_ptr, user_type, user_ptr, user_type)) {
+                fprintf(stderr, "Erreur: utiliserConsommable(): executerAction(%zu)\n", i);
+                return EXIT_FAILURE;
+            }
+        }
+    }
 
-    // Supprimer le consommable de la liste après utilisation
-    if (supprimerConsommable(list, c)) {
+    c->quantite--;
+
+    // Supprimer le consommable de la liste si quantité <= 0
+    if (c->quantite <= 0 && supprimerConsommable(list, c) == EXIT_FAILURE) {
         fprintf(stderr, "Erreur: utiliserConsommable(): supprimerConsommable()\n");
         return EXIT_FAILURE;
     }
@@ -30,16 +37,23 @@ int utiliserConsommable(ListeConsommable *list, Consommable *c, void *user_ptr, 
 }
 
 
-int consommableInList(ListeConsommable *list, Consommable *c) {
+// Retourne la quantité de consommable dans la liste
+// Retourne -1 en cas d'erreur
+int quantiteConsommableInList(ListeConsommable *list, Consommable *c) {
     if (!list || !c) {
-        fprintf(stderr, "Erreur: consommableInList(): arguments invalides\n");
-        return false;
+        fprintf(stderr, "Erreur: quantiteConsommableInList(): arguments invalides\n");
+        return -1;
     }
     for (size_t i = 0; i < list->longueur; i++) {
-        if (list->consommables[i] == c)
-            return true;
+        if (list->consommables[i] == c) {
+            if (list->consommables[i]->quantite == 0) {
+                supprimerConsommable(list, c);
+                return 0;
+            }
+            return list->consommables[i]->quantite;
+        }
     }
-    return false;
+    return 0;
 }
 
 Consommable *duplicateConsommable(Consommable *c) {
@@ -57,6 +71,9 @@ Consommable *duplicateConsommable(Consommable *c) {
     }
 
     new_c->id = c->id;
+    new_c->rarete = c->rarete;
+    new_c->quantite = 1; // On initialise la quantité à 1
+
     new_c->nom = my_strdup(c->nom);
     if (!new_c->nom) {
         fprintf(stderr, "Erreur: duplicateConsommable(): duplication du nom\n");
@@ -89,6 +106,15 @@ int ajouterConsommable(ListeConsommable *modal, ListeConsommable *list, size_t i
         return EXIT_FAILURE;
     }
 
+    // Si le consommable est déjà dans la liste, on incrémente juste la quantité
+    for (size_t i = 0; i < list->longueur; i++) {
+        if (list->consommables[i]->id == id_consommable) {
+            list->consommables[i]->quantite++;
+            return EXIT_SUCCESS;
+        }
+    }
+
+    // Sinon, on l'ajoute à la liste
     Consommable *c = duplicateConsommable(modal->consommables[id_consommable]);
     if (!c) {
         fprintf(stderr, "Erreur: ajouterConsommable(): duplicateConsommable()\n");
@@ -152,6 +178,163 @@ int supprimerConsommable(ListeConsommable *list, Consommable *c) {
     return EXIT_SUCCESS;
 }
 
+int setListeConsommableFromConf(ListeConsommable *modalConsumablesList, char *path) {
+    if (!modalConsumablesList || !modalConsumablesList->consommables || modalConsumablesList->longueur == 0 || !path)
+        return EXIT_FAILURE;
+
+    FILE *f = fopen(path, "r");
+    if (f == NULL) {
+        fprintf(stderr, "Erreur: setListeConsommableFromConf(): Impossible d'ouvrir le fichier de configuration \"%s\"\n", path);
+        return EXIT_FAILURE;
+    }
+
+    Consommable **consumables = modalConsumablesList->consommables;
+
+    char line[512];
+    size_t length = 0, index = 0;
+
+    short res;
+
+    while (fgets(line, sizeof(line), f)) {
+
+        if (strncmp(line, "[Objet]", 7) == 0) {
+            length++;
+            index = length - 1;
+
+            // Si dépassement alors on arrete de load mais on garde la conf actuelle
+            if (index >= modalConsumablesList->longueur) {
+                fprintf(stderr, "Warning: setListeConsommableFromConf(): index %zu hors des limites de consumables\n", index);
+                break;
+            }
+
+            // Init
+            consumables[index]->id = index;
+        }
+        
+        else if (strncmp(line, "nom=", 4) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            consumables[index]->nom = strdup(line + 4);
+            if (!consumables[index]->nom) {
+                fprintf(stderr, "Erreur: setListeConsommableFromConf(): my_strdup() -> \"nom=\"\n");
+                freeListeConsommablesContent(modalConsumablesList);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+        
+        else if (strncmp(line, "description=", 12) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            consumables[index]->description = strdup(line + 12);
+            if (!consumables[index]->description) {
+                fprintf(stderr, "Erreur: setListeConsommableFromConf(): my_strdup() -> \"description=\"\n");
+                freeListeConsommablesContent(modalConsumablesList);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+
+        else if (strncmp(line, "rarete=", 7) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            int rarete = my_strToInt(line + 7, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setListeConsommableFromConf(): my_strToInt() -> \"rarete=\"\n");
+                freeListeConsommablesContent(modalConsumablesList);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+            if (rarete >= LENGTH_Rarete) {
+                fprintf(stderr, "Warning: setListeConsommableFromConf(): rarete >= LENGTH_Rarete --> init à max_rarete (%d)\n", LENGTH_Rarete - 1);
+                rarete = LENGTH_Rarete - 1;
+            }
+            else if (rarete < 0) {
+                fprintf(stderr, "Warning: setListeConsommableFromConf(): rarete < 0 --> init à DESACTIVE (0)\n");
+                rarete = 0;
+            }
+
+            consumables[index]->rarete = (Rarete) rarete;
+        }
+        
+        else if (strncmp(line, "actions=", 8) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            consumables[index]->listeAction.actions = parseActions(line + 8, &consumables[index]->listeAction.longueur, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: setListeConsommableFromConf(): actions = calloc()\n");
+                freeListeConsommablesContent(modalConsumablesList);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
+    }
+
+    if (modalConsumablesList->longueur < length) {
+        fprintf(stderr, "Erreur: setListeConsommableFromConf(): longueur (%zu) < length (%zu)\n", modalConsumablesList->longueur, length);
+        freeListeConsommablesContent(modalConsumablesList);
+        fclose(f);
+        return EXIT_FAILURE;
+    }
+
+    fclose(f);
+    return EXIT_SUCCESS;
+}
+
+ListeConsommable *initModalListeConsommable(char *path) {
+    if (!path) {
+        fprintf(stderr, "Erreur: initModalListeConsommable(): path == NULL\n");
+        return NULL;
+    }
+
+    short res;
+
+    size_t count_all_unique = confCountAllUniqueObjet(path, &res);
+    if (res == EXIT_FAILURE) {
+        fprintf(stderr, "Erreur: initModalListeConsommable(): confCountAllUniqueObjet()\n");
+        return NULL;
+    }
+
+    // Allocation mémoire
+
+    ListeConsommable *modalConsumablesList = calloc(1, sizeof(ListeConsommable));
+    if (!modalConsumablesList) {
+        fprintf(stderr, "Erreur: initModalListeConsommable(): modalConsumablesList = calloc()\n");
+        return NULL;
+    }
+
+    modalConsumablesList->longueur = count_all_unique;
+    modalConsumablesList->consommables = calloc(count_all_unique, sizeof(Consommable*));
+    if (!modalConsumablesList->consommables) {
+        fprintf(stderr, "Erreur: initModalListeConsommable(): Allocation mémoire modalConsumablesList->consommables\n");
+        freeListeConsommables(modalConsumablesList);
+        return NULL;
+    }
+
+    for (size_t i = 0; i < count_all_unique; i++) {
+        modalConsumablesList->consommables[i] = calloc(1, sizeof(Consommable));
+        if (!modalConsumablesList->consommables[i]) {
+            fprintf(stderr, "Erreur: initModalListeConsommable(): Allocation mémoire modalConsumablesList->consommables[%zu]\n", i);
+            modalConsumablesList->longueur = i;
+            freeListeConsommables(modalConsumablesList);
+            return NULL;
+        }
+    }
+
+    // Initialisation à partir du fichier de configuration
+
+    if (setListeConsommableFromConf(modalConsumablesList, path) == EXIT_FAILURE) {
+        fprintf(stderr, "Erreur: initModalListeConsommable(): setListeConsommableFromConf()\n");
+        freeListeConsommables(modalConsumablesList);
+        return NULL;
+    }
+
+    return modalConsumablesList;
+}
 
 void freeConsommable(Consommable *c) {
     if (!c) return;
@@ -165,7 +348,7 @@ void freeConsommable(Consommable *c) {
     free(c);
 }
 
-void freeListeConsommables(ListeConsommable *liste) {
+void freeListeConsommablesContent(ListeConsommable *liste) {
     if (!liste || !liste->consommables) return;
     for (size_t i = 0; i < liste->longueur; i++) {
         freeConsommable(liste->consommables[i]);
@@ -173,5 +356,10 @@ void freeListeConsommables(ListeConsommable *liste) {
     free(liste->consommables);
     liste->consommables = NULL;
     liste->longueur = 0;
+}
+
+void freeListeConsommables(ListeConsommable *liste) {
+    if (!liste) return;
+    freeListeConsommablesContent(liste);
     free(liste);
 }

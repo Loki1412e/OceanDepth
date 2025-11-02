@@ -12,7 +12,9 @@ int runGame(Sauvegarde *actualSave) {
     Plongeur *diver = actualSave->diver;
     Bestiaire *modalBestiary = NULL;
     Bestiaire *bestiary = NULL;
-    ListeCompetence modalCreaturesSkills;
+    ListeCompetence modalCreaturesSkills = {0};
+    ListeConsommable *modalConsumablesList = NULL;
+    Arsenal *modalArsenal = NULL;
 
     short res;
 
@@ -20,26 +22,61 @@ int runGame(Sauvegarde *actualSave) {
 
     modalCreaturesSkills = initSkillsList(&res, "config/bestiaire/competences.conf");
     if (res == EXIT_FAILURE) {
-        fprintf(stderr, "Erreur lors du chargement des compétences.\n");
+        fprintf(stderr, "runGame(): Erreur lors du chargement des compétences.\n");
         return EXIT_FAILURE;
     }
 
     modalBestiary = initModalBestiary(&modalCreaturesSkills);
     if (!modalBestiary) {
         freeListeCompetence(&modalCreaturesSkills);
-        fprintf(stderr, "Erreur lors du chargement du bestiaire modèle.\n");
+        fprintf(stderr, "runGame(): Erreur lors du chargement du bestiaire modèle.\n");
         return EXIT_FAILURE;
     }
 
     bestiary = initEmptyBestiary();
     if (!bestiary) {
-        fprintf(stderr, "Erreur lors de la création du bestiaire.\n");
+        fprintf(stderr, "runGame(): Erreur lors de la création du bestiaire.\n");
         freeBestiary(modalBestiary);
         freeListeCompetence(&modalCreaturesSkills);
         return EXIT_FAILURE;
     }
 
+    modalConsumablesList = initModalListeConsommable("config/objets/consommables.conf");
+    if (!modalConsumablesList) {
+        freeBestiary(bestiary);
+        freeBestiary(modalBestiary);
+        freeListeCompetence(&modalCreaturesSkills);
+        fprintf(stderr, "runGame(): Erreur lors du chargement de la liste des consommables.\n");
+        return EXIT_FAILURE;
+    }
 
+    modalArsenal = chargerArmesDepuisFichier("config/objets/armes.conf");
+    if (!modalArsenal) {
+        fprintf(stderr, "runGame(): Erreur lors du chargement des armes.\n");
+        freeBestiary(bestiary);
+        freeBestiary(modalBestiary);
+        freeListeCompetence(&modalCreaturesSkills);
+        freeListeConsommables(modalConsumablesList);
+        return EXIT_FAILURE;
+    }
+    
+    // On ajoute des armes de base au joueur
+    ajouterArme(modalArsenal, diver->arsenal, 0);
+    ajouterArme(modalArsenal, diver->arsenal, 2);
+
+    // Joueur choisi son arme parmis son arsenal
+    afficherArmes(diver->arsenal);
+    printf("\nChoisissez une arme à équiper :\n> ");
+    size_t choix = lireEntier();
+    while (choix >= diver->arsenal->longueur_armes) {
+        printf("\nChoix invalide. Veuillez réessayer :\n> ");
+        choix = lireEntier();
+    }
+    equiperArme(diver, choix);
+    printf("\n✅ %s équipée !\n", diver->arme_equipee->nom);
+    pressEnterToContinue();
+
+    /* ========================== */
     /*===== Boucle principale ====*/
 
     printSave(actualSave);
@@ -66,8 +103,13 @@ int runGame(Sauvegarde *actualSave) {
 
         ajouterEffet(&bestiary->creatures[0]->liste_etats, PARALYSIE, 5, 0, 0);
         ajouterEffet(&bestiary->creatures[1]->liste_etats, SAIGNEMENT, 5, 0, 0);
-        
+
         printBestiary(bestiary);
+        pressEnterToContinue();
+
+        ajouterConsommable(modalConsumablesList, diver->liste_consommables, 3);
+        ajouterConsommable(modalConsumablesList, diver->liste_consommables, 1);
+        printConsumablesList(diver->liste_consommables);
         pressEnterToContinue();
 
         res = combat(diver, bestiary->creatures, bestiary->longueur_creatures);
@@ -94,6 +136,8 @@ int runGame(Sauvegarde *actualSave) {
     freeBestiary(bestiary);
     freeBestiary(modalBestiary);
     freeListeCompetence(&modalCreaturesSkills);
+    freeListeConsommables(modalConsumablesList);
+    freeArsenal(modalArsenal);
     
     return EXIT_SUCCESS;
 }

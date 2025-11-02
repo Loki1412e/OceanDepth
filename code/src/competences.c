@@ -142,7 +142,7 @@ int setListeCompetenceFromConf(ListeCompetence *modalCreaturesSkills, char *path
 
     while (fgets(line, sizeof(line), f)) {
 
-        if (strncmp(line, "id=", 3) == 0) {
+        if (strncmp(line, "[Objet]", 7) == 0) {
             length++;
             index = length - 1;
 
@@ -153,17 +153,7 @@ int setListeCompetenceFromConf(ListeCompetence *modalCreaturesSkills, char *path
             }
 
             // Init
-
-            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
-            if (line[0] == '\0') continue; // ligne vide
-
-            modalCreaturesSkills->competences[index].id = my_strToInt(line + 3, &res);
-            if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): my_strToInt() -> \"id=\"\n");
-                freeListeCompetence(modalCreaturesSkills);
-                fclose(f);
-                return EXIT_FAILURE;
-            }
+            modalCreaturesSkills->competences[index].id = index;
         }
          
         if (strncmp(line, "nom=", 4) == 0) {
@@ -280,9 +270,9 @@ ListeCompetence initSkillsList(short *res, char *path) {
     }
     *res = EXIT_SUCCESS;
 
-    size_t count_all_unique_model = confCountAllUniqueId(path, res);
+    size_t count_all_unique_model = confCountAllUniqueObjet(path, res);
     if (*res == EXIT_FAILURE) {
-        fprintf(stderr, "Erreur: initSkillsList(): confCountAllUniqueId()\n");
+        fprintf(stderr, "Erreur: initSkillsList(): confCountAllUniqueObjet()\n");
         return initEmptySkillList();
     }
 
@@ -378,6 +368,7 @@ int utiliserCompetence(Competence *comp, void *lanceur_ptr, EntiteType lanceur_t
             return -1;
         }
         lanceur_plongeur->oxygene -= comp->cout_oxygene;
+        if (lanceur_plongeur->oxygene < 0) lanceur_plongeur->oxygene = 0;
 
         if (lanceur_plongeur->pv <= comp->cout_pv) {
             printf("Pas assez de PV pour lancer '%s'.\n", comp->nom);
