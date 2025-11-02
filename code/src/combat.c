@@ -313,7 +313,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         afficherInterface(joueur, creatures, nb_creatures);
 
         if (attaques_restantes == 0) {
-            printf("Vous êtes trop fatigué pour attaquer ce tour-ci.\n");
+            printf("\nVous êtes trop fatigué pour attaquer ce tour-ci.\n");
             pressEnterToContinue();
         }
         else afficherActionsDisponibles(joueur, attaques_restantes);
@@ -426,7 +426,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                             break;
                         }
 
-                        printf("\nQuelle cible ?\n");
+                        printf(nb_creatures > 1 ? "\nQuelle cible ?\n" : "\nCible unique: ");
                         for (size_t i = 0; i < nb_creatures; i++) {
                             if (creatures[i]->pv > 0)
                                 printf("[%zu] %s\n", i+1, creatures[i]->nom);
