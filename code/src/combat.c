@@ -98,7 +98,12 @@ void joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature) {
     printf("Oxygène consommé: -%d (arme)\n", perteOxygene);
     printf("Fatigue augmentée: +%d\n", gainFatigue);
 
-    appliquerActionsArme(joueur, &creature->liste_etats, ENTITE_CREATURE);
+    if (creature->pv <= 0) {
+        printf(">> %s est vaincu !\n", creature->nom);
+        return;
+    }
+    
+    appliquerActionsArme(joueur, (void*)creature, ENTITE_CREATURE);
 }
 
 // Return -1 si n'a pas de compétence activable
