@@ -21,34 +21,36 @@ int ajouterBibelot(ListeObjet *modal, ListeObjet *list, size_t id_objet) {
         return EXIT_FAILURE;
     }
 
-    if (appliquerActionsObjet(list->objets[list->longueur - 1], NULL, ENTITE_TYPE_INVALIDE, NO_REVERSE) != EXIT_SUCCESS) {
-        fprintf(stderr, "Erreur: ajouterBibelot(): appliquerActionsObjet(): Impossible d'ajouter l'objet avec l'id %zu à la liste des bibelots.\n", id_objet);
-        supprimerBibelot(list, modal->objets[id_objet]);
+    if (appliquerActionsObjet(modal->objets[id_objet], NULL, ENTITE_TYPE_INVALIDE, NO_REVERSE) != EXIT_SUCCESS) {
+        fprintf(stderr, "Erreur: ajouterBibelot(): appliquerActionsObjet(): Impossible d'appliquer l'objet avec l'id %zu à la liste des bibelots.\n", id_objet);
+        // supprimerBibelot(list, id_objet);
         return EXIT_FAILURE;
     }
 
     return EXIT_SUCCESS;
 }
 
-int supprimerBibelot(ListeObjet *list, Objet *c) {
-    if (!list || !c) {
+int supprimerBibelot(ListeObjet *list, size_t id) {
+    if (!list) {
         fprintf(stderr, "Erreur: supprimerBibelot(): arguments invalides\n");
         return EXIT_FAILURE;
     }
 
-    short res = false;
-    for (size_t i = 0; i < list->longueur; i++) {
-        if (list->objets[i] == c) res = true;
-    }
-    if (!res) return EXIT_SUCCESS;
+    size_t indice_id;
+    short estDansLaListe = false;
 
-    if (appliquerActionsObjet(list->objets[list->longueur - 1], NULL, ENTITE_TYPE_INVALIDE, REVERSE) != EXIT_SUCCESS) {
-        fprintf(stderr, "Erreur: supprimerBibelot(): appliquerActionsObjet(): Impossible d'appliquer le reverse de l'objet avec l'id %zu de la liste des bibelots.\n", c->id);
+    for (indice_id = 0; indice_id < list->longueur; indice_id++) {
+        if (list->objets[indice_id]->id == id) estDansLaListe = true;
+    }
+    if (!estDansLaListe) return EXIT_SUCCESS;
+
+    if (appliquerActionsObjet(list->objets[indice_id], NULL, ENTITE_TYPE_INVALIDE, REVERSE) != EXIT_SUCCESS) {
+        fprintf(stderr, "Erreur: supprimerBibelot(): appliquerActionsObjet(): Impossible d'appliquer le reverse de l'objet avec l'id %zu de la liste des bibelots.\n", id);
         return EXIT_FAILURE;
     }
 
-    if (supprimerObjet(list, c) != EXIT_SUCCESS) {
-        fprintf(stderr, "Erreur: supprimerBibelot(): supprimerObjet(): Impossible de supprimer l'objet avec l'id %zu de la liste des bibelots.\n", c->id);
+    if (supprimerObjet(list, id) != EXIT_SUCCESS) {
+        fprintf(stderr, "Erreur: supprimerBibelot(): supprimerObjet(): Impossible de supprimer l'objet avec l'id %zu de la liste des bibelots.\n", id);
         return EXIT_FAILURE;
     }
 

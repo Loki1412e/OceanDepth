@@ -5,6 +5,6 @@
     #include "objets.h"
 
     int ajouterBibelot(ListeObjet *modal, ListeObjet *list, size_t id_objet);
-    int supprimerBibelot(ListeObjet *list, Objet *c);
+    int supprimerBibelot(ListeObjet *list, size_t id);
 
 #endif

@@ -66,6 +66,9 @@ int runGame(Sauvegarde *actualSave) {
     printf("[%s] entre dans les profondeurs maritimes.\n\n", diver->nom);
     pressEnterToContinue();
 
+    printObjectsList(modalOrnamentsList);
+    pressEnterToContinue();
+
     while (runProgram) {
         
         // Génération aléatoire de créatures
@@ -111,7 +114,7 @@ int runGame(Sauvegarde *actualSave) {
         }
 
         // Test suppression bibelots
-        supprimerBibelot(modalOrnamentsList, diver->liste_bibelots->objets[2]);
+        supprimerBibelot(modalOrnamentsList, diver->liste_bibelots->objets[2]->id);
         printObjectsList(diver->liste_bibelots);
         pressEnterToContinue();
 

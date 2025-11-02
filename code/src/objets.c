@@ -60,7 +60,7 @@ int consommerObjet(ListeObjet *list, Objet *c, void *user_ptr, EntiteType user_t
     c->quantite--;
 
     // Supprimer l'objet de la liste si quantité <= 0
-    if (c->quantite <= 0 && supprimerObjet(list, c) == EXIT_FAILURE) {
+    if (c->quantite <= 0 && supprimerObjet(list, c->id) == EXIT_FAILURE) {
         fprintf(stderr, "Erreur: consommerObjet(): supprimerObjet()\n");
         return EXIT_FAILURE;
     }
@@ -79,7 +79,7 @@ int quantiteObjetInList(ListeObjet *list, Objet *c) {
     for (size_t i = 0; i < list->longueur; i++) {
         if (list->objets[i] == c) {
             if (list->objets[i]->quantite == 0) {
-                supprimerObjet(list, c);
+                supprimerObjet(list, c->id);
                 return 0;
             }
             return list->objets[i]->quantite;
@@ -166,8 +166,8 @@ int ajouterObjet(ListeObjet *modal, ListeObjet *list, size_t id_objet) {
     return EXIT_SUCCESS;
 }
 
-int supprimerObjet(ListeObjet *list, Objet *c) {
-    if (!list || !c) {
+int supprimerObjet(ListeObjet *list, size_t id) {
+    if (!list) {
         fprintf(stderr, "Erreur: supprimerObjet(): arguments invalides\n");
         return EXIT_FAILURE;
     }
@@ -175,12 +175,12 @@ int supprimerObjet(ListeObjet *list, Objet *c) {
     Objet **new_objets = NULL;
 
     short estDansLaListe = false;
-    size_t indice_c;
+    size_t indice_id;
     size_t new_length = list->longueur - 1;
 
-    // Trouver l'index de c dans la liste
-    for (indice_c = 0; indice_c < list->longueur; indice_c++) {
-        if (list->objets[indice_c] == c) {
+    // Vérifier si l'objet est dans la liste
+    for (indice_id = 0; indice_id < list->longueur; indice_id++) {
+        if (list->objets[indice_id]->id == id) {
             estDansLaListe = true;
             break;
         }
@@ -199,17 +199,17 @@ int supprimerObjet(ListeObjet *list, Objet *c) {
     }
 
     // Copier les éléments avant et après l'élément à supprimer
-    for (size_t i = 0; i < indice_c; i++) {
+    for (size_t i = 0; i < indice_id; i++) {
         new_objets[i] = list->objets[i];
     }
 
     // Décaler les éléments après l'élément supprimé
-    for (size_t i = indice_c; i < new_length; i++) {
+    for (size_t i = indice_id; i < new_length; i++) {
         new_objets[i] = list->objets[i + 1];
     }
 
     // Libérer l'objet supprimé
-    freeObjet(c);
+    freeObjet(list->objets[indice_id]);
     // Libérer l'ancienne liste de objets
     free(list->objets);
     // Mettre à jour la liste et sa longueur
