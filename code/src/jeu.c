@@ -62,7 +62,7 @@ int runGame(Sauvegarde *actualSave) {
     
     // // On ajoute des armes de base au joueur
     // ajouterArme(modalArsenal, diver->arsenal, 0);
-    // ajouterArme(modalArsenal, diver->arsenal, 3);
+    // ajouterArme(modalArsenal, diver->arsenal, 2);
 
     // // Joueur choisi son arme parmis son arsenal
     // afficherArmes(diver->arsenal);
