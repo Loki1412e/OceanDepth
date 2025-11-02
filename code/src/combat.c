@@ -15,7 +15,7 @@ int botAttaque(void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, Enti
 // Affichage
 int afficherEtatOxygene(Plongeur *joueur);
 void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures);
-void afficherActionsDisponibles(int attaques_restantes);
+void afficherActionsDisponibles(Plongeur *joueur, int attaques_restantes);
 
 
 /*====== Utils ======*/
@@ -97,47 +97,8 @@ void joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature) {
 
     printf("Oxygène consommé: -%d (arme)\n", perteOxygene);
     printf("Fatigue augmentée: +%d\n", gainFatigue);
-    
-    // === Application des effets spéciaux de l'arme ===
-    
-    if (joueur->arme_equipee && joueur->arme_equipee->listeAction.actions) {
 
-        for (size_t i = 0; i < joueur->arme_equipee->listeAction.longueur; i++) {
-            if (executerAction(
-                &joueur->arme_equipee->listeAction.actions[i],
-                (void*)joueur, ENTITE_PLONGEUR,
-                (void*)creature, ENTITE_CREATURE
-            ) == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: joueurAttaqueCreature(): executerAction()\n");
-                return;
-            }
-        }
-
-        // // ⚡ Effet ÉLECTRIQUE : chance de paralysie
-        // if (strcmp(joueur->arme_equipee->effet_special, "ÉLECTRIQUE") == 0) {
-        //     if (random_int(1, 100) <= 25) { // 25% de chance
-        //         ajouterEffet(&creature->liste_etats, PARALYSIE, 2, 0, 0);
-        //         printf("⚡ %s est paralysée par un choc électrique !\n", creature->nom);
-        //     }
-        // }
-
-        // // 🔱 Effet PERFORANT : ignore partiellement la défense
-        // else if (strcmp(joueur->arme_equipee->effet_special, "PERFORANT") == 0) {
-        //     printf("🔱 %s perce la défense de %s ! (Dégâts améliorés)\n",
-        //         joueur->arme_equipee->nom, creature->nom);
-        //     // déjà pris en compte si tu veux réduire la défense avant le calcul
-        // }
-
-        // // 💥 Effet CHOC : réduit la vitesse de la créature
-        // else if (strcmp(joueur->arme_equipee->effet_special, "CHOC") == 0) {
-        //     if (random_int(1, 100) <= 40) { // 40% de chance
-        //         creature->vitesse -= 5;
-        //         if (creature->vitesse < 0) creature->vitesse = 0;
-        //         printf("💥 Le coup de %s désoriente %s ! Vitesse réduite !\n",
-        //             joueur->arme_equipee->nom, creature->nom);
-        //     }
-        // }
-    }
+    appliquerActionsArme(joueur, &creature->liste_etats, ENTITE_CREATURE);
 }
 
 // Return -1 si n'a pas de compétence activable
@@ -233,9 +194,9 @@ void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_c
     printf("\n\n\n╚═══════════════════════════════════════════════════════════════════════════════════╝\n");
 }
 
-void afficherActionsDisponibles(int attaques_restantes) {
+void afficherActionsDisponibles(Plongeur *joueur, int attaques_restantes) {
     printf("\n--- MENU DES ACTIONS (0 pour quitter et sauvegarder) ---\n");
-    printf("1 - Attaquer (attaques restantes : %d)\n", attaques_restantes);
+    printf("1 - Attaquer avec %s (attaques restantes : %d)\n", joueur->arme_equipee ? joueur->arme_equipee->nom : "vos poings (aled)", attaques_restantes);
     printf("2 - Utiliser Compétence\n");
     printf("3 - Utiliser Objet\n");
     printf("4 - Se reposer / Passer le tour\n");
@@ -347,11 +308,15 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         if (pv_before_player != joueur->pv) {
             printf("Vous subissez %d dégâts d'effets de statut (PV: %d -> %d)\n", pv_before_player - joueur->pv, pv_before_player, joueur->pv);
         }
-
         pressEnterToContinue();
 
         afficherInterface(joueur, creatures, nb_creatures);
-        afficherActionsDisponibles(attaques_restantes);
+
+        if (attaques_restantes == 0) {
+            printf("Vous êtes trop fatigué pour attaquer ce tour-ci.\n");
+            pressEnterToContinue();
+        }
+        else afficherActionsDisponibles(joueur, attaques_restantes);
 
         while (attaques_restantes > 0) {
 
@@ -438,7 +403,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                         printf("Action annulée.\n");
                         pressEnterToContinue();
                         afficherInterface(joueur, creatures, nb_creatures);
-                        afficherActionsDisponibles(attaques_restantes);
+                        afficherActionsDisponibles(joueur, attaques_restantes);
                         continue; // Ne termine pas le tour, redemande une action
                     }
 
@@ -545,7 +510,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                         printf("Action annulée.\n");
                         pressEnterToContinue();
                         afficherInterface(joueur, creatures, nb_creatures);
-                        afficherActionsDisponibles(attaques_restantes);
+                        afficherActionsDisponibles(joueur, attaques_restantes);
                         continue; // Ne termine pas le tour, redemande une action
                     }
 
@@ -586,7 +551,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
             if (attaques_restantes > 0) {
                 clearConsole();
                 afficherInterface(joueur, creatures, nb_creatures);
-                afficherActionsDisponibles(attaques_restantes);
+                afficherActionsDisponibles(joueur, attaques_restantes);
             }
         }
 
