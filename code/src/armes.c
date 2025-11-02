@@ -215,6 +215,30 @@ int equiperArme(Plongeur *joueur, size_t id_arme) {
     return EXIT_SUCCESS;
 }
 
+
+int appliquerActionsArme(Plongeur *joueur, void *cible, EntiteType cible_type) {
+    if (!joueur || !cible || !cible_type) {
+        fprintf(stderr, "Erreur: appliquerActionsArme(): paramètres invalides\n");
+        return EXIT_FAILURE;
+    }
+    // Pas d'arme équipée
+    if (!joueur->arme_equipee) return EXIT_SUCCESS;
+    
+    for (size_t i = 0; i < joueur->arme_equipee->listeAction.longueur; i++) {
+        if (executerAction(
+            &joueur->arme_equipee->listeAction.actions[i],
+            (void*)joueur, ENTITE_PLONGEUR,
+            (void*)cible, cible_type
+        ) == EXIT_FAILURE) {
+            fprintf(stderr, "Erreur: appliquerActionsArme(): executerAction()\n");
+            return EXIT_FAILURE;
+        }
+    }
+
+    return EXIT_SUCCESS;
+}
+
+
 void freeArme(Arme *arme) {
     if (!arme) return;
     if (arme->nom) free(arme->nom);
