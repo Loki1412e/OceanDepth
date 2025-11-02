@@ -66,9 +66,6 @@ int runGame(Sauvegarde *actualSave) {
     printf("[%s] entre dans les profondeurs maritimes.\n\n", diver->nom);
     pressEnterToContinue();
 
-    printObjectsList(modalOrnamentsList);
-    pressEnterToContinue();
-
     while (runProgram) {
         
         // Génération aléatoire de créatures
@@ -93,8 +90,8 @@ int runGame(Sauvegarde *actualSave) {
         pressEnterToContinue();
 
         // Test ajout bibelots
-        ajouterBibelot(modalOrnamentsList, diver->liste_bibelots, 2);
-        ajouterBibelot(modalOrnamentsList, diver->liste_bibelots, 5);
+        ajouterBibelot(modalOrnamentsList, diver, 2);
+        ajouterBibelot(modalOrnamentsList, diver, 5);
         printObjectsList(diver->liste_bibelots);
         pressEnterToContinue();
 
@@ -113,14 +110,14 @@ int runGame(Sauvegarde *actualSave) {
             break;
         }
 
-        // Test suppression bibelots
-        supprimerBibelot(modalOrnamentsList, diver->liste_bibelots->objets[2]->id);
-        printObjectsList(diver->liste_bibelots);
-        pressEnterToContinue();
-
         freeBestiaryContent(bestiary);
         runProgram = false;
     }
+
+    // Test suppression bibelots
+    supprimerBibelot(diver, diver->liste_bibelots->objets[0]->id);
+    printObjectsList(diver->liste_bibelots);
+    pressEnterToContinue();
 
     /*===== free && return ====*/
     
