@@ -128,7 +128,7 @@ int ajouterEffet(ListeEtat *listeEtat, ListeEffet *effets_immunises, Effet type,
 }
 
 
-int peutAttaquer(ListeEtat *listeEtat) {
+int peutAgir(ListeEtat *listeEtat) {
     short res = true;
     for (size_t i = 0; i < listeEtat->longueur; i++) {
         switch (listeEtat->etats[i].effet) {
@@ -136,7 +136,7 @@ int peutAttaquer(ListeEtat *listeEtat) {
             case PARALYSIE:
             case ETREINTE:
             case PACIFICATION:
-                printf(">> [%s] est active\n", enumEffectToChar(listeEtat->etats[i].effet));
+                printf(">> L'effet [%s] est actif\n", enumEffectToChar(listeEtat->etats[i].effet));
                 res = false;
                 break;
 
@@ -248,7 +248,7 @@ int supprimerEtat(ListeEtat *listeEtat, Effet type) {
             listeEtat->etats = tmp;
             listeEtat->longueur--;
 
-            // printf("L'effet [%s] a été retiré.\n", enumEffectToChar(type));
+            // printf(">> L'effet [%s] a été retiré.\n", enumEffectToChar(type));
             
             i--; // Ajuster l'index après le décalage
         }
@@ -458,7 +458,7 @@ int retirerEffetImmunise(ListeEffet *listeEffet, Effet type) {
             }
             listeEffet->effets = tmp;
 
-            return EXIT_SUCCESS;
+            i--; // Ajuster l'index après le décalage
         }
     }
     
