@@ -331,6 +331,8 @@ int decrementerCooldownsCompetences(ListeCompetence *liste_competences) {
 }
 
 // Vérifie les conditions et lance une compétence.
+// Return: `EXIT_FAILURE` ou `EXIT_SUCCESS`
+// Return `-1` si la compétence n'a pas pu être lancée (cooldown, coût, etc)
 int utiliserCompetence(Competence *comp, void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, EntiteType cible_type) {
     if (!comp || !lanceur_ptr || !cible_ptr) {
         fprintf(stderr, "Erreur: utiliserCompetence(): Invalid params\n");
