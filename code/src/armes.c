@@ -228,7 +228,8 @@ int appliquerActionsArme(Plongeur *joueur, void *cible, EntiteType cible_type) {
         if (executerAction(
             &joueur->arme_equipee->listeAction.actions[i],
             (void*)joueur, ENTITE_PLONGEUR,
-            (void*)cible, cible_type
+            (void*)cible, cible_type,
+            NO_REVERSE
         ) == EXIT_FAILURE) {
             fprintf(stderr, "Erreur: appliquerActionsArme(): executerAction()\n");
             return EXIT_FAILURE;

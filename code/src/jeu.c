@@ -64,10 +64,11 @@ int runGame(Sauvegarde *actualSave) {
     modalArsenal = chargerArmesDepuisFichier("config/objets/armes.conf");
     if (!modalArsenal) {
         fprintf(stderr, "runGame(): Erreur lors du chargement des armes.\n");
+        freeListeObjets(modalOrnamentsList);
+        freeListeObjets(modalConsumablesList);
         freeBestiary(bestiary);
         freeBestiary(modalBestiary);
         freeListeCompetence(&modalCreaturesSkills);
-        freeListeConsommables(modalConsumablesList);
         return EXIT_FAILURE;
     }
     
