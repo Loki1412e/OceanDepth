@@ -943,6 +943,55 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
     if (saveListeObjet(diver->liste_bibelots, tmpSave) != EXIT_SUCCESS)
         return EXIT_FAILURE;
 
+    // Sauvegarde Arsenal
+    
+    size_t arsenal_size = diver->arsenal && diver->arsenal->armes ? diver->arsenal->longueur_armes : 0;
+    // taille arsenal
+    if (addBlock(tmpSave, &arsenal_size, sizeof(size_t)) != EXIT_SUCCESS)
+        return EXIT_FAILURE;
+
+    // tab arsenal
+    for (size_t i = 0; i < arsenal_size; i++) {
+        Arme *arme = diver->arsenal->armes[i];
+        // Bloc arme sans pointeurs
+        Arme arme_copy = {0};
+        arme_copy.id = arme->id;
+        arme_copy.attaque_max = arme->attaque_max;
+        arme_copy.attaque_min = arme->attaque_min;
+        arme_copy.cout_oxygene = arme->cout_oxygene;
+        arme_copy.bonus_defense = arme->bonus_defense;
+        arme_copy.listeAction.longueur = arme->listeAction.longueur;
+        arme_copy.listeAction.actions = NULL;
+        if (addBlock(tmpSave, &arme_copy, sizeof(Arme)) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+
+        size_t nom_len = arme->nom ? strlen(arme->nom) + 1 : 0;
+        // taille nom
+        if (addBlock(tmpSave, &nom_len, sizeof(size_t)) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+        // tab nom
+        if (nom_len > 0 && addBlock(tmpSave, arme->nom, nom_len) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+        
+        // Liste des actions
+        if (saveListeActions(&arme->listeAction, tmpSave) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+    }
+
+    // Arme en equipement
+    size_t invalid_index = (size_t)(-1);
+    size_t index_arme_equipee = diver->arme_equipee ? diver->arme_equipee->id : invalid_index;
+    if (addBlock(tmpSave, &index_arme_equipee, sizeof(size_t)) != EXIT_SUCCESS)
+        return EXIT_FAILURE;
+
+    // Si arme equipee valide, on la rééquipe
+    if (index_arme_equipee < diver->arsenal->longueur_armes) {
+        if (equiperArme(diver, index_arme_equipee) == EXIT_FAILURE) {
+            fprintf(stderr, "saveDiver : erreur rééquipement arme\n");
+            return EXIT_FAILURE;
+        }
+    }
+
     return EXIT_SUCCESS;
 }
 
@@ -1022,89 +1071,6 @@ int saveListeObjet(ListeObjet *liste, SaveTmpFile *tmpSave) {
         // Liste des actions
         if (saveListeActions(&objet->listeAction, tmpSave) != EXIT_SUCCESS)
             return EXIT_FAILURE;
-    }
-
-    // Sauvegarde Arsenal
-    
-    size_t arsenal_size = diver->arsenal && diver->arsenal->armes ? diver->arsenal->longueur_armes : 0;
-    // taille arsenal
-    if (addBlock(tmpSave, &arsenal_size, sizeof(size_t)) != EXIT_SUCCESS)
-        return EXIT_FAILURE;
-
-    // tab arsenal
-    for (size_t i = 0; i < arsenal_size; i++) {
-        Arme *arme = diver->arsenal->armes[i];
-        // Bloc arme sans pointeurs
-        Arme arme_copy = {0};
-        arme_copy.id = arme->id;
-        arme_copy.attaque_max = arme->attaque_max;
-        arme_copy.attaque_min = arme->attaque_min;
-        arme_copy.cout_oxygene = arme->cout_oxygene;
-        arme_copy.bonus_defense = arme->bonus_defense;
-        arme_copy.listeAction.longueur = arme->listeAction.longueur;
-        arme_copy.listeAction.actions = NULL;
-        if (addBlock(tmpSave, &arme_copy, sizeof(Arme)) != EXIT_SUCCESS)
-            return EXIT_FAILURE;
-
-        size_t nom_len = arme->nom ? strlen(arme->nom) + 1 : 0;
-        // taille nom
-        if (addBlock(tmpSave, &nom_len, sizeof(size_t)) != EXIT_SUCCESS)
-            return EXIT_FAILURE;
-        // tab nom
-        if (nom_len > 0 && addBlock(tmpSave, arme->nom, nom_len) != EXIT_SUCCESS)
-            return EXIT_FAILURE;
-
-        size_t action_len = arme->listeAction.longueur;
-        // taille actions
-        if (addBlock(tmpSave, &action_len, sizeof(size_t)) != EXIT_SUCCESS)
-            return EXIT_FAILURE;
-        // tab actions
-        for (size_t j = 0; j < action_len; j++) {
-            Action *action = &arme->listeAction.actions[j];
-            Action action_copy = {0};
-            action_copy.type = action->type;
-            action_copy.params = NULL;
-            action_copy.longueur_params = action->longueur_params;
-
-            // Bloc action sans pointeurs
-            if (addBlock(tmpSave, &action_copy, sizeof(Action)) != EXIT_SUCCESS)
-                return EXIT_FAILURE;
-
-            size_t action_params_len = action->longueur_params;
-            // nombre de parametres
-            if (addBlock(tmpSave, &action_params_len, sizeof(size_t)) != EXIT_SUCCESS)
-                return EXIT_FAILURE;
-
-            for (size_t k = 0; k < action_params_len; k++) {
-                char *param = action->params[k];
-                size_t param_len = param ? strlen(param) + 1 : 0;
-                // taille parametre
-                if (addBlock(tmpSave, &param_len, sizeof(size_t)) != EXIT_SUCCESS)
-                    return EXIT_FAILURE;
-                // tab parametre
-                if (param_len > 0 && addBlock(tmpSave, param, param_len) != EXIT_SUCCESS)
-                    return EXIT_FAILURE;
-            }
-        }
-    }
-
-    // Arme en equipement
-    size_t invalid_index = 0;
-    for (size_t i = 0; i < diver->arsenal->longueur_armes; i++) {
-        Arme *arme = diver->arsenal->armes[i];
-        if (arme->id > invalid_index)
-            invalid_index = arme->id + 1;
-    }
-    size_t index_arme_equipee = diver->arme_equipee ? diver->arme_equipee->id : invalid_index;
-    if (addBlock(tmpSave, &index_arme_equipee, sizeof(size_t)) != EXIT_SUCCESS)
-        return EXIT_FAILURE;
-
-    // Si arme equipee valide, on la rééquipe
-    if (index_arme_equipee < diver->arsenal->longueur_armes) {
-        if (equiperArme(diver, index_arme_equipee) == EXIT_FAILURE) {
-            fprintf(stderr, "saveDiver : erreur rééquipement arme\n");
-            return EXIT_FAILURE;
-        }
     }
 
     return EXIT_SUCCESS;

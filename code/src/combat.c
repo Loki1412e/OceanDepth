@@ -421,7 +421,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                         printf("Erreur interne: compétence introuvable.\n");
                         pressEnterToContinue();
                         afficherInterface(joueur, creatures, nb_creatures);
-                        afficherActionsDisponibles(attaques_restantes);
+                        afficherActionsDisponibles(joueur, attaques_restantes);
                         continue;
                     }
 
@@ -471,7 +471,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                             printf("Erreur interne: cible introuvable.\n");
                             pressEnterToContinue();
                             afficherInterface(joueur, creatures, nb_creatures);
-                            afficherActionsDisponibles(attaques_restantes);
+                            afficherActionsDisponibles(joueur, attaques_restantes);
                             continue;
                         }
                     }
@@ -485,7 +485,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                         printf("Ciblage de compétence non géré dans l'interface.\n");
                         pressEnterToContinue();
                         afficherInterface(joueur, creatures, nb_creatures);
-                        afficherActionsDisponibles(attaques_restantes);
+                        afficherActionsDisponibles(joueur, attaques_restantes);
                         continue;
                     }
                     
@@ -499,7 +499,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                         printf("Vous pouvez choisir une autre action.\n");
                         pressEnterToContinue();
                         afficherInterface(joueur, creatures, nb_creatures);
-                        afficherActionsDisponibles(attaques_restantes);
+                        afficherActionsDisponibles(joueur, attaques_restantes);
                         continue;
                     }
                     else attaques_restantes--;
