@@ -73,6 +73,7 @@
         SAIGNEMENT,
         POISON,
         PARALYSIE,
+        PACIFICATION,
         ETREINTE,
         PRECISION_REDUITE,
         DEFENSE_AUGMENTEE,

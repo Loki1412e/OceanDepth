@@ -16,4 +16,6 @@
 
 - `PARALYSIE` : Empêche d'attaquer
 
+- `PACIFICATION` : Empêche d'attaquer MAIS, normalement, les BOSS sont tous immunisés (voir *[Contrer un effet](./effets.md)*)
+
 - `PRECISION_REDUITE` : 30% de chance de rater son attaque
