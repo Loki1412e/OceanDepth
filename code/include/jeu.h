@@ -8,6 +8,7 @@
     #include "combat.h"
     #include "objets.h"
     #include "bibelots.h"
+    #include "armes.h"
     #include "effets.h"
     #include "sauvegarde.h"
 

@@ -4,6 +4,7 @@
     #include "global.h"
     #include "joueur.h"
     #include "objets.h"
+    #include "armes.h"
 
     typedef struct {
         FILE *file;

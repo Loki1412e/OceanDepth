@@ -21,6 +21,6 @@
     // Affichage
     int afficherEtatOxygene(Plongeur *joueur);
     void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures);
-    void afficherActionsDisponibles(int attaques_restantes);
+    void afficherActionsDisponibles(Plongeur *joueur, int attaques_restantes);
 
 #endif

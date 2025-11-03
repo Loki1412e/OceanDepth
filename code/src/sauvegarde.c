@@ -389,6 +389,105 @@ Plongeur *loadDiver(FILE *file) {
         return NULL;
     }
 
+    // Lire arsenal
+    diver->arsenal = calloc(1, sizeof(Arsenal));
+    if (!diver->arsenal) {
+        fprintf(stderr, "loadDiver calloc arsenal\n");
+        freeDiverContent(diver);
+        return NULL;
+    }
+    // taille arsenal
+    if (fread(&diver->arsenal->longueur_armes, sizeof(size_t), 1, file) != 1) {
+        fprintf(stderr, "loadDiver fread arsenal->longueur_armes");
+        freeDiverContent(diver);
+        return NULL;
+    }
+    // tab arsenal
+    size_t arsenal_size = diver->arsenal->longueur_armes;
+    if (arsenal_size > 0) {
+        diver->arsenal->armes = calloc(arsenal_size, sizeof(Arme*));
+        if (!diver->arsenal->armes) {
+            fprintf(stderr, "loadDiver calloc arsenal->armes\n");
+            freeDiverContent(diver);
+            return NULL;
+        }
+    }
+    // Lire chaque arme
+    for (size_t i = 0; i < arsenal_size; i++) {
+        diver->arsenal->armes[i] = calloc(1, sizeof(Arme));
+        if (!diver->arsenal->armes[i]) {
+            fprintf(stderr, "loadDiver calloc arsenal->armes[%zu]\n", i);
+            freeDiverContent(diver);
+            return NULL;
+        }
+
+        // Lire les données de l'arme
+        Arme *arme = diver->arsenal->armes[i];
+        // Lire arme sans pointeurs
+        if (fread(arme, sizeof(Arme), 1, file) != 1) {
+            fprintf(stderr, "loadDiver fread arsenal->armes[%zu]\n", i);
+            freeDiverContent(diver);
+            return NULL;
+        }
+        arme->listeAction.actions = NULL;
+        arme->nom = NULL;
+        
+        // Lire taille nom
+        size_t arme_nom_len = 0;
+        if (fread(&arme_nom_len, sizeof(size_t), 1, file) != 1) {
+            fprintf(stderr, "loadDiver fread arme_nom_len\n");
+            freeDiverContent(diver);
+            return NULL;
+        }
+        if (arme_nom_len == 0) {
+            fprintf(stderr, "loadDiver arme_nom_len == 0\n");
+            freeDiverContent(diver);
+            return NULL;
+        }
+        arme->nom = calloc(arme_nom_len, sizeof(char));
+        if (!arme->nom) {
+            fprintf(stderr, "loadDiver calloc arme->nom\n");
+            freeDiverContent(diver);
+            return NULL;
+        }
+        // Lire nom
+        if (fread(arme->nom, sizeof(char), arme_nom_len, file) != arme_nom_len) {
+            fprintf(stderr, "loadDiver fread arme->nom\n");
+            freeDiverContent(diver);
+            return NULL;
+        }
+
+        // Lire listeAction
+        short res;
+        arme->listeAction = loadListeAction(file, &res);
+        if (res == EXIT_FAILURE) {
+            fprintf(stderr, "loadDiver(): loadListeAction for arme %zu failed\n", i);
+            freeDiverContent(diver);
+            return NULL;
+        }
+    }
+    
+    // Lire arme_equipee
+    diver->arme_equipee = NULL;
+    size_t index_arme_equipee;
+    if (fread(&index_arme_equipee, sizeof(size_t), 1, file) != 1) {
+        fprintf(stderr, "loadDiver fread index_arme_equipee\n");
+        freeDiverContent(diver);
+        return NULL;
+    }
+    short arme_found = false;
+    for (size_t i = 0; i < diver->arsenal->longueur_armes; i++) {
+        // On a trouvé l'arme équipée
+        if (diver->arsenal->armes[i]->id == index_arme_equipee) {
+            diver->arme_equipee = diver->arsenal->armes[i];
+            arme_found = true;
+            break;
+        }
+    }
+    if (!arme_found) {
+        diver->arme_equipee = NULL;
+    }
+
     return diver;
 }
 
@@ -713,6 +812,7 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
         int profondeur;
         ListeObjet *liste_consommables;
         ListeObjet *liste_bibelots;
+        Arsenal *arsenal;
     } Plongeur;
 */
 
@@ -734,6 +834,9 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
     // On garde la longueur des listes mais pas les pointeurs
     diver_copy.liste_etats.longueur = diver->liste_etats.etats ? diver->liste_etats.longueur : 0;
     diver_copy.liste_competences.longueur = diver->liste_competences.competences ? diver->liste_competences.longueur : 0;
+
+    diver_copy.arme_equipee = NULL;
+    diver_copy.arsenal = NULL;
 
     // Bloc sans pointeurs (safe, no uninitialised bytes)
     if (addBlock(tmpSave, &diver_copy, sizeof(Plongeur)) != EXIT_SUCCESS)
@@ -919,6 +1022,89 @@ int saveListeObjet(ListeObjet *liste, SaveTmpFile *tmpSave) {
         // Liste des actions
         if (saveListeActions(&objet->listeAction, tmpSave) != EXIT_SUCCESS)
             return EXIT_FAILURE;
+    }
+
+    // Sauvegarde Arsenal
+    
+    size_t arsenal_size = diver->arsenal && diver->arsenal->armes ? diver->arsenal->longueur_armes : 0;
+    // taille arsenal
+    if (addBlock(tmpSave, &arsenal_size, sizeof(size_t)) != EXIT_SUCCESS)
+        return EXIT_FAILURE;
+
+    // tab arsenal
+    for (size_t i = 0; i < arsenal_size; i++) {
+        Arme *arme = diver->arsenal->armes[i];
+        // Bloc arme sans pointeurs
+        Arme arme_copy = {0};
+        arme_copy.id = arme->id;
+        arme_copy.attaque_max = arme->attaque_max;
+        arme_copy.attaque_min = arme->attaque_min;
+        arme_copy.cout_oxygene = arme->cout_oxygene;
+        arme_copy.bonus_defense = arme->bonus_defense;
+        arme_copy.listeAction.longueur = arme->listeAction.longueur;
+        arme_copy.listeAction.actions = NULL;
+        if (addBlock(tmpSave, &arme_copy, sizeof(Arme)) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+
+        size_t nom_len = arme->nom ? strlen(arme->nom) + 1 : 0;
+        // taille nom
+        if (addBlock(tmpSave, &nom_len, sizeof(size_t)) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+        // tab nom
+        if (nom_len > 0 && addBlock(tmpSave, arme->nom, nom_len) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+
+        size_t action_len = arme->listeAction.longueur;
+        // taille actions
+        if (addBlock(tmpSave, &action_len, sizeof(size_t)) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+        // tab actions
+        for (size_t j = 0; j < action_len; j++) {
+            Action *action = &arme->listeAction.actions[j];
+            Action action_copy = {0};
+            action_copy.type = action->type;
+            action_copy.params = NULL;
+            action_copy.longueur_params = action->longueur_params;
+
+            // Bloc action sans pointeurs
+            if (addBlock(tmpSave, &action_copy, sizeof(Action)) != EXIT_SUCCESS)
+                return EXIT_FAILURE;
+
+            size_t action_params_len = action->longueur_params;
+            // nombre de parametres
+            if (addBlock(tmpSave, &action_params_len, sizeof(size_t)) != EXIT_SUCCESS)
+                return EXIT_FAILURE;
+
+            for (size_t k = 0; k < action_params_len; k++) {
+                char *param = action->params[k];
+                size_t param_len = param ? strlen(param) + 1 : 0;
+                // taille parametre
+                if (addBlock(tmpSave, &param_len, sizeof(size_t)) != EXIT_SUCCESS)
+                    return EXIT_FAILURE;
+                // tab parametre
+                if (param_len > 0 && addBlock(tmpSave, param, param_len) != EXIT_SUCCESS)
+                    return EXIT_FAILURE;
+            }
+        }
+    }
+
+    // Arme en equipement
+    size_t invalid_index = 0;
+    for (size_t i = 0; i < diver->arsenal->longueur_armes; i++) {
+        Arme *arme = diver->arsenal->armes[i];
+        if (arme->id > invalid_index)
+            invalid_index = arme->id + 1;
+    }
+    size_t index_arme_equipee = diver->arme_equipee ? diver->arme_equipee->id : invalid_index;
+    if (addBlock(tmpSave, &index_arme_equipee, sizeof(size_t)) != EXIT_SUCCESS)
+        return EXIT_FAILURE;
+
+    // Si arme equipee valide, on la rééquipe
+    if (index_arme_equipee < diver->arsenal->longueur_armes) {
+        if (equiperArme(diver, index_arme_equipee) == EXIT_FAILURE) {
+            fprintf(stderr, "saveDiver : erreur rééquipement arme\n");
+            return EXIT_FAILURE;
+        }
     }
 
     return EXIT_SUCCESS;

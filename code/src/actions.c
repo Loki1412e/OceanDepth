@@ -321,7 +321,7 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
             break;
         }
 
-        // Params: nom_effet (char*), duree_tours (int), chance_pourcentage (int)
+        // Params: nom_effet (char*), duree_tours (int), proba_en_pourcentage (int)
         case APPLIQUER_EFFET: {
             // Récupération de la liste des états de la cible
             ListeEtat *etats_cible = cible_plongeur ? &cible_plongeur->liste_etats : &cible_creature->liste_etats;
@@ -340,14 +340,14 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
                 return EXIT_FAILURE;
             }
             
-            int chance = my_strToInt(action->params[2], &res);
+            int proba = my_strToInt(action->params[2], &res);
             if (res == EXIT_FAILURE) {
                 fprintf(stderr, "Erreur: executerAction(): my_strToInt() -> action->params[2] (APPLIQUER_EFFET)\n");
                 return EXIT_FAILURE;
             }
 
             // Application de l'effet avec la probabilité donnée
-            if (random_int(1, 100) <= chance) {
+            if (random_int(1, 100) <= proba) {
                 ajouterEffet(etats_cible, effet, duree, 0, 0);
                 printf(">> L'effet [%s] a été appliqué pour %d tours !\n", action->params[0], duree);
             }
