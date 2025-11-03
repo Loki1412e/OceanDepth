@@ -270,6 +270,22 @@ int setDiverFromConf(Plongeur *diver, ListeCompetence *modalDiverSkills, char *p
 
             free(arrayLong);
         }
+
+        else if (strncmp(line, "effets_immunises=", 17) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[17] == '\0') continue; // ligne vide
+            if (diver->effets_immunises) {
+                freeListeEffet(diver->effets_immunises);
+                diver->effets_immunises = NULL;
+            }
+            diver->effets_immunises = initListeEffetFromStringList(line + 17);
+            if (!diver->effets_immunises) {
+                fprintf(stderr, "Erreur: setDiverFromConf(): initListeEffetFromStringList() -> \"effets_immunises=\"\n");
+                freeDiver(diver);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
     }
 
     fclose(f);
@@ -290,6 +306,7 @@ void freeDiverContent(Plongeur *diver) {
     freeListeObjets(diver->liste_consommables);
     freeListeObjets(diver->liste_bibelots);
     freeArsenal(diver->arsenal);
+    freeListeEffet(diver->effets_immunises);
 }
 
 void freeDiver(Plongeur *diver) {

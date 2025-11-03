@@ -299,6 +299,83 @@ int decrementerDureesEtNettoyer(ListeEtat *listeEtat, int estFinDeTourCombat, in
     return res;
 }
 
+size_t compterEffetsDansStringListe(char *str, short *res) {
+    if (!str) {
+        fprintf(stderr, "Erreur: compterEffetsDansStringListe(): Argument(s) invalide(s)\n");
+        *res = EXIT_FAILURE;
+        return 0;
+    }
+    *res = EXIT_SUCCESS;
+    
+    size_t count = 0;
+    char *token = strtok(str, ",");
+    while (token != NULL) {
+        Effet effet = charToEnumEffect(token);
+        if (effet != AUCUN_Effet) count++;
+        token = strtok(NULL, ",");
+    }
+
+    return count;
+}
+
+ListeEffet *initListeEffetFromStringList(char *str) {
+    if (!str) {
+        fprintf(stderr, "Erreur: initListeEffetFromStringList(): Argument(s) invalide(s)\n");
+        return NULL;
+    }
+
+    ListeEffet *listeEffet = NULL;
+    short res;
+
+    listeEffet = calloc(1, sizeof(ListeEffet));
+    if (!listeEffet) {
+        fprintf(stderr, "Erreur: initListeEffetFromStringList(): Allocation mémoire échouée\n");
+        return NULL;
+    }
+    
+    listeEffet->longueur = compterEffetsDansStringListe(str, &res);
+    if (res == EXIT_FAILURE) {
+        fprintf(stderr, "Erreur: initListeEffetFromStringList(): compterEffetsDansStringListe()\n");
+        freeListeEffet(listeEffet);
+        return NULL;
+    }
+
+    listeEffet->effets = calloc(listeEffet->longueur, sizeof(Effet));
+    if (!listeEffet->effets) {
+        fprintf(stderr, "Erreur: initListeEffetFromStringList(): Allocation mémoire échouée\n");
+        freeListeEffet(listeEffet);
+        return NULL;
+    }
+
+    size_t index = 0;
+    char *token = strtok(str, ",");
+    while (token != NULL) {
+        if (index >= listeEffet->longueur) {
+            fprintf(stderr, "Warning: initListeEffetFromStringList(): index (%zu) >= listeEffet->longueur (%zu) (dépassement de la longueur allouée)\n", index, listeEffet->longueur);
+            break;
+        }
+        
+        Effet effet = charToEnumEffect(token);
+        
+        if (effet != AUCUN_Effet)
+            listeEffet->effets[index++] = effet;
+        
+        token = strtok(NULL, ",");
+    }
+
+    return listeEffet;
+}
+
+
+void freeListeEffet(ListeEffet *listeEffet) {
+    if (!listeEffet) return;
+    if (listeEffet->effets) {
+        free(listeEffet->effets);
+        listeEffet->effets = NULL;
+    }
+    listeEffet->longueur = 0;
+    free(listeEffet);
+}
 
 void freeListeEtat(ListeEtat *listeEtat) {
     if (!listeEtat) return;
