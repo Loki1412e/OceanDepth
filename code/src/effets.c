@@ -250,12 +250,16 @@ int supprimerEtat(ListeEtat *listeEtat, Effets type) {
 }
 
 
-void decrementerDureesEtNettoyer(ListeEtat *listeEtat, int estFinDeTourCombat, int estFinDeZone) {
+// Retourne -1 si un état a été supprimé
+// Retourne EXIT_FAILURE ou EXIT_SUCCESS
+int decrementerDureesEtNettoyer(ListeEtat *listeEtat, int estFinDeTourCombat, int estFinDeZone) {
     
     int etat_a_nettoyer[listeEtat->longueur];
 
     ListeEtat listeEtatTemp = initEmptyListeEtat();
     listeEtatTemp.longueur = listeEtat->longueur;
+
+    short res = EXIT_SUCCESS;
 
     for (size_t i = 0; i < listeEtat->longueur; i++) {
         etat_a_nettoyer[i] = 0;
@@ -278,12 +282,14 @@ void decrementerDureesEtNettoyer(ListeEtat *listeEtat, int estFinDeTourCombat, i
     listeEtatTemp.etats = calloc(listeEtatTemp.longueur, sizeof(Etat));
     if (!listeEtatTemp.etats) {
         fprintf(stderr, "Erreur: decrementerDureesEtNettoyer(): Allocation mémoire échouée\n");
-        return;
+        return EXIT_FAILURE;
     }
 
     for (size_t i = 0, j = 0; i < listeEtat->longueur || j < listeEtatTemp.longueur; i++) {
-        if (etat_a_nettoyer[i])
-            printf("L'effet [%s] (%d) a expiré et a été supprimé.\n", enumEffectToChar(listeEtat->etats[i].effet), listeEtat->etats[i].effet);
+        if (etat_a_nettoyer[i]) {
+            printf(">> L'effet [%s] (%d) a expiré et a été supprimé.\n", enumEffectToChar(listeEtat->etats[i].effet), listeEtat->etats[i].effet);
+            res = -1;
+        }
         else
             listeEtatTemp.etats[j++] = listeEtat->etats[i];
     }
@@ -291,6 +297,8 @@ void decrementerDureesEtNettoyer(ListeEtat *listeEtat, int estFinDeTourCombat, i
     freeListeEtat(listeEtat);
     listeEtat->etats = listeEtatTemp.etats;
     listeEtat->longueur = listeEtatTemp.longueur;
+
+    return res;
 }
 
 

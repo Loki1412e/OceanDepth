@@ -72,24 +72,13 @@ int runGame(Sauvegarde *actualSave) {
         return EXIT_FAILURE;
     }
     
-    // On ajoute des armes de base au joueur
+    // On ajoute des armes de base au joueur (si pas déjà présentes)
     ajouterArme(modalArsenal, diver->arsenal, 0);
     ajouterArme(modalArsenal, diver->arsenal, 2);
 
-    // Joueur choisi son arme parmis son arsenal
-    afficherArmes(diver->arsenal);
-    printf("\nChoisissez une arme à équiper :\n> ");
-    size_t choix = lireEntier();
-    while (choix >= diver->arsenal->longueur) {
-        printf("\nChoix invalide. Veuillez réessayer :\n> ");
-        choix = lireEntier();
-    }
-    equiperArme(diver, choix);
-    printf("\n✅ %s équipée !\n", diver->arme_equipee->nom);
-    pressEnterToContinue();
-
-    /* ========================== */
+    /*============================*/
     /*===== Boucle principale ====*/
+    /*============================*/
 
     printSave(actualSave);
     printf("[%s] entre dans les profondeurs maritimes.\n\n", diver->nom);
