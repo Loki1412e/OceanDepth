@@ -97,9 +97,12 @@ int runGame(Sauvegarde *actualSave) {
         if (!runProgram) break;
 
         // Test ajout effets
-        ajouterEffet(&diver->liste_etats, POISON, 3, 0, 0);
-        ajouterEffet(&bestiary->creatures[0]->liste_etats, PARALYSIE, 5, 0, 0);
-        ajouterEffet(&bestiary->creatures[1]->liste_etats, SAIGNEMENT, 5, 0, 0);
+        printf("\nAjout d'effets pour les tests:\n");
+        ajouterEffet(&diver->liste_etats, diver->effets_immunises, POISON, 3, 0, 0);
+        ajouterEffet(&diver->liste_etats, diver->effets_immunises, PARALYSIE, 3, 0, 0);
+        ajouterEffet(&bestiary->creatures[0]->liste_etats, bestiary->creatures[0]->effets_immunises, PARALYSIE, 5, 0, 0);
+        ajouterEffet(&bestiary->creatures[1]->liste_etats, bestiary->creatures[1]->effets_immunises, SAIGNEMENT, 5, 0, 0);
+        pressEnterToContinue();
 
         // Test ajout objets (consommables)
         ajouterObjet(modalConsumablesList, diver->liste_consommables, 3);

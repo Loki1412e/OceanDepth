@@ -202,7 +202,7 @@
         int vitesse;
         ListeEtat liste_etats;
         ListeCompetence liste_competences;
-        ListeEffet *effets_immunises;
+        ListeEffet *effets_immunises; // --> si immunisé alors executerAction(APPLIQUER_EFFET, <cible=ENTITE_CREATURE>) ne s'appliquera pas
         Rarete rarete;
     } CreatureMarine;
 
@@ -232,7 +232,7 @@
         ListeObjet *liste_bibelots;
         Arme *arme_equipee;   // arme actuelle du joueur
         Arsenal *arsenal;
-        ListeEffet *effets_immunises;
+        ListeEffet *effets_immunises; // --> si immunisé alors executerAction(APPLIQUER_EFFET, <cible=ENTITE_PLONGEUR>) ne s'appliquera pas
     } Plongeur;
 
     typedef struct {

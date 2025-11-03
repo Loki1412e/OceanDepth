@@ -78,10 +78,20 @@ ListeEtat duplicateListeEtat(ListeEtat *modal, short *res) {
 
 // Note : La gestion de la mémoire (realloc) est simplifiée ici.
 // Vous devriez ajouter des vérifications robustes.
-int ajouterEffet(ListeEtat *listeEtat, Effet type, int dureeCombat, int dureeZone, int estPermanent) {
+int ajouterEffet(ListeEtat *listeEtat, ListeEffet *effets_immunises, Effet type, int dureeCombat, int dureeZone, int estPermanent) {
     if (!listeEtat) return EXIT_FAILURE;
     if (type <= AUCUN_Effet || type >= LENGTH_Effet) return EXIT_FAILURE;
-    
+
+    // Vérifier si la cible est immunisée contre cet effet
+    if (effets_immunises) {
+        for (size_t i = 0; i < effets_immunises->longueur; i++) {
+            if (effets_immunises->effets[i] == type) {
+                printf(">> La cible est immunisée contre l'effet [%s].\n", enumEffectToChar(type));
+                return EXIT_SUCCESS;
+            }
+        }
+    }
+
     // Vérifier si l'effet existe déjà pour le rafraîchir au lieu de le dupliquer
     for (size_t i = 0; i < listeEtat->longueur; i++) {
         Etat *etat = &listeEtat->etats[i];
@@ -89,7 +99,7 @@ int ajouterEffet(ListeEtat *listeEtat, Effet type, int dureeCombat, int dureeZon
             if (etat->duree_combat < dureeCombat) etat->duree_combat = dureeCombat;
             if (etat->duree_zone < dureeZone) etat->duree_zone = dureeZone;
             etat->estPermanent = etat->estPermanent || estPermanent;
-            printf("Effet [%s] (%d) rafraîchi.\n", enumEffectToChar(type), type);
+            printf(">> Effet [%s] (%d) rafraîchi.\n", enumEffectToChar(type), type);
             return EXIT_SUCCESS;
         }
     }

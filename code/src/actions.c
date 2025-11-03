@@ -330,10 +330,7 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
         }
 
         // Params: nom_effet (char*), duree_tours (int), proba_en_pourcentage (int)
-        case APPLIQUER_EFFET: {
-            // Récupération de la liste des états de la cible
-            ListeEtat *etats_cible = cible_plongeur ? &cible_plongeur->liste_etats : &cible_creature->liste_etats;
-            
+        case APPLIQUER_EFFET: {            
             // Récupération des paramètres
 
             Effet effet = charToEnumEffect(action->params[0]);
@@ -354,9 +351,15 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
                 return EXIT_FAILURE;
             }
 
+            // Récupération de la liste des états de la cible
+            ListeEtat *etats_cible = cible_plongeur ? &cible_plongeur->liste_etats : &cible_creature->liste_etats;
+
+            // Récupération de la liste des effets immunisés de la cible
+            ListeEffet *effets_immunises_cible = cible_plongeur ? cible_plongeur->effets_immunises : cible_creature->effets_immunises;
+
             // Application de l'effet avec la probabilité donnée
             if (random_int(1, 100) <= proba) {
-                ajouterEffet(etats_cible, effet, duree, 0, 0);
+                ajouterEffet(etats_cible, effets_immunises_cible, effet, duree, 0, 0);
                 printf(">> L'effet [%s] a été appliqué pour %d tours !\n", action->params[0], duree);
             }
             else printf(">> L'application de l'effet [%s] a échoué.\n", action->params[0]);
