@@ -118,6 +118,33 @@ void printListeAction(ListeAction actions) {
     }
 }
 
+void printModififierStatActions(ListeAction actions) {
+    if (actions.longueur == 0 || actions.actions == NULL) {
+        return;
+    }
+
+    short res;
+    int value;
+    char *stat_name = NULL;
+    size_t count = 0;
+
+    for (size_t i = 0; i < actions.longueur; i++) {
+        if (actions.actions[i].type != MODIFIER_STAT || actions.actions[i].longueur_params < 2) 
+            continue;
+    
+        stat_name = actions.actions[i].params[0];
+        value = my_strToInt(actions.actions[i].params[1], &res);
+        if (res != EXIT_SUCCESS) {
+            fprintf(stderr, "Warning: printModififierStatActions(): my_strToInt(%s)\n", actions.actions[i].params[1]);
+            continue;
+        }
+
+        if (count++ > 0) printf(" ");
+        else printf(" → ");
+        printf("[%s%d %s]", (value > 0 ? "+" : ""), value, stat_name);
+    }
+}
+
 void printListeEtat(ListeEtat etats) {
     if (etats.longueur == 0 || etats.etats == NULL) {
         return;
@@ -138,7 +165,7 @@ void printObjectsList(ListeObjet *objects_list) {
         return;
     }
 
-    printf("Objets (%zu):\n\n", objects_list->longueur);
+    printf(" (%zu):\n\n", objects_list->longueur);
     for (size_t i = 0; i < objects_list->longueur; i++) {
         Objet *c = objects_list->objets[i];
         if (!c) continue;
@@ -149,6 +176,22 @@ void printObjectsList(ListeObjet *objects_list) {
         printf("\tDescription: %s\n", c->description ? c->description : "(null)");
         printf("\tRarete: %s\n", enumRareteToChar(c->rarete));
         printListeAction(c->listeAction);
+        printf("\n");
+    }
+}
+
+void printBibelotsActifs(ListeObjet *bibelots) {
+    if (!bibelots || bibelots->longueur == 0 || bibelots->objets == NULL) {
+        printf("\n\n\t    Bibelots actifs : Aucun\n");
+        return;
+    }
+
+    printf("\n\n\t    Bibelots actifs (%zu):\n", bibelots->longueur);
+    for (size_t i = 0; i < bibelots->longueur; i++) {
+        Objet *c = bibelots->objets[i];
+        if (!c) continue;
+        printf("\t      - %s", c->nom ? c->nom : "(null)");
+        printModififierStatActions(c->listeAction);
         printf("\n");
     }
 }

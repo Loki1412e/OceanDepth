@@ -165,10 +165,14 @@ void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_c
     if (joueur->liste_etats.longueur > 0) {
         printf("\n\n\t    Etats :  ");
         printListeEtat(joueur->liste_etats);
-        printf("\n");
     }
 
-    printf("\n\n\n╟───────────────────────────────────────────────────────────────────────────────────╢\n");
+    // afficher les bibelots actifs
+    if (joueur->liste_bibelots->longueur > 0) {
+        printBibelotsActifs(joueur->liste_bibelots);
+    }
+
+    printf("\n\n╟───────────────────────────────────────────────────────────────────────────────────╢\n");
 
     // --- CRÉATURES ENNEMIES ---
     for (size_t i = 0; i < nb_creatures; i++) {

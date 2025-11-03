@@ -20,6 +20,7 @@
     void printCompetence(Competence competence);
     void printListeCompetence(ListeCompetence competences);
     void printObjectsList(ListeObjet *objects);
+    void printBibelotsActifs(ListeObjet *bibelots);
 
     void printSaveLastRun(Sauvegarde *save);
     void printListSave(ListeSauvegardes *saves);
