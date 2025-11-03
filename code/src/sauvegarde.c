@@ -232,13 +232,11 @@ Plongeur *loadDiver(FILE *file) {
         freeDiver(diver);
         return NULL;
     }
-
     if (nom_len == 0) {
         fprintf(stderr, "loadDiver nom_len == 0");
         freeDiver(diver);
         return NULL;
     }
-
     diver->nom = calloc(nom_len, sizeof(char));
     if (!diver->nom) {
         fprintf(stderr, "loadDiver calloc nom\n");
@@ -431,6 +429,7 @@ Plongeur *loadDiver(FILE *file) {
         }
         arme->listeAction.actions = NULL;
         arme->nom = NULL;
+        arme->description = NULL;
         
         // Lire taille nom
         size_t arme_nom_len = 0;
@@ -444,6 +443,7 @@ Plongeur *loadDiver(FILE *file) {
             freeDiverContent(diver);
             return NULL;
         }
+        // Allocation nom
         arme->nom = calloc(arme_nom_len, sizeof(char));
         if (!arme->nom) {
             fprintf(stderr, "loadDiver calloc arme->nom\n");
@@ -453,6 +453,27 @@ Plongeur *loadDiver(FILE *file) {
         // Lire nom
         if (fread(arme->nom, sizeof(char), arme_nom_len, file) != arme_nom_len) {
             fprintf(stderr, "loadDiver fread arme->nom\n");
+            freeDiverContent(diver);
+            return NULL;
+        }
+
+        // Lire taille description
+        size_t arme_desc_len = 0;
+        if (fread(&arme_desc_len, sizeof(size_t), 1, file) != 1) {
+            fprintf(stderr, "loadDiver fread arme_desc_len\n");
+            freeDiverContent(diver);
+            return NULL;
+        }
+        // Allocation description
+        arme->description = calloc(arme_desc_len, sizeof(char));
+        if (!arme->description) {
+            fprintf(stderr, "loadDiver calloc arme->description\n");
+            freeDiverContent(diver);
+            return NULL;
+        }
+        // Lire description
+        if (fread(arme->description, sizeof(char), arme_desc_len, file) != arme_desc_len) {
+            fprintf(stderr, "loadDiver fread arme->description\n");
             freeDiverContent(diver);
             return NULL;
         }
@@ -960,8 +981,8 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
         arme_copy.attaque_min = arme->attaque_min;
         arme_copy.cout_oxygene = arme->cout_oxygene;
         arme_copy.bonus_defense = arme->bonus_defense;
+        arme_copy.rarete = arme->rarete;
         arme_copy.listeAction.longueur = arme->listeAction.longueur;
-        arme_copy.listeAction.actions = NULL;
         if (addBlock(tmpSave, &arme_copy, sizeof(Arme)) != EXIT_SUCCESS)
             return EXIT_FAILURE;
 
@@ -973,6 +994,14 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
         if (nom_len > 0 && addBlock(tmpSave, arme->nom, nom_len) != EXIT_SUCCESS)
             return EXIT_FAILURE;
         
+        size_t desc_len = arme->description ? strlen(arme->description) + 1 : 0;
+        // taille description
+        if (addBlock(tmpSave, &desc_len, sizeof(size_t)) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+        // tab description
+        if (desc_len > 0 && addBlock(tmpSave, arme->description, desc_len) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+
         // Liste des actions
         if (saveListeActions(&arme->listeAction, tmpSave) != EXIT_SUCCESS)
             return EXIT_FAILURE;
