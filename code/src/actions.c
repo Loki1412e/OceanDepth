@@ -407,6 +407,10 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
                 break;
             }
 
+            // Retirer l'effet s'il est déjà appliqué
+            ListeEtat *etats_cible = cible_plongeur ? &cible_plongeur->liste_etats : &cible_creature->liste_etats;
+            supprimerEtat(etats_cible, effet);
+
             if (ajouterEffetImmunise(effets_immunises_cible, effet) == EXIT_FAILURE) {
                 fprintf(stderr, "Erreur: executerAction(): ajouterEffetImmunise() (AJOUTER_IMMUNITE_EFFET)\n");
                 return EXIT_FAILURE;
