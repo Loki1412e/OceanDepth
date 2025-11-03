@@ -316,15 +316,23 @@ size_t compterEffetsDansStringListe(char *str, short *res) {
         return 0;
     }
     *res = EXIT_SUCCESS;
+
+    char *strCopy = my_strdup(str);
+    if (!strCopy) {
+        fprintf(stderr, "Erreur: compterEffetsDansStringListe(): Allocation mémoire échouée\n");
+        *res = EXIT_FAILURE;
+        return 0;
+    }
     
     size_t count = 0;
-    char *token = strtok(str, ",");
+    char *token = strtok(strCopy, ",");
     while (token != NULL) {
         Effet effet = charToEnumEffect(token);
         if (effet != AUCUN_Effet) count++;
         token = strtok(NULL, ",");
     }
 
+    free(strCopy);
     return count;
 }
 
@@ -336,14 +344,21 @@ ListeEffet *initListeEffetFromStringList(char *str) {
 
     ListeEffet *listeEffet = NULL;
     short res;
+    char *strCopy = NULL;
 
     listeEffet = calloc(1, sizeof(ListeEffet));
     if (!listeEffet) {
         fprintf(stderr, "Erreur: initListeEffetFromStringList(): Allocation mémoire échouée\n");
         return NULL;
     }
-    
-    listeEffet->longueur = compterEffetsDansStringListe(str, &res);
+
+    strCopy = my_strdup(str);
+    if (!strCopy) {
+        fprintf(stderr, "Erreur: initListeEffetFromStringList(): Allocation mémoire échouée\n");
+        freeListeEffet(listeEffet);
+        return NULL;
+    }
+    listeEffet->longueur = compterEffetsDansStringListe(strCopy, &res);
     if (res == EXIT_FAILURE) {
         fprintf(stderr, "Erreur: initListeEffetFromStringList(): compterEffetsDansStringListe()\n");
         freeListeEffet(listeEffet);
@@ -357,8 +372,16 @@ ListeEffet *initListeEffetFromStringList(char *str) {
         return NULL;
     }
 
+    free(strCopy);
+    strCopy = my_strdup(str);
+    if (!strCopy) {
+        fprintf(stderr, "Erreur: initListeEffetFromStringList(): Allocation mémoire échouée\n");
+        freeListeEffet(listeEffet);
+        return NULL;
+    }
+
     size_t index = 0;
-    char *token = strtok(str, ",");
+    char *token = strtok(strCopy, ",");
     while (token != NULL) {
         if (index >= listeEffet->longueur) {
             fprintf(stderr, "Warning: initListeEffetFromStringList(): index (%zu) >= listeEffet->longueur (%zu) (dépassement de la longueur allouée)\n", index, listeEffet->longueur);
@@ -366,13 +389,13 @@ ListeEffet *initListeEffetFromStringList(char *str) {
         }
         
         Effet effet = charToEnumEffect(token);
-        
         if (effet != AUCUN_Effet)
             listeEffet->effets[index++] = effet;
         
         token = strtok(NULL, ",");
     }
 
+    free(strCopy);
     return listeEffet;
 }
 
