@@ -397,13 +397,13 @@ Plongeur *loadDiver(FILE *file) {
         return NULL;
     }
     // taille arsenal
-    if (fread(&diver->arsenal->longueur_armes, sizeof(size_t), 1, file) != 1) {
-        fprintf(stderr, "loadDiver fread arsenal->longueur_armes");
+    if (fread(&diver->arsenal->longueur, sizeof(size_t), 1, file) != 1) {
+        fprintf(stderr, "loadDiver fread arsenal->longueur");
         freeDiverContent(diver);
         return NULL;
     }
     // tab arsenal
-    size_t arsenal_size = diver->arsenal->longueur_armes;
+    size_t arsenal_size = diver->arsenal->longueur;
     if (arsenal_size > 0) {
         diver->arsenal->armes = calloc(arsenal_size, sizeof(Arme*));
         if (!diver->arsenal->armes) {
@@ -476,7 +476,7 @@ Plongeur *loadDiver(FILE *file) {
         return NULL;
     }
     short arme_found = false;
-    for (size_t i = 0; i < diver->arsenal->longueur_armes; i++) {
+    for (size_t i = 0; i < diver->arsenal->longueur; i++) {
         // On a trouvé l'arme équipée
         if (diver->arsenal->armes[i]->id == index_arme_equipee) {
             diver->arme_equipee = diver->arsenal->armes[i];
@@ -945,7 +945,7 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
 
     // Sauvegarde Arsenal
     
-    size_t arsenal_size = diver->arsenal && diver->arsenal->armes ? diver->arsenal->longueur_armes : 0;
+    size_t arsenal_size = diver->arsenal && diver->arsenal->armes ? diver->arsenal->longueur : 0;
     // taille arsenal
     if (addBlock(tmpSave, &arsenal_size, sizeof(size_t)) != EXIT_SUCCESS)
         return EXIT_FAILURE;
@@ -985,7 +985,7 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
         return EXIT_FAILURE;
 
     // Si arme equipee valide, on la rééquipe
-    if (index_arme_equipee < diver->arsenal->longueur_armes) {
+    if (index_arme_equipee < diver->arsenal->longueur) {
         if (equiperArme(diver, index_arme_equipee) == EXIT_FAILURE) {
             fprintf(stderr, "saveDiver : erreur rééquipement arme\n");
             return EXIT_FAILURE;

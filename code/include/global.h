@@ -159,7 +159,7 @@
 
     typedef struct {
         Arme **armes;
-        size_t longueur_armes;
+        size_t longueur;
     } Arsenal;
 
     
