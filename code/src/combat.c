@@ -583,19 +583,21 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                         break;
                     }
                     printf("\nQuelle arme équiper ? (0 pour annuler)\n");
+                    printf(joueur->arme_equipee == NULL ? "\n[ÉQUIPÉE]" : "\n[1]");
+                    printf(" Aucune (poings)\n");
                     for (size_t i = 0; i < joueur->arsenal->longueur; i++) {
                         Arme *a = joueur->arsenal->armes[i];
                         if (joueur->arme_equipee && a && a->id == joueur->arme_equipee->id)
                             printf("\n[ÉQUIPÉE]");
                         else
-                            printf("\n[%zu]", i + 1);
+                            printf("\n[%zu]", i + 2);
                         printf(" %s (Attaque: %d-%d, Coût Oxygène: %d)", a->nom, a->attaque_min, a->attaque_max, a->cout_oxygene);
                         printf("\n    %s\n", a->description);
                     }
                     printf("> ");
 
                     size_t choix_arme = lireEntier();
-                    if (choix_arme == 0 || choix_arme > joueur->arsenal->longueur) {
+                    if (choix_arme == 0 || choix_arme > joueur->arsenal->longueur + 1) {
                             if (choix_arme == 0)
                                 printf("\n>> Action annulée.\n");
                             else
@@ -606,7 +608,23 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                         continue; // Ne termine pas le tour, redemande une action
                     }
 
-                    if (joueur->arme_equipee == joueur->arsenal->armes[choix_arme - 1]) {
+                    if (choix_arme == 1) {
+                        if (joueur->arme_equipee == NULL) {
+                            printf(">> Vous n'avez déjà aucune arme équipée (Action annulée).\n");
+                            pressEnterToContinue();
+                            afficherInterface(joueur, creatures, nb_creatures);
+                            afficherActionsDisponibles(joueur, attaques_restantes);
+                            continue; // Ne termine pas le tour, redemande une action
+                        }
+
+                        joueur->arme_equipee = NULL;
+                        printf("\n→ Vous équipez vos poings.\n");
+                        attaques_restantes--;
+                        pressEnterToContinue();
+                        break;
+                    }
+
+                    if (joueur->arme_equipee == joueur->arsenal->armes[choix_arme - 2]) {
                         printf(">> [%s] est déjà équipée (Action annulée).\n", joueur->arme_equipee->nom);
                         pressEnterToContinue();
                         afficherInterface(joueur, creatures, nb_creatures);
@@ -614,7 +632,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                         continue; // Ne termine pas le tour, redemande une action
                     }
 
-                    if (!joueur->arsenal->armes[choix_arme - 1]) {
+                    if (!joueur->arsenal->armes[choix_arme - 2]) {
                         printf(">> Erreur interne: arme introuvable.\n");
                         pressEnterToContinue();
                         afficherInterface(joueur, creatures, nb_creatures);
@@ -622,7 +640,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                         continue; // Ne termine pas le tour, redemande une action
                     }
 
-                    if (equiperArme(joueur, choix_arme - 1) == EXIT_FAILURE) {
+                    if (equiperArme(joueur, choix_arme - 2) == EXIT_FAILURE) {
                         printf(">> Erreur interne: combat(): equiperArme()\n");
                         pressEnterToContinue();
                         afficherInterface(joueur, creatures, nb_creatures);
@@ -630,7 +648,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                         continue; // Ne termine pas le tour, redemande une action
                     }
 
-                    printf("→ Vous équipez [%s].\n", joueur->arme_equipee->nom);
+                    printf("\n→ Vous équipez [%s].\n", joueur->arme_equipee->nom);
                     attaques_restantes--;
                     pressEnterToContinue();
                     break;
