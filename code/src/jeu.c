@@ -80,7 +80,7 @@ int runGame(Sauvegarde *actualSave) {
     afficherArmes(diver->arsenal);
     printf("\nChoisissez une arme à équiper :\n> ");
     size_t choix = lireEntier();
-    while (choix >= diver->arsenal->longueur_armes) {
+    while (choix >= diver->arsenal->longueur) {
         printf("\nChoix invalide. Veuillez réessayer :\n> ");
         choix = lireEntier();
     }

@@ -298,8 +298,8 @@ void printDiver(Plongeur *diver) {
     printObjectsList(diver->liste_consommables);
 
     printf("\nArsenal:\n");
-    if (diver->arsenal && diver->arsenal->longueur_armes > 0) {
-        for (size_t i = 0; i < diver->arsenal->longueur_armes; i++) {
+    if (diver->arsenal && diver->arsenal->longueur > 0) {
+        for (size_t i = 0; i < diver->arsenal->longueur; i++) {
             Arme *arme = diver->arsenal->armes[i];
             if (!arme) continue;
             printf("\tArme ID: %zu\n", arme->id);

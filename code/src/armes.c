@@ -10,7 +10,7 @@ Arsenal *chargerArmesDepuisFichier(char *filename) {
     short res;
 
     Arsenal *arsenal = calloc(1, sizeof(Arsenal));
-    arsenal->longueur_armes = confCountAllUniqueObjet(filename, &res);
+    arsenal->longueur = confCountAllUniqueObjet(filename, &res);
     if (res == EXIT_FAILURE) {
         fprintf(stderr, "Erreur: chargerArmesDepuisFichier(): confCountAllUniqueObjet()\n");
         freeArsenal(arsenal);
@@ -18,14 +18,14 @@ Arsenal *chargerArmesDepuisFichier(char *filename) {
         return NULL;
     }
 
-    arsenal->armes = calloc(arsenal->longueur_armes, sizeof(Arme *));
+    arsenal->armes = calloc(arsenal->longueur, sizeof(Arme *));
     if (!arsenal->armes) {
         fprintf(stderr, "Erreur: chargerArmesDepuisFichier(): arsenal->armes = calloc()\n");
         freeArsenal(arsenal);
         fclose(f);
         return NULL;
     }
-    for (size_t i = 0; i < arsenal->longueur_armes; i++) {
+    for (size_t i = 0; i < arsenal->longueur; i++) {
         arsenal->armes[i] = calloc(1, sizeof(Arme));
         if (!arsenal->armes[i]) {
             fprintf(stderr, "Erreur: chargerArmesDepuisFichier(): arsenal->armes[%zu] = calloc()\n", i);
@@ -47,7 +47,7 @@ Arsenal *chargerArmesDepuisFichier(char *filename) {
             index = length - 1;
 
             // Si dépassement alors on arrete de load mais on garde la conf actuelle
-            if (index >= arsenal->longueur_armes) {
+            if (index >= arsenal->longueur) {
                 fprintf(stderr, "Warning: setListeCompetenceFromConf(): index %zu hors des limites de creatures\n", index);
                 break;
             }
@@ -94,8 +94,8 @@ Arsenal *chargerArmesDepuisFichier(char *filename) {
         }
     }
 
-    if (arsenal->longueur_armes < length) {
-        fprintf(stderr, "Erreur: chargerArmesDepuisFichier(): longueur (%zu) < length (%zu)\n", arsenal->longueur_armes, length);
+    if (arsenal->longueur < length) {
+        fprintf(stderr, "Erreur: chargerArmesDepuisFichier(): longueur (%zu) < length (%zu)\n", arsenal->longueur, length);
         freeArsenal(arsenal);
         fclose(f);
         return NULL;
@@ -106,13 +106,13 @@ Arsenal *chargerArmesDepuisFichier(char *filename) {
 }
 
 void afficherArmes(Arsenal *arsenal) {
-    if (!arsenal || arsenal->longueur_armes == 0) {
+    if (!arsenal || arsenal->longueur == 0) {
         printf("Aucune arme disponible.\n");
         return;
     }
 
     printf("\n=== Arsenal disponible ===\n");
-    for (size_t i = 0; i < arsenal->longueur_armes; i++) {
+    for (size_t i = 0; i < arsenal->longueur; i++) {
         Arme *a = arsenal->armes[i];
         printf("[%zu] %s (id=%zu) (ATK %d-%d | O2: %d | DEF+%d)\n",
                i, a->nom, a->id, a->attaque_min, a->attaque_max, a->cout_oxygene,
@@ -160,17 +160,17 @@ Arme *duplicateArme(Arme *a) {
 
 
 int ajouterArme(Arsenal *modal, Arsenal *arsenal, size_t id_arme) {
-    if (!modal || !arsenal || id_arme >= modal->longueur_armes) {
+    if (!modal || !arsenal || id_arme >= modal->longueur) {
         fprintf(stderr, "Erreur: ajouterArme(): paramètres invalides\n");
         return EXIT_FAILURE;
     }
 
-    if (id_arme > modal->longueur_armes) {
-        fprintf(stderr, "Erreur: ajouterArme(): id_arme (%zu) hors limites (%zu)\n", id_arme, modal->longueur_armes);
+    if (id_arme > modal->longueur) {
+        fprintf(stderr, "Erreur: ajouterArme(): id_arme (%zu) hors limites (%zu)\n", id_arme, modal->longueur);
         return EXIT_FAILURE;
     }
 
-    for (size_t i = 0; i < arsenal->longueur_armes; i++) {
+    for (size_t i = 0; i < arsenal->longueur; i++) {
         // On l'a déjà
         if (arsenal->armes[i]->id == id_arme) return EXIT_SUCCESS;
     }
@@ -181,21 +181,21 @@ int ajouterArme(Arsenal *modal, Arsenal *arsenal, size_t id_arme) {
         return EXIT_FAILURE;
     }
 
-    Arme **nouvelles_armes = realloc(arsenal->armes, (arsenal->longueur_armes + 1) * sizeof(Arme *));
+    Arme **nouvelles_armes = realloc(arsenal->armes, (arsenal->longueur + 1) * sizeof(Arme *));
     if (!nouvelles_armes) {
         fprintf(stderr, "Erreur: ajouterArme(): realloc()\n");
         return EXIT_FAILURE;
     }
 
     arsenal->armes = nouvelles_armes;
-    arsenal->armes[arsenal->longueur_armes] = arme;
-    arsenal->longueur_armes++;
+    arsenal->armes[arsenal->longueur] = arme;
+    arsenal->longueur++;
 
     return EXIT_SUCCESS;
 }
 
 int equiperArme(Plongeur *joueur, size_t id_arme) {
-    if (!joueur || joueur->arsenal->longueur_armes == 0 || id_arme >= joueur->arsenal->longueur_armes) {
+    if (!joueur || joueur->arsenal->longueur == 0 || id_arme >= joueur->arsenal->longueur) {
         fprintf(stderr, "Erreur: equiperArme(): paramètres invalides\n");
         return EXIT_FAILURE;
     }
@@ -250,7 +250,7 @@ void freeArme(Arme *arme) {
 
 void freeArsenal(Arsenal *arsenal) {
     if (!arsenal) return;
-    for (size_t i = 0; i < arsenal->longueur_armes; i++) {
+    for (size_t i = 0; i < arsenal->longueur; i++) {
         freeArme(arsenal->armes[i]);
         arsenal->armes[i] = NULL;
     }
