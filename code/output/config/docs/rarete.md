@@ -14,16 +14,16 @@ Les différents niveaux de rareté et leurs poids sont déterminés par une fonc
 
 ## Fonction de Répartition des Poids
 
-Les poids des différentes raretés sont calculés à l’aide de la fonction exponentielle suivante :
+Les poids des différentes raretés sont calculés à l’aide de la fonction exponentielle suivante *(r pour "rarete")* :
 
 ```yml
-f(r) = 100 * 1.5^(-(rarete - 1))
+f(r) = 100 * 1.5^(1 - r)
 ```
 
 ```c
 unsigned rareteToPoids(RARETE rarete) {
     if (rarete <= 0) return 0;
-    double res = RARETE_POIDS_MAX * pow(RARETE_BASE_EXP, (double) (-(rarete - 1)));
+    double res = RARETE_POIDS_MAX * pow(RARETE_BASE_EXP, (double) (1 - rarete));
     return (unsigned) round(res);
 }
 ```
