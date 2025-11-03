@@ -214,13 +214,14 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
             break;
         }
         
-        // Params: montant_degats (int), valeur_perforation (int)
+        // Params: multiplicateur_attaque_en_pourcentage (int), valeur_perforation (int)
         case DEGATS_PERFORANTS: {
-            int montant = my_strToInt(action->params[0], &res);
+            int getMultiplicateur = my_strToInt(action->params[0], &res);
             if (res == EXIT_FAILURE) {
                 fprintf(stderr, "Erreur: executerAction(): my_strToInt() -> action->params[0] (DEGATS_PERFORANTS)\n");
                 return EXIT_FAILURE;
             }
+            double multiplicateur = getMultiplicateur / 100.0;
             int perfor = my_strToInt(action->params[1], &res);
             if (res == EXIT_FAILURE) {
                 fprintf(stderr, "Erreur: executerAction(): my_strToInt() -> action->params[1] (DEGATS_PERFORANTS)\n");
@@ -231,7 +232,14 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
             int defense_effective = defense_cible - perfor;
             if (defense_effective < 0) defense_effective = 0;
 
-            int degats = calculerDegats(montant, montant, defense_effective);
+            int attaque_min_lanceur = lanceur_plongeur ? lanceur_plongeur->attaque_min : lanceur_creature->attaque_min;
+            int attaque_max_lanceur = lanceur_plongeur ? lanceur_plongeur->attaque_max : lanceur_creature->attaque_max;
+
+            int degats = calculerDegats(
+                attaque_min_lanceur * multiplicateur,
+                attaque_max_lanceur * multiplicateur,
+                defense_effective
+            );
 
             ListeEtat *etats_cible = cible_plongeur ? &cible_plongeur->liste_etats : &cible_creature->liste_etats;
             degats = calculerDegatsInfligesEffet(etats_cible, degats);
