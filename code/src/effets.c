@@ -10,6 +10,7 @@ char *enumEffectToChar(Effets type) {
         case SAIGNEMENT: return "SAIGNEMENT";
         case POISON: return "POISON";
         case PARALYSIE: return "PARALYSIE";
+        case PACIFICATION: return "PACIFICATION";
         case ETREINTE: return "ETREINTE";
         case PRECISION_REDUITE: return "PRECISION_REDUITE";
         case DEFENSE_AUGMENTEE: return "DEFENSE_AUGMENTEE";
@@ -123,15 +124,12 @@ int peutAttaquer(ListeEtat *listeEtat) {
         switch (listeEtat->etats[i].effet) {
             
             case PARALYSIE:
-                printf("[PARALYSIE] est active\n");
+            case ETREINTE:
+            case PACIFICATION:
+                printf(">> [%s] est active\n", enumEffectToChar(listeEtat->etats[i].effet));
                 res = false;
                 break;
 
-            case ETREINTE:
-                printf("[ETREINTE] est active\n");
-                res = false;
-                break;
-            
             default:
                 break;
         }
