@@ -5,8 +5,8 @@
 
     char *enumEffectToChar(Effet type);
     Effet charToEnumEffect(char *type);
-    
-    int ajouterEffet(ListeEtat *listeEtat, Effet type, int dureeCombat, int dureeZone, int estPermanent);
+
+    int ajouterEffet(ListeEtat *listeEtat, ListeEffet *effets_immunises, Effet type, int dureeCombat, int dureeZone, int estPermanent);
     int decrementerDureesEtNettoyer(ListeEtat *listeEtat, int estFinDeTourCombat, int estFinDeZone);
 
     int peutAttaquer(ListeEtat *listeEtat);
