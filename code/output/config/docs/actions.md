@@ -2,6 +2,11 @@
 
 Voici la liste des `TYPE` d'actions disponibles et leurs paramètres.
 
+Le symbole séparateur entre les actions est `;`. Exemple d'utilisation :
+```
+actions=DEGATS_SCALES:attaque:150;MODIFIER_STAT:vitesse:-5
+```
+
 ### Actions de Dégâts
 
 #### `DEGAT_DEFAUT`
