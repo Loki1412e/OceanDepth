@@ -90,16 +90,16 @@ void joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature) {
     // fatigue
     int gainFatigue = augmenterFatigue(joueur, 1);
 
-    printf("Vous attaquez %s avec %s → %d dégâts (PV restants: %d)\n",
+    printf(">> Vous attaquez [%s] avec [%s] → %d dégâts (PV restants: %d)\n",
         creature->nom,
         joueur->arme_equipee ? joueur->arme_equipee->nom : "vos poings",
         degats, creature->pv);
 
-    printf("Oxygène consommé: -%d (arme)\n", perteOxygene);
-    printf("Fatigue augmentée: +%d\n", gainFatigue);
+    printf(">> Oxygène consommé: -%d (arme)\n", perteOxygene);
+    printf(">> Fatigue augmentée: +%d\n", gainFatigue);
 
     if (creature->pv <= 0) {
-        printf(">> %s est vaincu !\n", creature->nom);
+        printf(">> [%s] est vaincu !\n", creature->nom);
         return;
     }
     
@@ -187,16 +187,14 @@ void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_c
 
     // Afficher arme équipée (nom, stats, description, effets, etc.)
     Arme *a = joueur->arme_equipee;
-    printf("\n\n\t    Arme équipée : [%s]\n", a ? a->nom : "Aucune (poings)");
+    printf("\n\n\t    Arme équipée : [ %s ]\n", a ? a->nom : "Aucune (poings)");
     if (a) {
-        printf("\t    Description : %s\n", a->description);
-        printf("\t    Attaque : %d - %d\n", a->attaque_min, a->attaque_max);
-        printf("\t    Coût en oxygène : %d\n", a->cout_oxygene);
-        printf("\t    Bonus de défense : +%d\n", a->bonus_defense);
-        printf("\t    Rareté : %d\n", a->rarete);
-        printListeAction(a->listeAction, "\t    ");
+        printf("\t        %s\n", a->description);
+        printf("\t        (Attaque: %d-%d, Coût Oxygène: %d)\n", a->attaque_min, a->attaque_max, a->cout_oxygene);
+        // tmp -> en vrai: ne pas afficher les actions dans tt les cas
+        if (a->listeAction.longueur > 0) printListeAction(a->listeAction, "\t        ");
     }
-
+    
     printf("\n\n╟───────────────────────────────────────────────────────────────────────────────────╢\n");
 
     // --- CRÉATURES ENNEMIES ---
@@ -212,15 +210,16 @@ void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_c
         }
     }
 
-    printf("\n\n\n╚═══════════════════════════════════════════════════════════════════════════════════╝\n");
+    printf("\n\n\n╚═══════════════════════════════════════════════════════════════════════════════════╝\n\n");
 }
 
 void afficherActionsDisponibles(Plongeur *joueur, int attaques_restantes) {
-    printf("\n--- MENU DES ACTIONS (0 pour quitter et sauvegarder) ---\n");
+    printf("--- MENU DES ACTIONS (0 pour quitter et sauvegarder) ---\n");
     printf("1 - Attaquer avec [%s] (attaques restantes : %d)\n", joueur->arme_equipee ? joueur->arme_equipee->nom : "vos poings (aled)", attaques_restantes);
     printf("2 - Utiliser Compétence\n");
     printf("3 - Utiliser Objet\n");
-    printf("4 - Se reposer / Passer le tour\n");
+    printf("4 - Changer d'Arme\n");
+    printf("5 - Se reposer / Passer le tour\n");
 }
 
 
@@ -234,7 +233,7 @@ int appliquerTourCreature(CreatureMarine *creature, size_t index, Plongeur *joue
     
     short res;
 
-    printf("\n--- Tour de %s #%zu ---\n", creature->nom, index);
+    printf("--- Tour de %s #%zu ---\n", creature->nom, index);
     printf("Effets Subis au début du tour: ");
     printListeEtat(creature->liste_etats);
     printf("\n");
@@ -288,21 +287,28 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         for (size_t i = 0; i < nb_creatures; i++) {
             if (creatures[i]->pv > 0 && (creatures[i]->vitesse >= joueur->vitesse)) {
                 afficherInterface(joueur, creatures, nb_creatures);
-
-                res = (appliquerTourCreature(creatures[i], i+1, joueur) == -1);
+                res = appliquerTourCreature(creatures[i], i+1, joueur);
                 if (res == EXIT_FAILURE) {
                     fprintf(stderr, "Erreur: combat() // Monstres autant ou plus rapides: appliquerTourCreature()\n");
                     return EXIT_FAILURE;
                 }
-
-                // Si la créature n'est pas morte
-                if (res != -1) {
-                    decrementerDureesEtNettoyer(&creatures[i]->liste_etats, true, false);
-                    decrementerCooldownsCompetences(&creatures[i]->liste_competences);
-                }
-
                 pressEnterToContinue();
                 if (joueur->pv <= 0) break;
+                if (res == -1) continue;
+
+                // Si la créature n'est pas morte
+                afficherInterface(joueur, creatures, nb_creatures);
+                res = (short) decrementerDureesEtNettoyer(&creatures[i]->liste_etats, true, false);
+                decrementerCooldownsCompetences(&creatures[i]->liste_competences);
+                if (res == EXIT_FAILURE) {
+                    fprintf(stderr, "Erreur: combat() // Monstres autant ou plus rapides: decrementerDureesEtNettoyer()\n");
+                    return EXIT_FAILURE;
+                }
+                if (res == -1) {
+                    printf(">> Un état de [%s] a expiré après son tour.\n", creatures[i]->nom);
+                    pressEnterToContinue();
+                }
+                else clearConsole();
             }
         }
         if (finDuCombat(joueur, creatures, nb_creatures)) break;
@@ -314,7 +320,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
         /* Affichage clair pour le joueur */
         afficherInterface(joueur, creatures, nb_creatures);
-        printf("\n--- Votre tour ---\n");
+        printf("--- Votre tour ---\n");
         printf("Effets Subis au début du tour: ");
         printListeEtat(joueur->liste_etats);
         printf("\n");
@@ -345,8 +351,8 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
             
             printf("> ");
             choix = lireEntier();
-            while ((choix < 1 || choix > 4) && choix != 0) {
-                printf("Entrée invalide, veuillez taper 0 ou un nombre entre 1 et 4.\n> ");
+            while ((choix < 1 || choix > 5) && choix != 0) {
+                printf("Entrée invalide, veuillez taper 0 ou un nombre entre 1 et 5.\n> ");
                 choix = lireEntier();
             }
 
@@ -366,10 +372,10 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                         break;
                     }
 
-                    printf("\nQuelle cible ?\n");
+                    printf("\nQuelle cible attaquer ? (0 pour annuler)\n");
                     for (size_t i = 0; i < nb_creatures; i++) {
                         if (creatures[i]->pv > 0)
-                            printf("[%zu] %s\n", i+1, creatures[i]->nom);
+                            printf("[%zu] %s (%d/%d PV)\n", i+1, creatures[i]->nom, creatures[i]->pv, creatures[i]->pv_max);
                     }
                     printf("> ");
 
@@ -382,16 +388,17 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     }
 
                     if (nb_creatures_vivantes != 1) {
-                        do {
-                            cible = lireEntier();
-                            if (cible >= 1 && cible <= nb_creatures && creatures[cible-1]->pv > 0) break;
-                            printf("Entrée invalide, veuillez choisir un monstre en vie :\n");
-                            for (size_t i = 0; i < nb_creatures; i++) {
-                                if (creatures[i]->pv > 0)
-                                    printf("[%zu] %s (%d/%d PV)\n", i+1, creatures[i]->nom, creatures[i]->pv, creatures[i]->pv_max);
-                            }
-                            printf("> ");
-                        } while (1);
+                        cible = lireEntier();
+                        if (cible == 0 || cible > nb_creatures || creatures[cible-1]->pv <= 0) {
+                            if (cible == 0)
+                                printf("\n>> Action annulée.\n");
+                            else
+                                printf("\n>> Choix invalide (Action annulée).\n");
+                            pressEnterToContinue();
+                            afficherInterface(joueur, creatures, nb_creatures);
+                            afficherActionsDisponibles(joueur, attaques_restantes);
+                            continue; // Ne termine pas le tour, redemande une action
+                        }
                     }
 
                     joueurAttaqueCreature(joueur, creatures[cible-1]);
@@ -421,7 +428,10 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
                     size_t choix_comp = lireEntier();
                     if (choix_comp == 0 || choix_comp > joueur->liste_competences.longueur) {
-                        printf("Action annulée.\n");
+                            if (choix_comp == 0)
+                                printf("\n>> Action annulée.\n");
+                            else
+                                printf("\n>> Choix invalide (Action annulée).\n");
                         pressEnterToContinue();
                         afficherInterface(joueur, creatures, nb_creatures);
                         afficherActionsDisponibles(joueur, attaques_restantes);
@@ -540,7 +550,10 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
                     size_t choix_objet = lireEntier();
                     if (choix_objet == 0 || choix_objet > joueur->liste_consommables->longueur) {
-                        printf("Action annulée.\n");
+                            if (choix_objet == 0)
+                                printf("\n>> Action annulée.\n");
+                            else
+                                printf("\n>> Choix invalide (Action annulée).\n");
                         pressEnterToContinue();
                         afficherInterface(joueur, creatures, nb_creatures);
                         afficherActionsDisponibles(joueur, attaques_restantes);
@@ -562,9 +575,68 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     pressEnterToContinue();
                     break;
 
+                // Changer d'arme
+                case 4:
+                    if (!joueur->arsenal || joueur->arsenal->longueur == 0) {
+                        printf("\n>> Vous n'avez aucune arme dans votre arsenal.\n");
+                        pressEnterToContinue();
+                        break;
+                    }
+                    printf("\nQuelle arme équiper ? (0 pour annuler)\n");
+                    for (size_t i = 0; i < joueur->arsenal->longueur; i++) {
+                        Arme *a = joueur->arsenal->armes[i];
+                        if (joueur->arme_equipee && a && a->id == joueur->arme_equipee->id)
+                            printf("\n[ÉQUIPÉE]");
+                        else
+                            printf("\n[%zu]", i + 1);
+                        printf(" %s (Attaque: %d-%d, Coût Oxygène: %d)", a->nom, a->attaque_min, a->attaque_max, a->cout_oxygene);
+                        printf("\n    %s\n", a->description);
+                    }
+                    printf("> ");
+
+                    size_t choix_arme = lireEntier();
+                    if (choix_arme == 0 || choix_arme > joueur->arsenal->longueur) {
+                            if (choix_arme == 0)
+                                printf("\n>> Action annulée.\n");
+                            else
+                                printf("\n>> Choix invalide (Action annulée).\n");
+                        pressEnterToContinue();
+                        afficherInterface(joueur, creatures, nb_creatures);
+                        afficherActionsDisponibles(joueur, attaques_restantes);
+                        continue; // Ne termine pas le tour, redemande une action
+                    }
+
+                    if (joueur->arme_equipee == joueur->arsenal->armes[choix_arme - 1]) {
+                        printf(">> [%s] est déjà équipée (Action annulée).\n", joueur->arme_equipee->nom);
+                        pressEnterToContinue();
+                        afficherInterface(joueur, creatures, nb_creatures);
+                        afficherActionsDisponibles(joueur, attaques_restantes);
+                        continue; // Ne termine pas le tour, redemande une action
+                    }
+
+                    if (!joueur->arsenal->armes[choix_arme - 1]) {
+                        printf(">> Erreur interne: arme introuvable.\n");
+                        pressEnterToContinue();
+                        afficherInterface(joueur, creatures, nb_creatures);
+                        afficherActionsDisponibles(joueur, attaques_restantes);
+                        continue; // Ne termine pas le tour, redemande une action
+                    }
+
+                    if (equiperArme(joueur, choix_arme - 1) == EXIT_FAILURE) {
+                        printf(">> Erreur interne: combat(): equiperArme()\n");
+                        pressEnterToContinue();
+                        afficherInterface(joueur, creatures, nb_creatures);
+                        afficherActionsDisponibles(joueur, attaques_restantes);
+                        continue; // Ne termine pas le tour, redemande une action
+                    }
+
+                    printf("→ Vous équipez [%s].\n", joueur->arme_equipee->nom);
+                    attaques_restantes--;
+                    pressEnterToContinue();
+                    break;
 
                 // Se reposer / Passer le tour
-                case 4:
+                case 5:
                     if (peutAttaquer(&joueur->liste_etats) == false) {
                         printf(">> Vous n'avez pas pu vous reposer.\n");
                     }
@@ -588,28 +660,42 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
             }
         }
 
-        decrementerDureesEtNettoyer(&joueur->liste_etats, true, false);
+        afficherInterface(joueur, creatures, nb_creatures);
+        res = (short) decrementerDureesEtNettoyer(&joueur->liste_etats, true, false);
         decrementerCooldownsCompetences(&joueur->liste_competences);
+        if (res == -1) {
+            printf(">> Un de vos états a expiré après votre tour.\n");
+            pressEnterToContinue();
+        }
+        else clearConsole();
 
         // Monstres strictement moins rapides
         for (size_t i = 0; i < nb_creatures; i++) {
             if (creatures[i]->pv > 0 && (creatures[i]->vitesse < joueur->vitesse)) {
+                
                 afficherInterface(joueur, creatures, nb_creatures);
-
-                res = (appliquerTourCreature(creatures[i], i+1, joueur) == -1);
+                res = appliquerTourCreature(creatures[i], i+1, joueur);
                 if (res == EXIT_FAILURE) {
-                    fprintf(stderr, "Erreur: combat() // Monstres autant ou plus rapides: appliquerTourCreature()\n");
+                    fprintf(stderr, "Erreur: combat() // Monstres strictement moins rapides: appliquerTourCreature()\n");
                     return EXIT_FAILURE;
                 }
-
-                // Si la créature n'est pas morte
-                if (res != -1) {
-                    decrementerDureesEtNettoyer(&creatures[i]->liste_etats, true, false);
-                    decrementerCooldownsCompetences(&creatures[i]->liste_competences);
-                }
-
                 pressEnterToContinue();
                 if (joueur->pv <= 0) break;
+                if (res == -1) continue;
+
+                // Si la créature n'est pas morte
+                afficherInterface(joueur, creatures, nb_creatures);
+                res = (short) decrementerDureesEtNettoyer(&creatures[i]->liste_etats, true, false);
+                decrementerCooldownsCompetences(&creatures[i]->liste_competences);
+                if (res == EXIT_FAILURE) {
+                    fprintf(stderr, "Erreur: combat() // Monstres strictement moins rapides: decrementerDureesEtNettoyer()\n");
+                    return EXIT_FAILURE;
+                }
+                if (res == -1) {
+                    printf("\n>> Un état de [%s] a expiré après son tour.\n", creatures[i]->nom);
+                    pressEnterToContinue();
+                }
+                else clearConsole();
             }
         }
     }
