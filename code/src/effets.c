@@ -399,14 +399,86 @@ ListeEffet *initListeEffetFromStringList(char *str) {
     return listeEffet;
 }
 
+int ajouterEffetImmunise(ListeEffet *listeEffet, Effet type) {
+    if (!listeEffet) {
+        fprintf(stderr, "Erreur: ajouterEffetImmunise(): Argument(s) invalide(s)\n");
+        return EXIT_FAILURE;
+    }
+    if (type <= AUCUN_Effet || type >= LENGTH_Effet) {
+        fprintf(stderr, "Erreur: ajouterEffetImmunise(): type d'effet invalide\n");
+        return EXIT_FAILURE;
+    }
 
-void freeListeEffet(ListeEffet *listeEffet) {
+    // Vérifier si l'effet est déjà dans la liste
+    for (size_t i = 0; i < listeEffet->longueur; i++) {
+        // Déjà présent
+        if (listeEffet->effets[i] == type) return EXIT_SUCCESS;
+    }
+
+    // Ajouter le nouvel effet immunisé
+    Effet *tmp = realloc(listeEffet->effets, sizeof(Effet) * (listeEffet->longueur + 1));
+    if (!tmp) {
+        fprintf(stderr, "Erreur: ajouterEffetImmunise(): Allocation mémoire échouée\n");
+        freeListeEffet(listeEffet);
+        return EXIT_FAILURE;
+    }
+    listeEffet->effets = tmp;
+    listeEffet->effets[listeEffet->longueur++] = type;
+
+    return EXIT_SUCCESS;
+}
+
+int retirerEffetImmunise(ListeEffet *listeEffet, Effet type) {
+    if (!listeEffet || listeEffet->longueur == 0) {
+        fprintf(stderr, "Erreur: retirerEffetImmunise(): Argument(s) invalide(s)\n");
+        return EXIT_FAILURE;
+    }
+    
+    for (size_t i = 0; i < listeEffet->longueur; i++) {
+        if (listeEffet->effets[i] == type) {
+
+            // Décalage des éléments
+            for (size_t j = i; j < listeEffet->longueur - 1; j++) {
+                listeEffet->effets[j] = listeEffet->effets[j + 1];
+            }
+            
+            listeEffet->longueur--;
+            
+            // Si la liste est maintenant vide, libérer la mémoire
+            if (listeEffet->longueur == 0) {
+                freeListeEffetContent(listeEffet->effets);
+                return EXIT_SUCCESS;
+            }
+
+            // Réallocation de la mémoire
+            Effet *tmp = realloc(listeEffet->effets, sizeof(Effet) * listeEffet->longueur);
+            if (!tmp) {
+                fprintf(stderr, "Erreur: retirerEffetImmunise(): Allocation mémoire échouée\n");
+                return EXIT_FAILURE;
+            }
+            listeEffet->effets = tmp;
+
+            return EXIT_SUCCESS;
+        }
+    }
+    
+    // L'effet n'est pas dans la liste
+    return EXIT_SUCCESS;
+}
+
+
+void freeListeEffetContent(ListeEffet *listeEffet) {
     if (!listeEffet) return;
     if (listeEffet->effets) {
         free(listeEffet->effets);
         listeEffet->effets = NULL;
     }
     listeEffet->longueur = 0;
+}
+
+void freeListeEffet(ListeEffet *listeEffet) {
+    if (!listeEffet) return;
+    freeListeEffetContent(listeEffet);
     free(listeEffet);
 }
 

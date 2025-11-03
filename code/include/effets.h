@@ -22,7 +22,11 @@
 
     int supprimerEtat(ListeEtat *listeEtat, Effet type);
 
+    void freeListeEffetContent(ListeEffet *listeEffet);
     void freeListeEffet(ListeEffet *listeEffet);
     ListeEffet *initListeEffetFromStringList(char *str);
+
+    int ajouterEffetImmunise(ListeEffet *listeEffet, Effet type);
+    int retirerEffetImmunise(ListeEffet *listeEffet, Effet type);
 
 #endif

@@ -1,7 +1,7 @@
 #include "../include/objets.h"
 
 
-// ActionReverseType type: `NO_REVERSE` = appliquer l'effet normalement / `REVERSE` = inverser l'effet de l'action (ex: soin -> dégats) -> `MODIFIER_STAT` uniquement pour le moment
+// ActionReverseType type: `NO_REVERSE` = appliquer l'effet normalement / `REVERSE` = inverser l'effet de l'action (ex: soin -> dégats) -> `MODIFIER_STAT` et `AJOUTER_IMMUNITE_EFFET` uniquement pour le moment
 int appliquerActionsObjet(Objet *c, void *user_ptr, EntiteType user_type, ActionReverseType type) {
     if (!c || !user_ptr || user_type == ENTITE_TYPE_INVALIDE) {
         fprintf(stderr, "Erreur: appliquerActionsObjet(): arguments invalides\n");
@@ -19,7 +19,7 @@ int appliquerActionsObjet(Objet *c, void *user_ptr, EntiteType user_type, Action
 }
 
 // Pour utiliser sans prendre en compte la quantité
-// ActionReverseType type: `NO_REVERSE` = appliquer l'effet normalement / `REVERSE` = inverser l'effet de l'action (ex: soin -> dégats) -> `MODIFIER_STAT` uniquement pour le moment
+// ActionReverseType type: `NO_REVERSE` = appliquer l'effet normalement / `REVERSE` = inverser l'effet de l'action (ex: soin -> dégats) -> `MODIFIER_STAT` et `AJOUTER_IMMUNITE_EFFET` uniquement pour le moment
 int appliquerActionsListeObjet(ListeObjet *listeObjet, void *user_ptr, EntiteType user_type, ActionReverseType type) {
     if (!listeObjet || !user_ptr || user_type == ENTITE_TYPE_INVALIDE) {
         fprintf(stderr, "Erreur: appliquerActionsListeObjet(): arguments invalides\n");
