@@ -67,7 +67,7 @@
 
 
     typedef enum {
-        AUCUN_Effets,
+        AUCUN_Effet,
         BENEDICTION_OCEAN,
         MALEDICTION_OCEAN,
         SAIGNEMENT,
@@ -79,8 +79,8 @@
         DEFENSE_AUGMENTEE,
         VOIX_DU_COURANT,
         // Suite ...
-        LENGTH_Effets
-    } Effets;
+        LENGTH_Effet
+    } Effet;
 
 
     typedef enum {
@@ -109,7 +109,13 @@
     /* Struct */
 
     typedef struct {
-        Effets effet;
+        Effet *effets;
+        size_t longueur;
+    } ListeEffet;
+
+
+    typedef struct {
+        Effet effet;
         int estPermanent;
         int duree_zone;
         int duree_combat;
@@ -196,6 +202,7 @@
         int vitesse;
         ListeEtat liste_etats;
         ListeCompetence liste_competences;
+        ListeEffet *effets_immunises;
         Rarete rarete;
     } CreatureMarine;
 
@@ -225,6 +232,7 @@
         ListeObjet *liste_bibelots;
         Arme *arme_equipee;   // arme actuelle du joueur
         Arsenal *arsenal;
+        ListeEffet *effets_immunises;
     } Plongeur;
 
     typedef struct {

@@ -3,10 +3,10 @@
 
     #include "global.h"
 
-    char *enumEffectToChar(Effets type);
-    Effets charToEnumEffect(char *type);
+    char *enumEffectToChar(Effet type);
+    Effet charToEnumEffect(char *type);
     
-    int ajouterEffet(ListeEtat *listeEtat, Effets type, int dureeCombat, int dureeZone, int estPermanent);
+    int ajouterEffet(ListeEtat *listeEtat, Effet type, int dureeCombat, int dureeZone, int estPermanent);
     int decrementerDureesEtNettoyer(ListeEtat *listeEtat, int estFinDeTourCombat, int estFinDeZone);
 
     int peutAttaquer(ListeEtat *listeEtat);
@@ -20,6 +20,6 @@
     Etat duplicateEtat(Etat *modal);
     ListeEtat duplicateListeEtat(ListeEtat *modal, short *res);
 
-    int supprimerEtat(ListeEtat *listeEtat, Effets type);
+    int supprimerEtat(ListeEtat *listeEtat, Effet type);
 
 #endif

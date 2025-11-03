@@ -92,7 +92,7 @@ Voici la liste des `TYPE` d'actions disponibles et leurs paramètres.
 
 ---
 
-### Actions d'Effets
+### Actions d'Effet
 
 #### `APPLIQUER_EFFET`
 - **Description** : Applique un effet de statut à la cible pour une durée donnée, avec une certaine probabilité.
