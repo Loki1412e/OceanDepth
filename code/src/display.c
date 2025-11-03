@@ -225,7 +225,7 @@ void printListeCompetence(ListeCompetence competences) {
 
 void printListeEffet(ListeEffet *effets) {
     if (!effets || effets->longueur == 0 || effets->effets == NULL) {
-        printf("Aucun\n");
+        printf("Aucun");
         return;
     }
 
