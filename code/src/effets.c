@@ -446,7 +446,7 @@ int retirerEffetImmunise(ListeEffet *listeEffet, Effet type) {
             
             // Si la liste est maintenant vide, libérer la mémoire
             if (listeEffet->longueur == 0) {
-                freeListeEffetContent(listeEffet->effets);
+                freeListeEffetContent(listeEffet);
                 return EXIT_SUCCESS;
             }
 
