@@ -50,6 +50,13 @@ Plongeur *initModalDiver(char *diver_name, ListeCompetence *modalDiverSkills) {
         return NULL;
     }
 
+    diver->effets_immunises = calloc(1, sizeof(ListeEffet));
+    if (!diver->effets_immunises) {
+        fprintf(stderr, "Erreur: initModalDiver(): Allocation mémoire effets_immunises\n");
+        freeDiver(diver);
+        return NULL;
+    }
+
     if (setDiverFromConf(diver, modalDiverSkills, "config/plongeur/stats.conf")) return NULL;
     diver->pv = diver->pv_max;
     diver->oxygene = diver->oxygene_max;

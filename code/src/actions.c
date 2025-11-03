@@ -14,6 +14,7 @@ char *enumActionTypeToChar(ActionType type) {
         // case VOL_DE_VIE: return "VOL_DE_VIE";
         case APPLIQUER_EFFET: return "APPLIQUER_EFFET";
         case RETIRER_EFFET: return "RETIRER_EFFET";
+        case AJOUTER_IMMUNITE_EFFET: return "AJOUTER_IMMUNITE_EFFET";
         default: return "AUCUN_ActionType";
     }
 }
@@ -101,8 +102,8 @@ ListeAction duplicateListeAction(ListeAction *modal, short *res) {
 }
 
 
-// ActionReverseType type: `NO_REVERSE` = appliquer l'effet normalement / `REVERSE` = inverser l'effet de l'action (ex: soin -> dégats) -> `MODIFIER_STAT` uniquement pour le moment
-int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, EntiteType cible_type, ActionReverseType type) {
+// ActionReverseType type: `NO_REVERSE` = appliquer l'effet normalement / `REVERSE` = inverser l'effet de l'action (ex: soin -> dégats) -> `MODIFIER_STAT` et `AJOUTER_IMMUNITE_EFFET` uniquement pour le moment
+int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, EntiteType cible_type, ActionReverseType reverseType) {
     if (!action || !lanceur_ptr || !cible_ptr) return EXIT_FAILURE;
 
     // Déterminer qui est le lanceur et qui est la cible
@@ -257,7 +258,7 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
             // Récupération des paramètres
             char* stat_nom = action->params[0];
             int valeur = my_strToInt(action->params[1], &res);
-            if (type == REVERSE) valeur = -valeur;
+            if (reverseType == REVERSE) valeur = -valeur;
             if (res == EXIT_FAILURE) {
                 fprintf(stderr, "Erreur: executerAction(): my_strToInt() -> action->params[1] (MODIFIER_STAT)\n");
                 return EXIT_FAILURE;
@@ -383,6 +384,34 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
                 return EXIT_FAILURE;
             }
 
+            break;
+        }
+
+        // Params: nom_effet (char*)
+        case AJOUTER_IMMUNITE_EFFET: {
+            Effet effet = charToEnumEffect(action->params[0]);
+            if (effet == AUCUN_Effet) {
+                fprintf(stderr, "Erreur: executerAction(): charToEnumEffect() -> action->params[0] (AJOUTER_IMMUNITE_EFFET)\n");
+                return EXIT_FAILURE;
+            }
+
+            ListeEffet *effets_immunises_cible = cible_plongeur ? cible_plongeur->effets_immunises : cible_creature->effets_immunises;
+
+            if (reverseType == REVERSE) {
+                // Retirer l'immunité
+                if (retirerEffetImmunise(effets_immunises_cible, effet) == EXIT_FAILURE) {
+                    fprintf(stderr, "Erreur: executerAction(): retirerEffetImmunise() (AJOUTER_IMMUNITE_EFFET - REVERSE)\n");
+                    return EXIT_FAILURE;
+                }
+                printf(">> [%s] n'est plus immunisé contre l'effet [%s] !\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, action->params[0]);
+                break;
+            }
+
+            if (ajouterEffetImmunise(effets_immunises_cible, effet) == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: executerAction(): ajouterEffetImmunise() (AJOUTER_IMMUNITE_EFFET)\n");
+                return EXIT_FAILURE;
+            }
+            printf(">> [%s] est désormais immunisé contre l'effet [%s] !\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, action->params[0]);
             break;
         }
 

@@ -93,6 +93,7 @@
         // VOL_DE_VIE,
         APPLIQUER_EFFET,
         RETIRER_EFFET,
+        AJOUTER_IMMUNITE_EFFET,
         // Suite ...
         LENGTH_ActionType
     } ActionType;
