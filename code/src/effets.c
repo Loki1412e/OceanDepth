@@ -3,7 +3,7 @@
 void freeListeEtat(ListeEtat *listeEtat);
 
 
-char *enumEffectToChar(Effets type) {
+char *enumEffectToChar(Effet type) {
     switch (type) {
         case BENEDICTION_OCEAN: return "BENEDICTION_OCEAN";
         case MALEDICTION_OCEAN: return "MALEDICTION_OCEAN";
@@ -15,16 +15,16 @@ char *enumEffectToChar(Effets type) {
         case PRECISION_REDUITE: return "PRECISION_REDUITE";
         case DEFENSE_AUGMENTEE: return "DEFENSE_AUGMENTEE";
         case VOIX_DU_COURANT: return "VOIX_DU_COURANT";
-        default: return "AUCUN_Effets";
+        default: return "AUCUN_Effet";
     }
 }
 
-Effets charToEnumEffect(char *type) {
-    for (size_t effet = 0; effet < LENGTH_Effets; effet++) {
-        if (strcmp(type, enumEffectToChar((Effets) effet)) == 0)
-            return (Effets) effet;
+Effet charToEnumEffect(char *type) {
+    for (size_t effet = 0; effet < LENGTH_Effet; effet++) {
+        if (strcmp(type, enumEffectToChar((Effet) effet)) == 0)
+            return (Effet) effet;
     }
-    return AUCUN_Effets;
+    return AUCUN_Effet;
 }
 
 
@@ -78,9 +78,9 @@ ListeEtat duplicateListeEtat(ListeEtat *modal, short *res) {
 
 // Note : La gestion de la mémoire (realloc) est simplifiée ici.
 // Vous devriez ajouter des vérifications robustes.
-int ajouterEffet(ListeEtat *listeEtat, Effets type, int dureeCombat, int dureeZone, int estPermanent) {
+int ajouterEffet(ListeEtat *listeEtat, Effet type, int dureeCombat, int dureeZone, int estPermanent) {
     if (!listeEtat) return EXIT_FAILURE;
-    if (type <= AUCUN_Effets || type >= LENGTH_Effets) return EXIT_FAILURE;
+    if (type <= AUCUN_Effet || type >= LENGTH_Effet) return EXIT_FAILURE;
     
     // Vérifier si l'effet existe déjà pour le rafraîchir au lieu de le dupliquer
     for (size_t i = 0; i < listeEtat->longueur; i++) {
@@ -218,7 +218,7 @@ int calculerDegatsSubiDebutTourEffet(ListeEtat *etats, int *pv, int maxPv, int d
 }
 
 
-int supprimerEtat(ListeEtat *listeEtat, Effets type) {
+int supprimerEtat(ListeEtat *listeEtat, Effet type) {
     if (!listeEtat || listeEtat->longueur == 0) return EXIT_FAILURE;
     
     for (size_t i = 0; i < listeEtat->longueur; i++) {

@@ -236,7 +236,7 @@ int appliquerTourCreature(CreatureMarine *creature, size_t index, Plongeur *joue
     short res;
 
     printf("--- Tour de %s #%zu ---\n", creature->nom, index);
-    printf("Effets Subis au début du tour: ");
+    printf("Effet Subis au début du tour: ");
     printListeEtat(creature->liste_etats);
     printf("\n");
 
@@ -325,7 +325,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         /* Affichage clair pour le joueur */
         afficherInterface(joueur, creatures, nb_creatures);
         printf("--- Votre tour ---\n");
-        printf("Effets Subis au début du tour: ");
+        printf("Effet Subis au début du tour: ");
         printListeEtat(joueur->liste_etats);
         printf("\n");
 

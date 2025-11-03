@@ -24,7 +24,7 @@ loot=
 - **description** : Texte affiché au joueur.
 - **choix** : Liste des choix possibles séparés par des virgules.
 - **issue** : Résultat(s) possible(s) pour chaque choix, sous la forme `evenement_id:probabilité`.
-- **effet** et **loot** : Effets ou objets obtenus (ici vides).
+- **effet** et **loot** : Effet ou objets obtenus (ici vides).
 
 ---
 

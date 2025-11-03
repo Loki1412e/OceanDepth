@@ -780,13 +780,13 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
 
 /*
     typedef enum {
-        AUCUN_Effets,
+        AUCUN_Effet,
         // Suite ...
-        LENGTH_Effets
-    } Effets;
+        LENGTH_Effet
+    } Effet;
 
     typedef struct {
-        Effets effet;
+        Effet effet;
         int estPermanent;
         int duree_zone;
         int duree_combat;
@@ -804,7 +804,7 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
         int cooldown_restant;
         int multiplicateur_degats;
         int chance_effet;
-        Effets effet;
+        Effet effet;
         int duree_effet;
         int sur_soi;
     } Competence;

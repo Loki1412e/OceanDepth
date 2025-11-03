@@ -336,8 +336,8 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
             
             // Récupération des paramètres
 
-            Effets effet = charToEnumEffect(action->params[0]);
-            if (effet == AUCUN_Effets) {
+            Effet effet = charToEnumEffect(action->params[0]);
+            if (effet == AUCUN_Effet) {
                 fprintf(stderr, "Erreur: executerAction(): charToEnumEffect() -> action->params[0] (APPLIQUER_EFFET)\n");
                 return EXIT_FAILURE;
             }
@@ -365,8 +365,8 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
 
         // Params: nom_effet (char*)
         case RETIRER_EFFET: {
-            Effets effet = charToEnumEffect(action->params[0]);
-            if (effet == AUCUN_Effets) {
+            Effet effet = charToEnumEffect(action->params[0]);
+            if (effet == AUCUN_Effet) {
                 fprintf(stderr, "Erreur: executerAction(): charToEnumEffect() -> action->params[0] (RETIRER_EFFET)\n");
                 return EXIT_FAILURE;
             }

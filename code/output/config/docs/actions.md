@@ -49,7 +49,7 @@ actions=DEGATS_SCALES:attaque:150;MODIFIER_STAT:vitesse:-5
 
 ---
 
-### Actions d'Effets
+### Actions d'Effet
 
 #### `APPLIQUER_EFFET`
 - **Description** : Applique un effet de statut à la cible pour une durée donnée, avec une certaine probabilité.
