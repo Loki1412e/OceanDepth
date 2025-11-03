@@ -39,7 +39,7 @@ Actions disponibles:
 
 - **Ressources multiples** : Vie + Oxygène (qui diminue chaque tour)
 - **Système de fatigue** : Limite le nombre d'attaques par tour
-- **Consommables vitaux** : Certains objets deviennent obligatoires
+- **Objets vitaux** : Certains objets deviennent obligatoires
 - **Interface en français** : Terminologie marine française uniquement
 
 **Contraintes techniques** : Gestion mémoire rigoureuse, validation des entrées, architecture modulaire.
@@ -230,7 +230,7 @@ Les créatures attaquent selon leur vitesse (plus rapide = attaque en premier).
 1. **Équipements** :
     - Harpons : Trident rouillé (10-15) → Harpon laser (35-50)
     - Combinaisons : Néoprène basique (+5 def) → Armure titanium (+25 def)
-2. **Consommables** :
+2. **Objets** :
     - Capsule d'oxygène : +40 oxygène (VITAL)
     - Trousse de soin : +25 PV
     - Stimulant marin : Réduit fatigue de 2 niveaux

@@ -42,6 +42,12 @@
     /* Enum */
     
     typedef enum {
+        NO_REVERSE,
+        REVERSE
+    } ActionReverseType;
+
+    
+    typedef enum {
         ENTITE_TYPE_INVALIDE,
         ENTITE_PLONGEUR,
         ENTITE_CREATURE
@@ -127,19 +133,19 @@
 
 
     typedef struct {
-        unsigned id;
+        size_t id;
         char *nom;
         char *description;
         Rarete rarete;
         int quantite;
         ListeAction listeAction;
-    } Consommable;
+    } Objet;
 
     typedef struct {
-        Consommable **consommables;
+        Objet **objets;
         size_t longueur;
-    } ListeConsommable;
-    
+    } ListeObjet;
+
 
     typedef struct Arme {
         size_t id;
@@ -158,7 +164,7 @@
 
     
     typedef struct {
-        unsigned id;
+        size_t id;
         char *nom;
         char *description;
         int cout_oxygene;
@@ -176,7 +182,7 @@
     
 
     typedef struct {
-        unsigned id;
+        size_t id;
         char *nom;
         int pv_min;
         int pv_max;
@@ -212,7 +218,8 @@
         ListeEtat liste_etats;
         ListeCompetence liste_competences;
         int profondeur;
-        ListeConsommable *liste_consommables;
+        ListeObjet *liste_consommables;
+        ListeObjet *liste_bibelots;
         Arme *arme_equipee;   // arme actuelle du joueur
         Arsenal *arsenal;
     } Plongeur;

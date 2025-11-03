@@ -6,8 +6,9 @@
     #include "joueur.h"
     #include "creatures.h"
     #include "combat.h"
+    #include "objets.h"
+    #include "bibelots.h"
     #include "armes.h"
-    #include "consommables.h"
     #include "effets.h"
     #include "sauvegarde.h"
 

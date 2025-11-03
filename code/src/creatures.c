@@ -382,7 +382,7 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreature
 
             arrayLong = parseLongList(line + 12, &len);
             if (!arrayLong) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf() -> arrayLong = parseLongList() -> idConf=%u / \"%s\"\n", modalBestiary->creatures[index]->id, "competences=");
+                fprintf(stderr, "Erreur: setBestiaryFromConf() -> arrayLong = parseLongList() -> idConf=%zu / \"%s\"\n", modalBestiary->creatures[index]->id, "competences=");
                 freeBestiary(modalBestiary);
                 fclose(f);
                 return EXIT_FAILURE;
