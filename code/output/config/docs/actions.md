@@ -27,8 +27,8 @@ actions=DEGATS_SCALES:attaque:150;MODIFIER_STAT:vitesse:-5
 
 #### `DEGATS_PERFORANTS`
 - **Description** : Inflige des dégâts qui ignorent une partie de la défense de la cible.
-- **Syntaxe** : `DEGATS_PERFORANTS:<montant_degats>:<valeur_perforation>`
-- **Exemple** : `actions=DEGATS_PERFORANTS:20:10` (inflige 20 points de dégâts, et la défense de la cible est réduite de 10 pour ce calcul).
+- **Syntaxe** : `DEGATS_PERFORANTS:<multiplicateur_attaque>:<valeur_perforation>`
+- **Exemple** : `actions=DEGATS_PERFORANTS:100:10` (inflige 100% de dégâts en ignorant 10 pts de défense de la cible).
 
 ---
 
