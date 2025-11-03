@@ -180,9 +180,21 @@ void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_c
         printListeEtat(joueur->liste_etats);
     }
 
-    // afficher les bibelots actifs
+    // Afficher les bibelots actifs
     if (joueur->liste_bibelots->longueur > 0) {
         printBibelotsActifs(joueur->liste_bibelots);
+    }
+
+    // Afficher arme équipée (nom, stats, description, effets, etc.)
+    Arme *a = joueur->arme_equipee;
+    printf("\n\n\t    Arme équipée : [%s]\n", a ? a->nom : "Aucune (poings)");
+    if (a) {
+        printf("\t    Description : %s\n", a->description);
+        printf("\t    Attaque : %d - %d\n", a->attaque_min, a->attaque_max);
+        printf("\t    Coût en oxygène : %d\n", a->cout_oxygene);
+        printf("\t    Bonus de défense : +%d\n", a->bonus_defense);
+        printf("\t    Rareté : %d\n", a->rarete);
+        printListeAction(a->listeAction, "\t    ");
     }
 
     printf("\n\n╟───────────────────────────────────────────────────────────────────────────────────╢\n");

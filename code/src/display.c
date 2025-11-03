@@ -99,15 +99,16 @@ void pressEnterToContinue() {
 
 /*==================*/
 
-void printListeAction(ListeAction actions) {
+void printListeAction(ListeAction actions, char *prefix) {
     if (actions.longueur == 0 || actions.actions == NULL) {
-        printf("\tActions : Aucune\n");
+        printf("%sActions : Aucune\n", prefix ? prefix : "");
         return;
     }
 
-    printf("\tActions (%zu):\n", actions.longueur);
+    printf("%sActions (%zu):\n", prefix ? prefix : "", actions.longueur);
     for (size_t i = 0; i < actions.longueur; i++) {
-        printf("\t  - Type: %s | Params (%zu): ",
+        printf("%s  - Type: %s | Params (%zu): ",
+            prefix ? prefix : "",
             enumActionTypeToChar(actions.actions[i].type),
             actions.actions[i].longueur_params
         );
@@ -175,7 +176,7 @@ void printObjectsList(ListeObjet *objects_list) {
         printf("\tNom: %s\n", c->nom ? c->nom : "(null)");
         printf("\tDescription: %s\n", c->description ? c->description : "(null)");
         printf("\tRarete: %s\n", enumRareteToChar(c->rarete));
-        printListeAction(c->listeAction);
+        printListeAction(c->listeAction, "\t");
         printf("\n");
     }
 }
@@ -205,7 +206,7 @@ void printCompetence(Competence competence) {
     printf("\t Ciblage              : %s\n", enumCiblageTypeToChar(competence.ciblage));
     printf("\t Cooldown max         : %d tours\n", competence.cooldown_max);
     printf("\t Cooldown restant     : %d tours\n", competence.cooldown_restant);
-    printListeAction(competence.listeAction);
+    printListeAction(competence.listeAction, "\t");
 }
 
 void printListeCompetence(ListeCompetence competences) {
@@ -307,7 +308,7 @@ void printDiver(Plongeur *diver) {
             printf("\tAttaque: %d - %d\n", arme->attaque_min, arme->attaque_max);
             printf("\tCoût en oxygène: %d\n", arme->cout_oxygene);
             printf("\tBonus défense: %d\n", arme->bonus_defense);
-            printListeAction(arme->listeAction);
+            printListeAction(arme->listeAction, "\t");
             printf("\n");
         }
     } else {

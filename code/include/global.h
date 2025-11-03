@@ -150,10 +150,12 @@
     typedef struct Arme {
         size_t id;
         char *nom;
+        char *description;
         int attaque_min;
         int attaque_max;
         int cout_oxygene;
         int bonus_defense;
+        Rarete rarete;
         ListeAction listeAction;
     } Arme;
 

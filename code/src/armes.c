@@ -61,7 +61,12 @@ Arsenal *chargerArmesDepuisFichier(char *filename) {
         if (strncmp(line, "nom=", 4) == 0) {
             line[strcspn(line, "\n")] = 0;
             arme->nom = my_strdup(line + 4);
-        } 
+        }
+
+        else if (strncmp(line, "description=", 12) == 0) {
+            line[strcspn(line, "\n")] = 0;
+            arme->description = my_strdup(line + 12);
+        }
         
         else if (strncmp(line, "attaque_min=", 12) == 0)
             arme->attaque_min = atoi(line + 12);
@@ -75,10 +80,8 @@ Arsenal *chargerArmesDepuisFichier(char *filename) {
         else if (strncmp(line, "bonus_defense=", 14) == 0)
             arme->bonus_defense = atoi(line + 14);
             
-        // else if (strncmp(line, "effet_special=", 14) == 0) {
-        //     line[strcspn(line, "\n")] = 0;
-        //     arme->effet_special = my_strdup(line + 14);
-        // }
+        else if (strncmp(line, "rarete=", 7) == 0)
+            arme->rarete = (Rarete)atoi(line + 7);
 
         else if (strncmp(line, "actions=", 8) == 0) {
             line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
@@ -114,10 +117,10 @@ void afficherArmes(Arsenal *arsenal) {
     printf("\n=== Arsenal disponible ===\n");
     for (size_t i = 0; i < arsenal->longueur; i++) {
         Arme *a = arsenal->armes[i];
-        printf("[%zu] %s (id=%zu) (ATK %d-%d | O2: %d | DEF+%d)\n",
+        printf("[%zu] %s (id=%zu) (ATK %d-%d | Coût O2: %d | DEF+%d) (Rareté: %d) / desc: '%s'\n",
                i, a->nom, a->id, a->attaque_min, a->attaque_max, a->cout_oxygene,
-               a->bonus_defense);
-        printListeAction(a->listeAction);
+               a->bonus_defense, a->rarete, a->description);
+        printListeAction(a->listeAction, "\t");
     }
 }
 
@@ -141,6 +144,7 @@ Arme *duplicateArme(Arme *a) {
     new_a->attaque_max = a->attaque_max;
     new_a->cout_oxygene = a->cout_oxygene;
     new_a->bonus_defense = a->bonus_defense;
+    new_a->rarete = a->rarete;
 
     new_a->nom = my_strdup(a->nom);
     if (!new_a->nom) {
@@ -148,6 +152,14 @@ Arme *duplicateArme(Arme *a) {
         freeArme(new_a);
         return NULL;
     }
+
+    new_a->description = my_strdup(a->description);
+    if (!new_a->description) {
+        fprintf(stderr, "Erreur: duplicateArme(): duplication de la description\n");
+        freeArme(new_a);
+        return NULL;
+    }
+
     new_a->listeAction = duplicateListeAction(&a->listeAction, &res);
     if (res == EXIT_FAILURE) {
         fprintf(stderr, "Erreur: duplicateArme(): duplication des champs\n");
@@ -244,6 +256,8 @@ void freeArme(Arme *arme) {
     if (!arme) return;
     if (arme->nom) free(arme->nom);
     arme->nom = NULL;
+    if (arme->description) free(arme->description);
+    arme->description = NULL;
     freeActions(arme->listeAction.actions, arme->listeAction.longueur);
     free(arme);
 }

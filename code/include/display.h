@@ -17,7 +17,7 @@
     void printBestiary(Bestiaire *bestiary);
     void printDiver(Plongeur *diver);
     void printListeEtat(ListeEtat etats);
-    void printListeAction(ListeAction actions);
+    void printListeAction(ListeAction actions, char *prefix);
     void printCompetence(Competence competence);
     void printListeCompetence(ListeCompetence competences);
     void printObjectsList(ListeObjet *objects);
