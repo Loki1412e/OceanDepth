@@ -161,7 +161,7 @@ void printListeEtat(ListeEtat etats) {
 
 void printObjectsList(ListeObjet *objects_list) {
     if (!objects_list || objects_list->longueur == 0 || objects_list->objets == NULL) {
-        printf("Objets : Aucun\n");
+        printf(" Aucun\n");
         return;
     }
 
@@ -236,7 +236,10 @@ void printCreature(CreatureMarine *creature) {
     printf("Rarete: %s\n", enumRareteToChar(creature->rarete));
 
     printf("Etats appliques: ");
-    printListeEtat(creature->liste_etats);
+    if (creature->liste_etats.longueur == 0)
+        printf("Aucun\n");
+    else
+        printListeEtat(creature->liste_etats);
     printf("\n");
 
     printListeCompetence(creature->liste_competences);
@@ -284,18 +287,14 @@ void printDiver(Plongeur *diver) {
     printf("Vitesse: %d\n", diver->vitesse);
     printf("Niveau: %hu\n", diver->niveau);
     printf("Perles: %hu\n", diver->perles);
-
-    printf("Bibelots:\n");
-    printObjectsList(diver->liste_bibelots);
-    printf("\n");
     
-    printf("Etats appliques: ");
+    printf("\nEtats appliques: ");
     printListeEtat(diver->liste_etats);
-    printf("\n");
 
-    printListeCompetence(diver->liste_competences);
+    printf("\nBibelots");
+    printObjectsList(diver->liste_bibelots);
 
-    printf("Consommables:\n");
+    printf("\nConsommables");
     printObjectsList(diver->liste_consommables);
 
     printf("\nArsenal:\n");
@@ -314,8 +313,11 @@ void printDiver(Plongeur *diver) {
     } else {
         printf("\tAucune arme dans l'arsenal.\n");
     }
+    
+    printf("Arme équipée: [%s]\n", diver->arme_equipee ? diver->arme_equipee->nom : "Aucune");
 
-    printf("Arme équipée: %s\n", diver->arme_equipee ? diver->arme_equipee->nom : "Aucune");
+    printf("\n");
+    printListeCompetence(diver->liste_competences);
 
     printf("====================================\n\n");
 }

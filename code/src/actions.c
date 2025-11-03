@@ -396,7 +396,7 @@ Action *parseActions(char *actions_str_raw, size_t *nb_actions, short *res) {
         return NULL;
     }
     if (strlen(actions_str_raw) == 0) {
-        fprintf(stderr, "Warning: parseActions(): strlen(actions_str_raw) == 0\n");
+        // fprintf(stderr, "Warning: parseActions(): strlen(actions_str_raw) == 0\n");
         return NULL;
     }
 

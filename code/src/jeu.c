@@ -115,12 +115,14 @@ int runGame(Sauvegarde *actualSave) {
         // Test ajout objets (consommables)
         ajouterObjet(modalConsumablesList, diver->liste_consommables, 3);
         ajouterObjet(modalConsumablesList, diver->liste_consommables, 1);
+        printf("\nConsommables ajoutés:\n");
         printObjectsList(diver->liste_consommables);
         pressEnterToContinue();
 
         // Test ajout bibelots
         ajouterBibelot(modalOrnamentsList, diver, 2);
         ajouterBibelot(modalOrnamentsList, diver, 5);
+        printf("\nBibelots ajoutés:\n");
         printObjectsList(diver->liste_bibelots);
         pressEnterToContinue();
 
@@ -145,6 +147,7 @@ int runGame(Sauvegarde *actualSave) {
 
     // Test suppression bibelots
     supprimerBibelot(diver, diver->liste_bibelots->objets[0]->id);
+    printf("\nBibelots après suppression du premier:\n");
     printObjectsList(diver->liste_bibelots);
     pressEnterToContinue();
 

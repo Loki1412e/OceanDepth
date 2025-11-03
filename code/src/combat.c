@@ -205,7 +205,7 @@ void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_c
 
 void afficherActionsDisponibles(Plongeur *joueur, int attaques_restantes) {
     printf("\n--- MENU DES ACTIONS (0 pour quitter et sauvegarder) ---\n");
-    printf("1 - Attaquer avec %s (attaques restantes : %d)\n", joueur->arme_equipee ? joueur->arme_equipee->nom : "vos poings (aled)", attaques_restantes);
+    printf("1 - Attaquer avec [%s] (attaques restantes : %d)\n", joueur->arme_equipee ? joueur->arme_equipee->nom : "vos poings (aled)", attaques_restantes);
     printf("2 - Utiliser Compétence\n");
     printf("3 - Utiliser Objet\n");
     printf("4 - Se reposer / Passer le tour\n");
