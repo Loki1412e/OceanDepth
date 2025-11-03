@@ -178,10 +178,14 @@ void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_c
     if (joueur->liste_etats.longueur > 0) {
         printf("\n\n\t    Etats :  ");
         printListeEtat(joueur->liste_etats);
-        printf("\n");
     }
 
-    printf("\n\n\n╟───────────────────────────────────────────────────────────────────────────────────╢\n");
+    // afficher les bibelots actifs
+    if (joueur->liste_bibelots->longueur > 0) {
+        printBibelotsActifs(joueur->liste_bibelots);
+    }
+
+    printf("\n\n╟───────────────────────────────────────────────────────────────────────────────────╢\n");
 
     // --- CRÉATURES ENNEMIES ---
     for (size_t i = 0; i < nb_creatures; i++) {
@@ -415,6 +419,9 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     Competence *comp_choisie = &joueur->liste_competences.competences[choix_comp - 1];
                     if (!comp_choisie) {
                         printf("Erreur interne: compétence introuvable.\n");
+                        pressEnterToContinue();
+                        afficherInterface(joueur, creatures, nb_creatures);
+                        afficherActionsDisponibles(attaques_restantes);
                         continue;
                     }
 
@@ -462,6 +469,9 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                         cible_ptr = creatures[cible - 1];
                         if (!cible_ptr) {
                             printf("Erreur interne: cible introuvable.\n");
+                            pressEnterToContinue();
+                            afficherInterface(joueur, creatures, nb_creatures);
+                            afficherActionsDisponibles(attaques_restantes);
                             continue;
                         }
                     }
@@ -473,6 +483,9 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     
                     else {
                         printf("Ciblage de compétence non géré dans l'interface.\n");
+                        pressEnterToContinue();
+                        afficherInterface(joueur, creatures, nb_creatures);
+                        afficherActionsDisponibles(attaques_restantes);
                         continue;
                     }
                     
@@ -484,6 +497,9 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     }    
                     else if (res == -1) {
                         printf("Vous pouvez choisir une autre action.\n");
+                        pressEnterToContinue();
+                        afficherInterface(joueur, creatures, nb_creatures);
+                        afficherActionsDisponibles(attaques_restantes);
                         continue;
                     }
                     else attaques_restantes--;
@@ -504,7 +520,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                 case 3:
                     printf("\nQuel objet utiliser ? (0 pour annuler)\n");
                     for (size_t i = 0; i < joueur->liste_consommables->longueur; i++) {
-                        Consommable *c = joueur->liste_consommables->consommables[i];
+                        Objet *c = joueur->liste_consommables->objets[i];
                         printf("\n[%zu] %s x%d", i + 1, c->nom, c->quantite);
                         printf("\n    %s\n", c->description);
                     }
@@ -519,14 +535,14 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                         continue; // Ne termine pas le tour, redemande une action
                     }
 
-                    res = utiliserConsommable(
+                    res = consommerObjet(
                         joueur->liste_consommables,
-                        joueur->liste_consommables->consommables[choix_objet - 1],
+                        joueur->liste_consommables->objets[choix_objet - 1],
                         (void*)joueur,
                         ENTITE_PLONGEUR
                     );
                     if (res == EXIT_FAILURE) {
-                        fprintf(stderr, "Erreur: combat(): utiliserConsommable()\n");
+                        fprintf(stderr, "Erreur: combat(): consommerObjet()\n");
                         return EXIT_FAILURE;
                     }
 

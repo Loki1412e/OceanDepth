@@ -118,6 +118,33 @@ void printListeAction(ListeAction actions) {
     }
 }
 
+void printModififierStatActions(ListeAction actions) {
+    if (actions.longueur == 0 || actions.actions == NULL) {
+        return;
+    }
+
+    short res;
+    int value;
+    char *stat_name = NULL;
+    size_t count = 0;
+
+    for (size_t i = 0; i < actions.longueur; i++) {
+        if (actions.actions[i].type != MODIFIER_STAT || actions.actions[i].longueur_params < 2) 
+            continue;
+    
+        stat_name = actions.actions[i].params[0];
+        value = my_strToInt(actions.actions[i].params[1], &res);
+        if (res != EXIT_SUCCESS) {
+            fprintf(stderr, "Warning: printModififierStatActions(): my_strToInt(%s)\n", actions.actions[i].params[1]);
+            continue;
+        }
+
+        if (count++ > 0) printf(" ");
+        else printf(" → ");
+        printf("[%s%d %s]", (value > 0 ? "+" : ""), value, stat_name);
+    }
+}
+
 void printListeEtat(ListeEtat etats) {
     if (etats.longueur == 0 || etats.etats == NULL) {
         return;
@@ -132,18 +159,18 @@ void printListeEtat(ListeEtat etats) {
     }
 }
 
-void printConsumablesList(ListeConsommable *consumables_list) {
-    if (!consumables_list || consumables_list->longueur == 0 || consumables_list->consommables == NULL) {
-        printf("Consommables : Aucun\n");
+void printObjectsList(ListeObjet *objects_list) {
+    if (!objects_list || objects_list->longueur == 0 || objects_list->objets == NULL) {
+        printf("Objets : Aucun\n");
         return;
     }
 
-    printf("Consommables (%zu):\n\n", consumables_list->longueur);
-    for (size_t i = 0; i < consumables_list->longueur; i++) {
-        Consommable *c = consumables_list->consommables[i];
+    printf(" (%zu):\n\n", objects_list->longueur);
+    for (size_t i = 0; i < objects_list->longueur; i++) {
+        Objet *c = objects_list->objets[i];
         if (!c) continue;
 
-        printf("\tConsommable ID: %u\n", c->id);
+        printf("\tObjet ID: %zu\n", c->id);
         printf("\tQuantite: %d\n", c->quantite);
         printf("\tNom: %s\n", c->nom ? c->nom : "(null)");
         printf("\tDescription: %s\n", c->description ? c->description : "(null)");
@@ -153,8 +180,24 @@ void printConsumablesList(ListeConsommable *consumables_list) {
     }
 }
 
+void printBibelotsActifs(ListeObjet *bibelots) {
+    if (!bibelots || bibelots->longueur == 0 || bibelots->objets == NULL) {
+        printf("\n\n\t    Bibelots actifs : Aucun\n");
+        return;
+    }
+
+    printf("\n\n\t    Bibelots actifs (%zu):\n", bibelots->longueur);
+    for (size_t i = 0; i < bibelots->longueur; i++) {
+        Objet *c = bibelots->objets[i];
+        if (!c) continue;
+        printf("\t      - %s", c->nom ? c->nom : "(null)");
+        printModififierStatActions(c->listeAction);
+        printf("\n");
+    }
+}
+
 void printCompetence(Competence competence) {
-    printf("\t Id                   : %u\n", competence.id);
+    printf("\t Id                   : %zu\n", competence.id);
     printf("\t Nom                  : %s\n", competence.nom);
     printf("\t Description          : %s\n", competence.description);
     printf("\t Coût en oxygène      : %d\n", competence.cout_oxygene);
@@ -184,7 +227,7 @@ void printCreature(CreatureMarine *creature) {
         printf("NULL CreatureMarine pointer\n");
         return;
     }
-    printf("CreatureMarine ID: %u\n", creature->id);
+    printf("CreatureMarine ID: %zu\n", creature->id);
     printf("Nom Type: %s\n", creature->nom ? creature->nom : "(null)");
     printf("PV: %d (Min: %d, Max: %d)\n", creature->pv, creature->pv_min, creature->pv_max);
     printf("Attaque: Min %d, Max %d\n", creature->attaque_min, creature->attaque_max);
@@ -241,14 +284,19 @@ void printDiver(Plongeur *diver) {
     printf("Vitesse: %d\n", diver->vitesse);
     printf("Niveau: %hu\n", diver->niveau);
     printf("Perles: %hu\n", diver->perles);
+
+    printf("Bibelots:\n");
+    printObjectsList(diver->liste_bibelots);
+    printf("\n");
     
     printf("Etats appliques: ");
     printListeEtat(diver->liste_etats);
     printf("\n");
 
     printListeCompetence(diver->liste_competences);
-    
-    printConsumablesList(diver->liste_consommables);
+
+    printf("Consommables:\n");
+    printObjectsList(diver->liste_consommables);
 
     printf("\nArsenal:\n");
     if (diver->arsenal && diver->arsenal->longueur_armes > 0) {

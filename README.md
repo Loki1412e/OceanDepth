@@ -107,7 +107,7 @@ GROUPE-02/
 │   │   │   ├───objets
 │   │   │   │       armes.conf
 │   │   │   │       combinaisons.conf
-│   │   │   │       consommables.conf
+│   │   │   │       objets.conf
 │   │   │   │       idee.md
 │   │   │   │
 │   │   │   ├───palliers

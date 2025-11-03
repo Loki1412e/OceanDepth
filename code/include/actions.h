@@ -16,6 +16,6 @@
     Action duplicateAction(Action *modal, short *res);
     ListeAction duplicateListeAction(ListeAction *modal, short *res);
     
-    int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, EntiteType cible_type);
+    int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, EntiteType cible_type, ActionReverseType type);
 
 #endif
