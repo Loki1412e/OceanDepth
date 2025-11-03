@@ -377,9 +377,6 @@ int utiliserCompetence(Competence *comp, void *lanceur_ptr, EntiteType lanceur_t
             return -1;
         }
         lanceur_plongeur->pv -= comp->cout_pv;
-
-        // Augmenter la fatigue du joueur
-        augmenterFatigue(lanceur_plongeur, 1);
     }
     else if (lanceur_creature) {
 

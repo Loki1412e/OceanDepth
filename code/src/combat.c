@@ -4,7 +4,7 @@
 int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures);
 
 // Utils
-int augmenterFatigue(Plongeur *joueur, int gain);
+void updateFatigue(Plongeur *joueur, int gain);
 int diminuerFatigue(Plongeur *joueur, int perte);
 int calculerAttaquesMaxAvecFatigue(int fatigue_max, int fatigue);
 int calculerDegats(int attaque_min, int attaque_max, int defense);
@@ -20,10 +20,15 @@ void afficherActionsDisponibles(Plongeur *joueur, int actions_restantes, int act
 
 /*====== Utils ======*/
 
-int augmenterFatigue(Plongeur *joueur, int gain) {
+void updateFatigue(Plongeur *joueur, int gain) {
     joueur->fatigue += gain;
     if (joueur->fatigue > joueur->fatigue_max) joueur->fatigue = joueur->fatigue_max;
-    return gain;
+    if (joueur->fatigue < 0) joueur->fatigue = 0;
+
+    if (gain >= 0)
+        printf(">> Fatigue augmentée de %d (Fatigue actuelle: %d/%d)\n", gain, joueur->fatigue, joueur->fatigue_max);
+    else
+        printf(">> Fatigue diminuée de %d (Fatigue actuelle: %d/%d)\n", -gain, joueur->fatigue, joueur->fatigue_max);
 }
 
 int diminuerFatigue(Plongeur *joueur, int perte) {
@@ -87,16 +92,12 @@ void joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature) {
     joueur->oxygene -= perteOxygene;
     if (joueur->oxygene < 0) joueur->oxygene = 0;
 
-    // fatigue
-    int gainFatigue = augmenterFatigue(joueur, 1);
-
     printf(">> Vous attaquez [%s] avec [%s] → %d dégâts (PV restants: %d)\n",
         creature->nom,
         joueur->arme_equipee ? joueur->arme_equipee->nom : "vos poings",
         degats, creature->pv);
 
     printf(">> Oxygène consommé: -%d (arme)\n", perteOxygene);
-    printf(">> Fatigue augmentée: +%d\n", gainFatigue);
 
     if (creature->pv <= 0) {
         printf(">> [%s] est vaincu !\n", creature->nom);
@@ -418,6 +419,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
                     joueurAttaqueCreature(joueur, creatures[cible-1]);
                     actions_restantes -= cout_actions;
+                    updateFatigue(joueur, cout_actions);
                     pressEnterToContinue();
                     break;
 
@@ -480,6 +482,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                         if (!peutAttaquer(&joueur->liste_etats)) {
                             printf(">> Vous n'avez pas pu attaquer.\n");
                             actions_restantes -= cout_actions;
+                            updateFatigue(joueur, cout_actions);
                             pressEnterToContinue();
                             break;
                         }
@@ -561,6 +564,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     }
                     
                     actions_restantes -= cout_actions;
+                    updateFatigue(joueur, cout_actions);
                     pressEnterToContinue();
                     break;
 
@@ -607,6 +611,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     }
 
                     actions_restantes -= cout_actions;
+                    updateFatigue(joueur, cout_actions);
                     pressEnterToContinue();
                     break;
 
@@ -663,6 +668,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                         joueur->arme_equipee = NULL;
                         printf("\n→ Vous équipez vos poings.\n");
                         actions_restantes -= cout_actions;
+                        // updateFatigue(joueur, cout_actions); // On considère que changer d'arme ne fatigue pas
                         pressEnterToContinue();
                         break;
                     }
@@ -693,6 +699,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
                     printf("\n→ Vous équipez [%s].\n", joueur->arme_equipee->nom);
                     actions_restantes -= cout_actions;
+                    // updateFatigue(joueur, cout_actions); // On considère que changer d'arme ne fatigue pas
                     pressEnterToContinue();
                     break;
 
@@ -703,9 +710,8 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     }
                     else {
                         int repos = joueur->fatigue_max * 0.1; // 10% de la fatigue max
-                        joueur->fatigue -= repos > 0 ? repos : 1;
-                        if (joueur->fatigue < 0) joueur->fatigue = 0;
-                        printf("\n→ Vous vous reposez (fatigue -%d)\n", repos > 0 ? repos : 1);
+                        updateFatigue(joueur, -(repos > 0 ? repos : 1));
+                        printf("\n→ Vous vous reposez (fatigue -%d)\n", repos);
                     }
                     
                     printf(">> FIN du tour.\n");

@@ -10,7 +10,7 @@
     int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures);
 
     // Utils
-    int augmenterFatigue(Plongeur *joueur, int gain);
+    void updateFatigue(Plongeur *joueur, int gain);
     int diminuerFatigue(Plongeur *joueur, int perte);
     int calculerAttaquesMaxAvecFatigue(int fatigue_max, int fatigue);
     int calculerDegats(int attaque_min, int attaque_max, int defense);
