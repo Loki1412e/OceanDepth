@@ -15,7 +15,7 @@ int botAttaque(void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, Enti
 // Affichage
 int afficherEtatOxygene(Plongeur *joueur);
 void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures);
-void afficherActionsDisponibles(int attaques_restantes);
+void afficherActionsDisponibles(Plongeur *joueur, int attaques_restantes);
 
 
 /*====== Utils ======*/
@@ -82,15 +82,28 @@ void joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature) {
     creature->pv -= degats;
     if (creature->pv < 0) creature->pv = 0;
 
-    int perteOxygene = random_int(2, 4); // attaque normal
+    // oxygène consommé selon l’arme équipée
+    int perteOxygene = joueur->arme_equipee ? joueur->arme_equipee->cout_oxygene : 2;
     joueur->oxygene -= perteOxygene;
     if (joueur->oxygene < 0) joueur->oxygene = 0;
 
-    int gainFatigue = augmenterFatigue(joueur, 1); // de 1 pour le moment
+    // fatigue
+    int gainFatigue = augmenterFatigue(joueur, 1);
 
-    printf("Vous attaquez %s → %d dégâts (PV restants: %d)\n", creature->nom, degats, creature->pv);
-    printf("Oxygène consommé: -%d (action de combat)\n", perteOxygene);
-    printf("Fatigue augmentée: +%d (effort physique)\n", gainFatigue);
+    printf("Vous attaquez %s avec %s → %d dégâts (PV restants: %d)\n",
+        creature->nom,
+        joueur->arme_equipee ? joueur->arme_equipee->nom : "vos poings",
+        degats, creature->pv);
+
+    printf("Oxygène consommé: -%d (arme)\n", perteOxygene);
+    printf("Fatigue augmentée: +%d\n", gainFatigue);
+
+    if (creature->pv <= 0) {
+        printf(">> %s est vaincu !\n", creature->nom);
+        return;
+    }
+    
+    appliquerActionsArme(joueur, (void*)creature, ENTITE_CREATURE);
 }
 
 // Return -1 si n'a pas de compétence activable
@@ -190,9 +203,9 @@ void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_c
     printf("\n\n\n╚═══════════════════════════════════════════════════════════════════════════════════╝\n");
 }
 
-void afficherActionsDisponibles(int attaques_restantes) {
+void afficherActionsDisponibles(Plongeur *joueur, int attaques_restantes) {
     printf("\n--- MENU DES ACTIONS (0 pour quitter et sauvegarder) ---\n");
-    printf("1 - Attaquer (attaques restantes : %d)\n", attaques_restantes);
+    printf("1 - Attaquer avec %s (attaques restantes : %d)\n", joueur->arme_equipee ? joueur->arme_equipee->nom : "vos poings (aled)", attaques_restantes);
     printf("2 - Utiliser Compétence\n");
     printf("3 - Utiliser Objet\n");
     printf("4 - Se reposer / Passer le tour\n");
@@ -304,11 +317,15 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         if (pv_before_player != joueur->pv) {
             printf("Vous subissez %d dégâts d'effets de statut (PV: %d -> %d)\n", pv_before_player - joueur->pv, pv_before_player, joueur->pv);
         }
-
         pressEnterToContinue();
 
         afficherInterface(joueur, creatures, nb_creatures);
-        afficherActionsDisponibles(attaques_restantes);
+
+        if (attaques_restantes == 0) {
+            printf("\nVous êtes trop fatigué pour attaquer ce tour-ci.\n");
+            pressEnterToContinue();
+        }
+        else afficherActionsDisponibles(joueur, attaques_restantes);
 
         while (attaques_restantes > 0) {
 
@@ -395,7 +412,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                         printf("Action annulée.\n");
                         pressEnterToContinue();
                         afficherInterface(joueur, creatures, nb_creatures);
-                        afficherActionsDisponibles(attaques_restantes);
+                        afficherActionsDisponibles(joueur, attaques_restantes);
                         continue; // Ne termine pas le tour, redemande une action
                     }
 
@@ -421,7 +438,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                             break;
                         }
 
-                        printf("\nQuelle cible ?\n");
+                        printf(nb_creatures > 1 ? "\nQuelle cible ?\n" : "\nCible unique: ");
                         for (size_t i = 0; i < nb_creatures; i++) {
                             if (creatures[i]->pv > 0)
                                 printf("[%zu] %s\n", i+1, creatures[i]->nom);
@@ -514,7 +531,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                         printf("Action annulée.\n");
                         pressEnterToContinue();
                         afficherInterface(joueur, creatures, nb_creatures);
-                        afficherActionsDisponibles(attaques_restantes);
+                        afficherActionsDisponibles(joueur, attaques_restantes);
                         continue; // Ne termine pas le tour, redemande une action
                     }
 
@@ -555,7 +572,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
             if (attaques_restantes > 0) {
                 clearConsole();
                 afficherInterface(joueur, creatures, nb_creatures);
-                afficherActionsDisponibles(attaques_restantes);
+                afficherActionsDisponibles(joueur, attaques_restantes);
             }
         }
 

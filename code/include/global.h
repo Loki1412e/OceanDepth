@@ -146,6 +146,22 @@
         size_t longueur;
     } ListeObjet;
 
+
+    typedef struct Arme {
+        size_t id;
+        char *nom;
+        int attaque_min;
+        int attaque_max;
+        int cout_oxygene;
+        int bonus_defense;
+        ListeAction listeAction;
+    } Arme;
+
+    typedef struct {
+        Arme **armes;
+        size_t longueur_armes;
+    } Arsenal;
+
     
     typedef struct {
         size_t id;
@@ -204,6 +220,8 @@
         int profondeur;
         ListeObjet *liste_consommables;
         ListeObjet *liste_bibelots;
+        Arme *arme_equipee;   // arme actuelle du joueur
+        Arsenal *arsenal;
     } Plongeur;
 
     typedef struct {
@@ -228,5 +246,7 @@
         Sauvegarde **sauvegardes;
         size_t longueur_sauvegardes;
     } ListeSauvegardes;
+
+
 
 #endif

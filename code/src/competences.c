@@ -368,6 +368,7 @@ int utiliserCompetence(Competence *comp, void *lanceur_ptr, EntiteType lanceur_t
             return -1;
         }
         lanceur_plongeur->oxygene -= comp->cout_oxygene;
+        if (lanceur_plongeur->oxygene < 0) lanceur_plongeur->oxygene = 0;
 
         if (lanceur_plongeur->pv <= comp->cout_pv) {
             printf("Pas assez de PV pour lancer '%s'.\n", comp->nom);
