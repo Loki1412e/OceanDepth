@@ -11,8 +11,8 @@
     ListeObjet *initModalListeObjet(char *path);
     int setListeObjetFromConf(ListeObjet *modalObjects, char *path);
     
-    int ajouterObjet(ListeObjet *modal, ListeObjet *list, size_t id_objet);
-    int supprimerObjet(ListeObjet *list, size_t id);
+    int ajouterObjet(ListeObjet *modal, ListeObjet *list, long id_objet);
+    int supprimerObjet(ListeObjet *list, long id);
 
     int appliquerActionsObjet(Objet *c, void *user_ptr, EntiteType user_type, ActionReverseType type);
     int appliquerActionsListeObjet(ListeObjet *listeObjet, void *user_ptr, EntiteType user_type, ActionReverseType type);

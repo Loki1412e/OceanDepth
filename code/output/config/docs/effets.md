@@ -23,9 +23,9 @@ effets_immunises=PARALYSIE,ETREINTE,PACIFICATION
 
 ### 1. Avant que l'entitée ne subisse des degats
 
-- `BENEDICTION_OCEAN` : Dégat -10%
+- `BENEDICTION_OCEAN` : Dégat subi -10% / donné +10%
 
-- `MALEDICTION_OCEAN` : Dégat +10%
+- `MALEDICTION_OCEAN` : Dégat subi +10% / donné -10%
 
 - `DEFENSE_AUGMENTEE` : La défense augmente de 50%
 

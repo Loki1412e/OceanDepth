@@ -117,7 +117,7 @@ void afficherArmes(Arsenal *arsenal) {
     printf("\n=== Arsenal disponible ===\n");
     for (size_t i = 0; i < arsenal->longueur; i++) {
         Arme *a = arsenal->armes[i];
-        printf("[%zu] %s (id=%zu) (ATK %d-%d | Coût O2: %d | DEF+%d) (Rareté: %d) / desc: '%s'\n",
+        printf("[%zu] %s (id=%ld) (ATK %d-%d | Coût O2: %d | DEF+%d) (Rareté: %d) / desc: '%s'\n",
                i, a->nom, a->id, a->attaque_min, a->attaque_max, a->cout_oxygene,
                a->bonus_defense, a->rarete, a->description);
         printListeAction(a->listeAction, "\t");
@@ -171,14 +171,14 @@ Arme *duplicateArme(Arme *a) {
 }
 
 
-int ajouterArme(Arsenal *modal, Arsenal *arsenal, size_t id_arme) {
-    if (!modal || !arsenal || id_arme >= modal->longueur) {
+int ajouterArme(Arsenal *modal, Arsenal *arsenal, long id_arme) {
+    if (!modal || !arsenal || (size_t) id_arme >= modal->longueur) {
         fprintf(stderr, "Erreur: ajouterArme(): paramètres invalides\n");
         return EXIT_FAILURE;
     }
 
-    if (id_arme > modal->longueur) {
-        fprintf(stderr, "Erreur: ajouterArme(): id_arme (%zu) hors limites (%zu)\n", id_arme, modal->longueur);
+    if ((size_t) id_arme > modal->longueur) {
+        fprintf(stderr, "Erreur: ajouterArme(): id_arme (%ld) hors limites (%zu)\n", id_arme, modal->longueur);
         return EXIT_FAILURE;
     }
 
@@ -206,9 +206,24 @@ int ajouterArme(Arsenal *modal, Arsenal *arsenal, size_t id_arme) {
     return EXIT_SUCCESS;
 }
 
-int equiperArme(Plongeur *joueur, size_t id_arme) {
-    if (!joueur || joueur->arsenal->longueur == 0 || id_arme >= joueur->arsenal->longueur) {
+int equiperArme(Plongeur *joueur, Arme *arme) {
+    if (!joueur || !joueur->arsenal || !joueur->arsenal->armes || joueur->arsenal->longueur == 0 || !arme) {
         fprintf(stderr, "Erreur: equiperArme(): paramètres invalides\n");
+        return EXIT_FAILURE;
+    }
+
+    size_t index_new_arme = 0;
+    short found = false;
+
+    for (index_new_arme = 0; index_new_arme < joueur->arsenal->longueur; index_new_arme++) {
+        if (joueur->arsenal->armes[index_new_arme] == arme) {
+            joueur->arme_equipee = arme;
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        fprintf(stderr, "Erreur: equiperArme(): l'arme n'est pas dans l'arsenal du joueur\n");
         return EXIT_FAILURE;
     }
 
@@ -218,7 +233,7 @@ int equiperArme(Plongeur *joueur, size_t id_arme) {
         joueur->attaque_min -= joueur->arme_equipee->attaque_min;
     }
 
-    joueur->arme_equipee = joueur->arsenal->armes[id_arme];
+    joueur->arme_equipee = joueur->arsenal->armes[index_new_arme];
     
     // Ajouter les bonus de la nouvelle arme
     joueur->attaque_max += joueur->arme_equipee->attaque_max;

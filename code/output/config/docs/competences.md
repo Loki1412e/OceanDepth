@@ -42,7 +42,8 @@ Le champ `ciblage` détermine sur qui les actions de la compétence vont s'appli
 | :--- | :--- |
 | `ENNEMI_UNIQUE` | Cible une seule créature ennemie. |
 | `SOI_MEME` | La compétence s'applique sur le lanceur. |
-| `TOUS_ENNEMIS` | (Pas encore traité) Cible toutes les créatures ennemies. |
+| `GROUPE_ALLIE` | Cible tous les alliés d'un même groupe. (Pas encore traité coté joueur) |
+| `GROUPE_ENNEMI` | (Pas encore traité) Cible tous les ennemis d'un même groupe. |
 
 ---
 
