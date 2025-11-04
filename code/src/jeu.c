@@ -86,6 +86,10 @@ int runGame(Sauvegarde *actualSave) {
             continue;
         }
 
+        printf("Des créatures marines apparaissent !\n");
+        printBestiary(bestiary);
+        pressEnterToContinue();
+
         // Test ajout effets
         printf("\nAjout d'effets pour les tests:\n");
         ajouterEffet(&diver->liste_etats, diver->effets_immunises, POISON, 3, 0, 0);
