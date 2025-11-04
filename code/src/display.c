@@ -333,9 +333,10 @@ void printGroupsCreatures(Bestiaire *bestiary) {
         printf("Créatures dans le groupe (%zu): ", g->longueur);
         for (size_t j = 0; j < g->longueur; j++) {
             long id = g->id_creatures[j];
-            printf("%s [id=%ld]%s", bestiary->creatures[id]->nom, id, (j + 1 < g->longueur) ? ", " : "\n");
+            printf("%s [id=%ld]", bestiary->creatures[id]->nom, id);
+            if (j + 1 < g->longueur) printf(", ");
         }
-        printf("\n");
+        printf("\n\n");
     }
 }
 

@@ -71,6 +71,10 @@ int runGame(Sauvegarde *actualSave) {
         freeListeCompetence(&modalCreaturesSkills);
         return EXIT_FAILURE;
     }
+
+    // Affichage modalBestiary
+    printBestiary(modalBestiary);
+    pressEnterToContinue();
     
     // On ajoute des armes de base au joueur (si pas déjà présentes)
     ajouterArme(modalArsenal, diver->arsenal, 0);

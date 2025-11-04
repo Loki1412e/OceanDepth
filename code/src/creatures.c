@@ -179,13 +179,6 @@ Bestiaire *initModalBestiary(ListeCompetence *modalCreaturesSkills) {
         }
     }
 
-    modalBestiary->groupes = calloc(1, sizeof(GroupeCreatureMarine*));
-    if (!modalBestiary->groupes) {
-        fprintf(stderr, "Erreur: initModalBestiary(): Allocation mémoire modalBestiary->groupes\n");
-        freeBestiary(modalBestiary);
-        return NULL;
-    }
-
     modalBestiary->longueur_groupes = count_all_unique_model_groups;
     modalBestiary->groupes = calloc(count_all_unique_model_groups, sizeof(GroupeCreatureMarine*));
     if (!modalBestiary->groupes) {
@@ -540,20 +533,25 @@ int setBestiaryGroupsFromConf(Bestiaire *modalBestiary, char *path) {
             modalBestiary->groupes[index]->id = index;
         }
         
-        else if (strncmp(line, "competences=", 12) == 0) {
+        else if (strncmp(line, "creatures=", 10) == 0) {
             line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
-            if (line[12] == '\0') continue; // ligne vide
+            if (line[10] == '\0') continue; // ligne vide
 
             modalBestiary->groupes[index]->longueur = 0;
             len = 0;
 
-            arrayLong = parseLongList(line + 12, &len);
+            arrayLong = parseLongList(line + 10, &len);
             if (!arrayLong) {
                 fprintf(stderr, "Erreur: setBestiaryGroupsFromConf() -> arrayLong = parseLongList() -> idConf=%ld / \"%s\"\n", modalBestiary->creatures[index]->id, "competences=");
                 freeBestiary(modalBestiary);
                 fclose(f);
                 return EXIT_FAILURE;
             }
+
+            for (size_t i = 0; i < len; i++) {
+                printf("%ld ", arrayLong[i]);
+            }
+            printf("\n");
 
             // On vérifie si l'id de la compétence existe
             res = false;
