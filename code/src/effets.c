@@ -99,7 +99,7 @@ int ajouterEffet(ListeEtat *listeEtat, ListeEffet *effets_immunises, Effet type,
             if (etat->duree_combat < dureeCombat) etat->duree_combat = dureeCombat;
             if (etat->duree_zone < dureeZone) etat->duree_zone = dureeZone;
             etat->estPermanent = etat->estPermanent || estPermanent;
-            printf(">> Effet [%s] (%d) rafraîchi.\n", enumEffectToChar(type), type);
+            printf(">> Effet [%s] rafraîchi.\n", enumEffectToChar(type));
             return EXIT_SUCCESS;
         }
     }
@@ -295,7 +295,7 @@ int decrementerDureesEtNettoyer(ListeEtat *listeEtat, int estFinDeTourCombat, in
 
     for (size_t i = 0, j = 0; i < listeEtat->longueur || j < listeEtatTemp.longueur; i++) {
         if (etat_a_nettoyer[i]) {
-            printf(">> L'effet [%s] (%d) a expiré et a été supprimé.\n", enumEffectToChar(listeEtat->etats[i].effet), listeEtat->etats[i].effet);
+            printf(">> L'effet [%s] a expiré et a été supprimé.\n", enumEffectToChar(listeEtat->etats[i].effet));
             res = -1;
         }
         else

@@ -483,7 +483,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur, CreatureMarine **creatures,
                             printf("\nQuelle cible ? (0 pour annuler) [coût: %d action%s]\n", cout_actions, cout_actions > 1 ? "s" : "");
                             for (size_t i = 0; i < nb_creatures; i++) {
                                 if (creatures[i]->pv > 0)
-                                    printf("[%zu] %s\n", i+1, creatures[i]->nom);
+                                    printf("[%zu] %s (%d/%d PV)\n", i+1, creatures[i]->nom, creatures[i]->pv, creatures[i]->pv_max);
                             }
                             printf("> ");
                             cible = lireEntier();
