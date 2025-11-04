@@ -307,6 +307,7 @@ int equiperArme(Plongeur *joueur, Arme *arme) {
         // Retirer les bonus de l'ancienne arme
         joueur->attaque_max -= joueur->arme_equipee->attaque_max;
         joueur->attaque_min -= joueur->arme_equipee->attaque_min;
+        joueur->defense -= joueur->arme_equipee->bonus_defense;
     }
 
     joueur->arme_equipee = joueur->arsenal->armes[index_new_arme];
@@ -314,6 +315,7 @@ int equiperArme(Plongeur *joueur, Arme *arme) {
     // Ajouter les bonus de la nouvelle arme
     joueur->attaque_max += joueur->arme_equipee->attaque_max;
     joueur->attaque_min += joueur->arme_equipee->attaque_min;
+    joueur->defense += joueur->arme_equipee->bonus_defense;
 
     return EXIT_SUCCESS;
 }
