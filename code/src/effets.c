@@ -164,29 +164,51 @@ int calculerDefenseEffet(int defenseBase, ListeEtat *etats) {
     return defenseFinal;
 }
 
-int calculerDegatsInfligesEffet(ListeEtat *etatsCible, int degatsBase) {
+int calculerDegatsInfligesEtatsCible(ListeEtat *etatsCible, int degatsBase) {
     int degatsFinaux = degatsBase;
     for (size_t i = 0; i < etatsCible->longueur; i++) {
         switch (etatsCible->etats[i].effet) {
             
             case BENEDICTION_OCEAN:
                 degatsFinaux *= 0.9;
-                printf(">> [BENEDICTION_OCEAN] s'applique\n");
+                printf(">> [BENEDICTION_OCEAN] s'applique (réduction des dégâts de 10%%)\n");
                 break;
             
             case MALEDICTION_OCEAN:
                 degatsFinaux *= 1.1;
-                printf(">> [MALEDICTION_OCEAN] s'applique\n");
+                printf(">> [MALEDICTION_OCEAN] s'applique (augmentation des dégâts de 10%%)\n");
+                break;
+            
+            default:
+                break;
+        }
+    }
+    return degatsFinaux;
+}
+
+int calculerDegatsInfligesEtatsLanceur(ListeEtat *etatsLanceur, int degatsBase) {
+    int degatsFinaux = degatsBase;
+    for (size_t i = 0; i < etatsLanceur->longueur; i++) {
+        switch (etatsLanceur->etats[i].effet) {
+            
+            case BENEDICTION_OCEAN:
+                degatsFinaux *= 1.1;
+                printf(">> [BENEDICTION_OCEAN] s'applique (augmentation des dégâts de 10%%)\n");
+                break;
+            
+            case MALEDICTION_OCEAN:
+                degatsFinaux *= 0.9;
+                printf(">> [MALEDICTION_OCEAN] s'applique (réduction des dégâts de 10%%)\n");
                 break;
 
             case PRECISION_REDUITE:
                 int res = random_int(1, 100);
 
                 // 30% de chance de rater
-                if (res <= 30) {
-                    degatsFinaux = 0;
+                // test a 100%
+                if (res <= 100) {
                     printf(">> [PRECISION_REDUITE] fait rater l'attaque !\n");
-                    break;
+                    return 0;
                 }
                 
                 printf(">> [PRECISION_REDUITE] n'a pas fait rater l'attaque.\n");
