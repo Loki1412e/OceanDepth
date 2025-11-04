@@ -195,7 +195,7 @@ int loadInfo(Sauvegarde *save, FILE *file) {
     if (!save || !file) return EXIT_FAILURE;
 
     if (fread(&(save->derniere_modification), sizeof(size_t), 1, file) != 1) {
-        perror("loadInfo fread derniere_modification");
+        fprintf(stderr, "Erreur: loadInfo(): fread derniere_modification\n");
         return EXIT_FAILURE;
     }
 
@@ -231,32 +231,32 @@ Plongeur *loadDiver(FILE *file) {
     // Lire nom
     size_t nom_len = 0;
     if (fread(&nom_len, sizeof(size_t), 1, file) != 1) {
-        fprintf(stderr, "loadDiver fread nom_len");
+        fprintf(stderr, "Erreur: loadDiver(): fread nom_len");
         freeDiver(diver);
         return NULL;
     }
     if (nom_len == 0) {
-        fprintf(stderr, "loadDiver nom_len == 0");
+        fprintf(stderr, "Erreur: loadDiver(): nom_len == 0");
         freeDiver(diver);
         return NULL;
     }
     diver->nom = calloc(nom_len, sizeof(char));
     if (!diver->nom) {
-        fprintf(stderr, "loadDiver calloc nom\n");
-        freeDiverContent(diver);
+        fprintf(stderr, "Erreur: loadDiver(): calloc nom\n");
+        freeDiver(diver);
         return NULL;
     }
     if (fread(diver->nom, 1, nom_len, file) != nom_len) {
-        perror("loadDiver fread nom");
-        freeDiverContent(diver);
+        fprintf(stderr, "Erreur: loadDiver(): fread nom\n");
+        freeDiver(diver);
         return NULL;
     }
 
     // Lire liste_etats.etats
     size_t etats_len = 0;
     if (fread(&etats_len, sizeof(size_t), 1, file) != 1) {
-        perror("loadDiver fread etats_len");
-        freeDiverContent(diver);
+        fprintf(stderr, "Erreur: loadDiver(): fread etats_len\n");
+        freeDiver(diver);
         return NULL;
     }
     diver->liste_etats.longueur = etats_len;
@@ -265,8 +265,8 @@ Plongeur *loadDiver(FILE *file) {
     if (etats_len > 0) {
         diver->liste_etats.etats = calloc(etats_len, sizeof(Etat));
         if (!diver->liste_etats.etats) {
-            fprintf(stderr, "loadDiver calloc etats\n");
-            freeDiverContent(diver);
+            fprintf(stderr, "Erreur: loadDiver(): calloc etats\n");
+            freeDiver(diver);
             return NULL;
         }
 
@@ -274,8 +274,8 @@ Plongeur *loadDiver(FILE *file) {
             // Lire Etats sans pointeurs
             Etat tmp_etat;
             if (fread(&tmp_etat, sizeof(Etat), 1, file) != 1) {
-                perror("loadDiver fread Competence");
-                freeDiverContent(diver);
+                fprintf(stderr, "Erreur: loadDiver(): fread Etat\n");
+                freeDiver(diver);
                 return NULL;
             }
 
@@ -287,8 +287,8 @@ Plongeur *loadDiver(FILE *file) {
     // Lire competences
     size_t comp_len = 0;
     if (fread(&comp_len, sizeof(size_t), 1, file) != 1) {
-        perror("loadDiver fread comp_len");
-        freeDiverContent(diver);
+        fprintf(stderr, "Erreur: loadDiver(): fread comp_len\n");
+        freeDiver(diver);
         return NULL;
     }
     diver->liste_competences.longueur = comp_len;
@@ -297,8 +297,8 @@ Plongeur *loadDiver(FILE *file) {
     if (comp_len > 0) {
         diver->liste_competences.competences = calloc(comp_len, sizeof(Competence));
         if (!diver->liste_competences.competences) {
-            fprintf(stderr, "loadDiver calloc competences\n");
-            freeDiverContent(diver);
+            fprintf(stderr, "Erreur: loadDiver(): calloc competences\n");
+            freeDiver(diver);
             return NULL;
         }
 
@@ -306,8 +306,8 @@ Plongeur *loadDiver(FILE *file) {
             // Lire Competence sans nom
             Competence tmp_comp;
             if (fread(&tmp_comp, sizeof(Competence), 1, file) != 1) {
-                perror("loadDiver fread Competence");
-                freeDiverContent(diver);
+                fprintf(stderr, "Erreur: loadDiver(): fread Competence\n");
+                freeDiver(diver);
                 return NULL;
             }
 
@@ -318,21 +318,21 @@ Plongeur *loadDiver(FILE *file) {
             // Lire taille nom de la compétence
             size_t comp_nom_len = 0;
             if (fread(&comp_nom_len, sizeof(size_t), 1, file) != 1) {
-                perror("loadDiver fread comp_nom_len");
-                freeDiverContent(diver);
+                fprintf(stderr, "Erreur: loadDiver(): fread comp_nom_len\n");
+                freeDiver(diver);
                 return NULL;
             }
 
             if (comp_nom_len > 0) {
                 diver->liste_competences.competences[i].nom = calloc(comp_nom_len, sizeof(char));
                 if (!diver->liste_competences.competences[i].nom) {
-                    fprintf(stderr, "loadDiver calloc comp nom\n");
-                    freeDiverContent(diver);
+                    fprintf(stderr, "Erreur: loadDiver(): calloc comp nom\n");
+                    freeDiver(diver);
                     return NULL;
                 }
                 if (fread(diver->liste_competences.competences[i].nom, 1, comp_nom_len, file) != comp_nom_len) {
-                    perror("loadDiver fread comp nom");
-                    freeDiverContent(diver);
+                    fprintf(stderr, "Erreur: loadDiver(): fread comp nom\n");
+                    freeDiver(diver);
                     return NULL;
                 }
             } else {
@@ -342,21 +342,21 @@ Plongeur *loadDiver(FILE *file) {
             /* Lire description de la competence */
             size_t comp_desc_len = 0;
             if (fread(&comp_desc_len, sizeof(size_t), 1, file) != 1) {
-                perror("loadDiver fread comp_desc_len");
-                freeDiverContent(diver);
+                fprintf(stderr, "Erreur: loadDiver(): fread comp_desc_len\n");
+                freeDiver(diver);
                 return NULL;
             }
 
             if (comp_desc_len > 0) {
                 diver->liste_competences.competences[i].description = calloc(comp_desc_len, sizeof(char));
                 if (!diver->liste_competences.competences[i].description) {
-                    fprintf(stderr, "loadDiver calloc comp description\n");
-                    freeDiverContent(diver);
+                    fprintf(stderr, "Erreur: loadDiver(): calloc comp description\n");
+                    freeDiver(diver);
                     return NULL;
                 }
                 if (fread(diver->liste_competences.competences[i].description, 1, comp_desc_len, file) != comp_desc_len) {
-                    perror("loadDiver fread comp description");
-                    freeDiverContent(diver);
+                    fprintf(stderr, "Erreur: loadDiver(): fread comp description\n");
+                    freeDiver(diver);
                     return NULL;
                 }
             } else {
@@ -367,8 +367,8 @@ Plongeur *loadDiver(FILE *file) {
             short res;
             diver->liste_competences.competences[i].listeAction = loadListeAction(file, &res);
             if (res == EXIT_FAILURE) {
-                fprintf(stderr, "loadDiver(): loadListeAction for competence %zu failed\n", i);
-                freeDiverContent(diver);
+                fprintf(stderr, "Erreur: loadDiver(): loadListeAction for competence %zu failed\n", i);
+                freeDiver(diver);
                 return NULL;
             }
         }
@@ -377,30 +377,30 @@ Plongeur *loadDiver(FILE *file) {
     // Lire liste_consommables
     diver->liste_consommables = loadListeObjet(file);
     if (!diver->liste_consommables) {
-        fprintf(stderr, "loadDiver(): loadListeObjet for liste_consommables failed\n");
-        freeDiverContent(diver);
+        fprintf(stderr, "Erreur: loadDiver(): loadListeObjet for liste_consommables failed\n");
+        freeDiver(diver);
         return NULL;
     }
 
     // Lire liste_bibelots
     diver->liste_bibelots = loadListeObjet(file);
     if (!diver->liste_bibelots) {
-        fprintf(stderr, "loadDiver(): loadListeObjet for liste_bibelots failed\n");
-        freeDiverContent(diver);
+        fprintf(stderr, "Erreur: loadDiver(): loadListeObjet for liste_bibelots failed\n");
+        freeDiver(diver);
         return NULL;
     }
 
     // Lire arsenal
     diver->arsenal = calloc(1, sizeof(Arsenal));
     if (!diver->arsenal) {
-        fprintf(stderr, "loadDiver calloc arsenal\n");
-        freeDiverContent(diver);
+        fprintf(stderr, "Erreur: loadDiver(): calloc arsenal\n");
+        freeDiver(diver);
         return NULL;
     }
     // taille arsenal
     if (fread(&diver->arsenal->longueur, sizeof(size_t), 1, file) != 1) {
-        fprintf(stderr, "loadDiver fread arsenal->longueur");
-        freeDiverContent(diver);
+        fprintf(stderr, "Erreur: loadDiver(): fread arsenal->longueur\n");
+        freeDiver(diver);
         return NULL;
     }
     // tab arsenal
@@ -408,8 +408,8 @@ Plongeur *loadDiver(FILE *file) {
     if (arsenal_size > 0) {
         diver->arsenal->armes = calloc(arsenal_size, sizeof(Arme*));
         if (!diver->arsenal->armes) {
-            fprintf(stderr, "loadDiver calloc arsenal->armes\n");
-            freeDiverContent(diver);
+            fprintf(stderr, "Erreur: loadDiver(): calloc arsenal->armes\n");
+            freeDiver(diver);
             return NULL;
         }
     }
@@ -417,8 +417,8 @@ Plongeur *loadDiver(FILE *file) {
     for (size_t i = 0; i < arsenal_size; i++) {
         diver->arsenal->armes[i] = calloc(1, sizeof(Arme));
         if (!diver->arsenal->armes[i]) {
-            fprintf(stderr, "loadDiver calloc arsenal->armes[%zu]\n", i);
-            freeDiverContent(diver);
+            fprintf(stderr, "Erreur: loadDiver(): calloc arsenal->armes[%zu]\n", i);
+            freeDiver(diver);
             return NULL;
         }
 
@@ -426,8 +426,8 @@ Plongeur *loadDiver(FILE *file) {
         Arme *arme = diver->arsenal->armes[i];
         // Lire arme sans pointeurs
         if (fread(arme, sizeof(Arme), 1, file) != 1) {
-            fprintf(stderr, "loadDiver fread arsenal->armes[%zu]\n", i);
-            freeDiverContent(diver);
+            fprintf(stderr, "Erreur: loadDiver(): fread arsenal->armes[%zu]\n", i);
+            freeDiver(diver);
             return NULL;
         }
         arme->listeAction.actions = NULL;
@@ -437,47 +437,47 @@ Plongeur *loadDiver(FILE *file) {
         // Lire taille nom
         size_t arme_nom_len = 0;
         if (fread(&arme_nom_len, sizeof(size_t), 1, file) != 1) {
-            fprintf(stderr, "loadDiver fread arme_nom_len\n");
-            freeDiverContent(diver);
+            fprintf(stderr, "Erreur: loadDiver(): fread arme_nom_len\n");
+            freeDiver(diver);
             return NULL;
         }
         if (arme_nom_len == 0) {
-            fprintf(stderr, "loadDiver arme_nom_len == 0\n");
-            freeDiverContent(diver);
+            fprintf(stderr, "Erreur: loadDiver(): arme_nom_len == 0\n");
+            freeDiver(diver);
             return NULL;
         }
         // Allocation nom
         arme->nom = calloc(arme_nom_len, sizeof(char));
         if (!arme->nom) {
-            fprintf(stderr, "loadDiver calloc arme->nom\n");
-            freeDiverContent(diver);
+            fprintf(stderr, "Erreur: loadDiver(): calloc arme->nom\n");
+            freeDiver(diver);
             return NULL;
         }
         // Lire nom
         if (fread(arme->nom, sizeof(char), arme_nom_len, file) != arme_nom_len) {
-            fprintf(stderr, "loadDiver fread arme->nom\n");
-            freeDiverContent(diver);
+            fprintf(stderr, "Erreur: loadDiver(): fread arme->nom\n");
+            freeDiver(diver);
             return NULL;
         }
 
         // Lire taille description
         size_t arme_desc_len = 0;
         if (fread(&arme_desc_len, sizeof(size_t), 1, file) != 1) {
-            fprintf(stderr, "loadDiver fread arme_desc_len\n");
-            freeDiverContent(diver);
+            fprintf(stderr, "Erreur: loadDiver(): fread arme_desc_len\n");
+            freeDiver(diver);
             return NULL;
         }
         // Allocation description
         arme->description = calloc(arme_desc_len, sizeof(char));
         if (!arme->description) {
-            fprintf(stderr, "loadDiver calloc arme->description\n");
-            freeDiverContent(diver);
+            fprintf(stderr, "Erreur: loadDiver(): calloc arme->description\n");
+            freeDiver(diver);
             return NULL;
         }
         // Lire description
         if (fread(arme->description, sizeof(char), arme_desc_len, file) != arme_desc_len) {
-            fprintf(stderr, "loadDiver fread arme->description\n");
-            freeDiverContent(diver);
+            fprintf(stderr, "Erreur: loadDiver(): fread arme->description\n");
+            freeDiver(diver);
             return NULL;
         }
 
@@ -485,58 +485,59 @@ Plongeur *loadDiver(FILE *file) {
         short res;
         arme->listeAction = loadListeAction(file, &res);
         if (res == EXIT_FAILURE) {
-            fprintf(stderr, "loadDiver(): loadListeAction for arme %zu failed\n", i);
-            freeDiverContent(diver);
+            fprintf(stderr, "Erreur: loadDiver(): loadListeAction for arme %zu failed\n", i);
+            freeDiver(diver);
             return NULL;
         }
     }
     
     // Lire arme_equipee
     diver->arme_equipee = NULL;
-    size_t index_arme_equipee;
-    if (fread(&index_arme_equipee, sizeof(size_t), 1, file) != 1) {
-        fprintf(stderr, "loadDiver fread index_arme_equipee\n");
-        freeDiverContent(diver);
+    long id_arme_equipee;
+    if (fread(&id_arme_equipee, sizeof(long), 1, file) != 1) {
+        fprintf(stderr, "Erreur: loadDiver(): fread id_arme_equipee\n");
+        freeDiver(diver);
         return NULL;
     }
-    short arme_found = false;
-    for (size_t i = 0; i < diver->arsenal->longueur; i++) {
-        // On a trouvé l'arme équipée
-        if (diver->arsenal->armes[i]->id == index_arme_equipee) {
-            diver->arme_equipee = diver->arsenal->armes[i];
-            arme_found = true;
-            break;
+    // Chercher l'arme par son ID (car on sauvegarde l'ID, pas l'indice)
+    if (id_arme_equipee != -1) {
+        for (size_t i = 0; i < diver->arsenal->longueur; i++) {
+            if (diver->arsenal->armes[i]->id == id_arme_equipee) {
+                if (equiperArme(diver, diver->arsenal->armes[i]) == EXIT_FAILURE) {
+                    fprintf(stderr, "Erreur: loadDiver(): erreur rééquipement arme\n");
+                    freeDiver(diver);
+                    return NULL;
+                }
+                break;
+            }
         }
-    }
-    if (!arme_found) {
-        diver->arme_equipee = NULL;
     }
 
     // Lire effets_immunises
     diver->effets_immunises = calloc(1, sizeof(ListeEffet));
     if (!diver->effets_immunises) {
-        fprintf(stderr, "loadDiver(): calloc diver->effets_immunises\n");
-        freeDiverContent(diver);
+        fprintf(stderr, "Erreur: loadDiver(): calloc diver->effets_immunises\n");
+        freeDiver(diver);
         return NULL;
     }
     // Lire longueur
     if (fread(&diver->effets_immunises->longueur, sizeof(size_t), 1, file) != 1) {
-        fprintf(stderr, "loadDiver(): fread diver->effets_immunises->longueur\n");
-        freeDiverContent(diver);
+        fprintf(stderr, "Erreur: loadDiver(): fread diver->effets_immunises->longueur\n");
+        freeDiver(diver);
         return NULL;
     }
     // Lire tab si longueur > 0
     if (diver->effets_immunises->longueur > 0) {
         diver->effets_immunises->effets = calloc(diver->effets_immunises->longueur, sizeof(Effet));
         if (!diver->effets_immunises->effets) {
-            fprintf(stderr, "loadDiver(): calloc diver->effets_immunises->effets\n");
-            freeDiverContent(diver);
+            fprintf(stderr, "Erreur: loadDiver(): calloc diver->effets_immunises->effets\n");
+            freeDiver(diver);
             return NULL;
         }
         for (size_t i = 0; i < diver->effets_immunises->longueur; i++) {
             if (fread(&diver->effets_immunises->effets[i], sizeof(Effet), 1, file) != 1) {
-                fprintf(stderr, "loadDiver(): fread diver->effets_immunises->effets[%zu]\n", i);
-                freeDiverContent(diver);
+                fprintf(stderr, "Erreur: loadDiver(): fread diver->effets_immunises->effets[%zu]\n", i);
+                freeDiver(diver);
                 return NULL;
             }
         }
@@ -1038,18 +1039,10 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
     }
 
     // Arme en equipement
-    size_t invalid_index = (size_t)(-1);
-    size_t index_arme_equipee = diver->arme_equipee ? diver->arme_equipee->id : invalid_index;
-    if (addBlock(tmpSave, &index_arme_equipee, sizeof(size_t)) != EXIT_SUCCESS)
+    long invalid_index = -1;
+    long index_arme_equipee = diver->arme_equipee ? diver->arme_equipee->id : invalid_index;
+    if (addBlock(tmpSave, &index_arme_equipee, sizeof(long)) != EXIT_SUCCESS)
         return EXIT_FAILURE;
-
-    // Si arme equipee valide, on la rééquipe
-    if (index_arme_equipee < diver->arsenal->longueur) {
-        if (equiperArme(diver, index_arme_equipee) == EXIT_FAILURE) {
-            fprintf(stderr, "saveDiver : erreur rééquipement arme\n");
-            return EXIT_FAILURE;
-        }
-    }
 
     // taille effets_immunises
     size_t effets_len = diver->effets_immunises ? diver->effets_immunises->longueur : 0;

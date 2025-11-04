@@ -153,9 +153,11 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
 
             // Application des dégâts (bruts mais affectés par les effets de la cible)
             ListeEtat *etats_cible = cible_plongeur ? &cible_plongeur->liste_etats : &cible_creature->liste_etats;
+            ListeEtat *etats_lanceur = lanceur_plongeur ? &lanceur_plongeur->liste_etats : &lanceur_creature->liste_etats;
             int defense_cible = cible_plongeur ? cible_plongeur->defense : cible_creature->defense;
             int degats = calculerDegats(montant, montant, defense_cible);
-            degats = calculerDegatsInfligesEffet(etats_cible, degats);
+            degats = calculerDegatsInfligesEtatsLanceur(etats_lanceur, degats);
+            degats = degats > 0 ? calculerDegatsInfligesEtatsCible(etats_cible, degats) : 0;
 
             int *pv_cible = cible_plongeur ? &cible_plongeur->pv : &cible_creature->pv;
 
@@ -242,8 +244,10 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
                 defense_effective
             );
 
+            ListeEtat *etats_lanceur = lanceur_plongeur ? &lanceur_plongeur->liste_etats : &lanceur_creature->liste_etats;
             ListeEtat *etats_cible = cible_plongeur ? &cible_plongeur->liste_etats : &cible_creature->liste_etats;
-            degats = calculerDegatsInfligesEffet(etats_cible, degats);
+            degats = calculerDegatsInfligesEtatsLanceur(etats_lanceur, degats);
+            degats = degats > 0 ? calculerDegatsInfligesEtatsCible(etats_cible, degats) : 0;
 
             int *pv_cible = cible_plongeur ? &cible_plongeur->pv : &cible_creature->pv;
             *pv_cible -= degats;
@@ -281,47 +285,47 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
                 *pv += valeur;
                 if (*pv > *pv_max) *pv = *pv_max;
                 if (*pv < 0) *pv = 0;
-                printf(">> [%s] à régénéré %d PV.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
+                printf(">> [%s] a régénéré %d PV.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
             }
             else if (strcmp(stat_nom, "oxygene") == 0 && cible_plongeur) {
                  *oxygene += valeur;
                  if (*oxygene > *oxygene_max) *oxygene = *oxygene_max;
                  if (*oxygene < 0) *oxygene = 0;
-                 printf(">> [%s] à régénéré %d d'oxygène.\n", cible_plongeur->nom, valeur);
+                 printf(">> [%s] a régénéré %d d'oxygène.\n", cible_plongeur->nom, valeur);
             }
             else if (strcmp(stat_nom, "oxygene_max") == 0 && cible_plongeur) {
                 *oxygene_max += valeur;
                 if (*oxygene_max < 0) *oxygene_max = 0;
-                printf(">> [%s] à modifié son oxygène max de %d.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
+                printf(">> [%s] a modifié son oxygène max de %d.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
             }
             else if (strcmp(stat_nom, "fatigue") == 0 && cible_plongeur) {
                 *fatigue += valeur;
                 if (*fatigue > *fatigue_max) *fatigue = *fatigue_max;
                 if (*fatigue < 0) *fatigue = 0;
-                printf(">> [%s] à réduit sa fatigue de %d.\n", cible_plongeur->nom, valeur);
+                printf(">> [%s] a %s sa fatigue de %d.\n", cible_plongeur->nom, valeur < 0 ? "réduit" : "augmenté", abs(valeur));
             }
             else if (strcmp(stat_nom, "fatigue_max") == 0 && cible_plongeur) {
                 *fatigue_max += valeur;
                 if (*fatigue_max < 0) *fatigue_max = 0;
-                printf(">> [%s] à modifié sa fatigue max de %d.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
+                printf(">> [%s] a modifié sa fatigue max de %d.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
             }
             else if (strcmp(stat_nom, "attaque_max") == 0) {
                 *attaque_max += valeur;
-                printf(">> [%s] à modifié son attaque max de %d.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
+                printf(">> [%s] a modifié son attaque max de %d.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
             }
             else if (strcmp(stat_nom, "attaque_min") == 0) {
                 *attaque_min += valeur;
-                printf(">> [%s] à modifié son attaque min de %d.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
+                printf(">> [%s] a modifié son attaque min de %d.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
             }
             else if (strcmp(stat_nom, "defense") == 0) {
                 *defense += valeur;
                 if (*defense < 0) *defense = 0;
-                printf(">> [%s] à modifié sa défense de %d.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
+                printf(">> [%s] a modifié sa défense de %d.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
             }
             else if (strcmp(stat_nom, "vitesse") == 0) {
                 *vitesse += valeur;
                 if (*vitesse < 0) *vitesse = 0;
-                printf(">> [%s] à modifié sa vitesse de %d.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
+                printf(">> [%s] a modifié sa vitesse de %d.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
             }
             else {
                 fprintf(stderr, "Erreur: executerAction(): Stat inconnue pour MODIFIER_STAT: \"%s\"\n", stat_nom);

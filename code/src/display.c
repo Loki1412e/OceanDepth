@@ -197,9 +197,33 @@ void printModififierStatActions(ListeAction actions) {
     }
 }
 
+void printImmuneEffetActions(ListeAction actions) {
+    if (actions.longueur == 0 || actions.actions == NULL) {
+        return;
+    }
+
+    Effet effet;
+    size_t count = 0;
+
+    for (size_t i = 0; i < actions.longueur; i++) {
+        if (actions.actions[i].type != AJOUTER_IMMUNITE_EFFET || actions.actions[i].longueur_params < 1) 
+            continue;
+    
+        effet = charToEnumEffect(actions.actions[i].params[0]);
+        if (effet == AUCUN_Effet) {
+            fprintf(stderr, "Warning: printImmuneEffetActions(): charToEnumEffect(%s)\n", actions.actions[i].params[0]);
+            continue;
+        }
+
+        if (count++ > 0) printf(" ");
+        else printf(" → ");
+        printf("[Immunisé %s]", enumEffectToChar(effet));
+    }
+}
+
 void printListeEtat(ListeEtat etats) {
     if (etats.longueur == 0 || etats.etats == NULL) {
-        printf("Aucun\n");
+        printf("Aucun");
         return;
     }
 
@@ -210,6 +234,8 @@ void printListeEtat(ListeEtat etats) {
             (i < etats.longueur - 1) ? ", " : ""
         );
     }
+
+    printf("\n");
 }
 
 void printObjectsList(ListeObjet *objects_list) {
@@ -223,7 +249,7 @@ void printObjectsList(ListeObjet *objects_list) {
         Objet *c = objects_list->objets[i];
         if (!c) continue;
 
-        printf("\tObjet ID: %zu\n", c->id);
+        printf("\tObjet ID: %ld\n", c->id);
         printf("\tQuantite: %d\n", c->quantite);
         printf("\tNom: %s\n", c->nom ? c->nom : "(null)");
         printf("\tDescription: %s\n", c->description ? c->description : "(null)");
@@ -245,12 +271,13 @@ void printBibelotsActifs(ListeObjet *bibelots) {
         if (!c) continue;
         printf("\t      - %s", c->nom ? c->nom : "(null)");
         printModififierStatActions(c->listeAction);
+        printImmuneEffetActions(c->listeAction);
         printf("\n");
     }
 }
 
 void printCompetence(Competence competence) {
-    printf("\t Id                   : %zu\n", competence.id);
+    printf("\t Id                   : %ld\n", competence.id);
     printf("\t Nom                  : %s\n", competence.nom);
     printf("\t Description          : %s\n", competence.description);
     printf("\t Coût en oxygène      : %d\n", competence.cout_oxygene);
@@ -291,7 +318,7 @@ void printCreature(CreatureMarine *creature) {
         printf("NULL CreatureMarine pointer\n");
         return;
     }
-    printf("CreatureMarine ID: %zu\n", creature->id);
+    printf("CreatureMarine ID: %ld\n", creature->id);
     printf("Nom Type: %s\n", creature->nom ? creature->nom : "(null)");
     printf("PV: %d (Min: %d, Max: %d)\n", creature->pv, creature->pv_min, creature->pv_max);
     printf("Attaque: Min %d, Max %d\n", creature->attaque_min, creature->attaque_max);
@@ -322,6 +349,28 @@ void printCreatures(CreatureMarine **creatures, size_t length) {
     }
 }
 
+void printGroupsCreatures(Bestiaire *bestiary) {
+    if (!bestiary || !bestiary->groupes || bestiary->longueur_groupes == 0) {
+        printf("Aucun groupe de créatures marines.\n");
+        return;
+    }
+    printf("Groupes de créatures marines (%zu):\n\n", bestiary->longueur_groupes);
+    for (size_t i = 0; i < bestiary->longueur_groupes; i++) {
+        GroupeCreatureMarine *g = bestiary->groupes[i];
+        if (!g) continue;
+
+        printf("Groupe ID: %ld\n", g->id);
+        printf("Dangerosité: %d\n", g->dangerosite);
+        printf("Créatures dans le groupe (%zu): ", g->longueur);
+        for (size_t j = 0; j < g->longueur; j++) {
+            long id = g->id_creatures[j];
+            printf("%s [id=%ld]", bestiary->creatures[id]->nom, id);
+            if (j + 1 < g->longueur) printf(", ");
+        }
+        printf("\n\n");
+    }
+}
+
 
 void printBestiary(Bestiaire *bestiary) {
     if (!bestiary) {
@@ -331,7 +380,11 @@ void printBestiary(Bestiaire *bestiary) {
     
     printf("\n====================================\n\n");
 
+    printf("--- Créatures marines ---\n\n");
     printCreatures(bestiary->creatures, bestiary->longueur_creatures);
+
+    printf("\n--- Groupes de créatures marines ---\n\n");
+    printGroupsCreatures(bestiary);
 
     printf("\n====================================\n\n");
 }
@@ -376,7 +429,7 @@ void printDiver(Plongeur *diver) {
         for (size_t i = 0; i < diver->arsenal->longueur; i++) {
             Arme *arme = diver->arsenal->armes[i];
             if (!arme) continue;
-            printf("\tArme ID: %zu\n", arme->id);
+            printf("\tArme ID: %ld\n", arme->id);
             printf("\tNom: %s\n", arme->nom ? arme->nom : "(null)");
             printf("\tAttaque: %d - %d\n", arme->attaque_min, arme->attaque_max);
             printf("\tCoût en oxygène: %d\n", arme->cout_oxygene);

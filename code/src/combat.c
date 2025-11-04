@@ -64,7 +64,8 @@ int finDuCombat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creature
 void joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature) {
     int defenseCible = calculerDefenseEffet(creature->defense, &creature->liste_etats);
     int degats = calculerDegats(joueur->attaque_min, joueur->attaque_max, defenseCible);
-    degats = calculerDegatsInfligesEffet(&creature->liste_etats, degats);
+    degats = calculerDegatsInfligesEtatsLanceur(&joueur->liste_etats, degats);
+    degats = degats > 0 ? calculerDegatsInfligesEtatsCible(&creature->liste_etats, degats) : 0;
 
     creature->pv -= degats;
     if (creature->pv < 0) creature->pv = 0;
@@ -91,13 +92,11 @@ void joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature) {
 
 // Return -1 si n'a pas de compétence activable
 // Return EXIT_FAILURE ou EXIT_SUCCESS
-int botAttaque(void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, EntiteType cible_type) {
+int botAttaque(void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, EntiteType cible_type, void** groupe_allie, long *groupe_allie_type, size_t len_groupe) {
     if (!lanceur_ptr || !cible_ptr) {
         fprintf(stderr, "Erreur: botAttaque(): Invalid params\n");
         return EXIT_FAILURE;
     }
-
-    short res;
 
     ListeCompetence *liste_competences = lanceur_type == ENTITE_CREATURE ?
         &((CreatureMarine*)lanceur_ptr)->liste_competences :
@@ -111,10 +110,43 @@ int botAttaque(void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, Enti
         return -1;
     }
 
-    res = utiliserCompetence(comp, lanceur_ptr, lanceur_type, cible_ptr, cible_type);
-    if (res == EXIT_FAILURE) {
-        fprintf(stderr, "Erreur: botAttaque(): utiliserCompetence()\n");
-        return EXIT_FAILURE;
+    switch (comp->ciblage) {
+        
+        case GROUPE_ALLIE: {
+            if (len_groupe == 0 || !groupe_allie) {
+                fprintf(stderr, "Erreur: botAttaque(): GROUPE_ALLIE mais groupe_allie est NULL ou vide\n");
+                return EXIT_FAILURE;
+            }
+            // Pour le moment: Peut appliquer l'effet a lui mm
+            int choice = random_int(0, len_groupe - 1);
+            if (utiliserCompetence(comp, lanceur_ptr, lanceur_type, groupe_allie[choice], groupe_allie_type[choice]) == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: botAttaque(): utiliserCompetence() sur GROUPE_ALLIE -> allié [%d]\n", choice);
+                return EXIT_FAILURE;
+            }
+            break;
+        }
+
+        case ENNEMI_UNIQUE: {
+            if (utiliserCompetence(comp, lanceur_ptr, lanceur_type, cible_ptr, cible_type) == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: botAttaque(): utiliserCompetence() sur ENNEMI_UNIQUE\n");
+                return EXIT_FAILURE;
+            }
+
+            break;
+        }
+
+        case SOI_MEME: {
+            if (utiliserCompetence(comp, lanceur_ptr, lanceur_type, lanceur_ptr, lanceur_type) == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: botAttaque(): utiliserCompetence() sur SOI_MEME\n");
+                return EXIT_FAILURE;
+            }
+            break;
+        }
+        
+        default: {
+            fprintf(stderr, "Erreur: botAttaque(): CiblageType non géré (%d)\n", comp->ciblage);
+            return EXIT_FAILURE;
+        }
     }
 
     return EXIT_SUCCESS;
@@ -170,7 +202,7 @@ void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_c
 
     // Afficher arme équipée (nom, stats, description, effets, etc.)
     Arme *a = joueur->arme_equipee;
-    printf("\n\n\t    Arme équipée : [ %s ]\n", a ? a->nom : "Aucune (poings)");
+    printf("\n\t    Arme équipée : [ %s ]\n", a ? a->nom : "Aucune (poings)");
     if (a) {
         printf("\t        %s\n", a->description);
         printf("\t        (Attaque: %d-%d, Coût Oxygène: %d)\n", a->attaque_min, a->attaque_max, a->cout_oxygene);
@@ -209,7 +241,7 @@ void afficherActionsDisponibles(Plongeur *joueur, int actions_restantes, int act
 
 // Return `-1` si la créature est morte durant son tour
 // Return `EXIT_FAILURE` ou `EXIT_SUCCESS`
-int appliquerTourCreature(CreatureMarine *creature, size_t index, Plongeur *joueur) {
+int appliquerTourCreature(CreatureMarine **creatures, size_t nb_creatures, CreatureMarine *creature, size_t index, Plongeur *joueur) {
     if (!creature || !joueur) {
         fprintf(stderr, "Erreur: appliquerTourCreature(): Invalid params\n");
         return EXIT_FAILURE;
@@ -220,7 +252,6 @@ int appliquerTourCreature(CreatureMarine *creature, size_t index, Plongeur *joue
     printf("--- Tour de [%s] #%zu ---\n", creature->nom, index + 1);
     printf("Effet Subis au début du tour: ");
     printListeEtat(creature->liste_etats);
-    printf("\n");
 
     int pv_before = creature->pv;
     appliquerDegatsAvantTour(&creature->liste_etats, &creature->pv, creature->pv_max, creature->defense, NULL, false);
@@ -243,11 +274,22 @@ int appliquerTourCreature(CreatureMarine *creature, size_t index, Plongeur *joue
         return EXIT_SUCCESS;
     }
 
-    if (botAttaque(creature, ENTITE_CREATURE, joueur, ENTITE_PLONGEUR) != EXIT_SUCCESS) {
+    // Pour le moment on fait en dur :
+    long *groupe_type = malloc(sizeof(long) * nb_creatures);
+    if (!groupe_type) {
+        fprintf(stderr, "Erreur: appliquerTourCreature(): malloc groupe_type\n");
+        return EXIT_FAILURE;
+    }
+    for (size_t i = 0; i < nb_creatures; i++) {
+        groupe_type[i] = ENTITE_CREATURE;
+    }
+    if (botAttaque(creature, ENTITE_CREATURE, joueur, ENTITE_PLONGEUR, (void**) creatures, groupe_type, nb_creatures) != EXIT_SUCCESS) {
         printf(">> [%s] n'a pas pu attaquer.\n", creature->nom);
+        free(groupe_type);
         return EXIT_SUCCESS;
     }
 
+    free(groupe_type);
     return EXIT_SUCCESS;
 }
 
@@ -271,7 +313,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur, CreatureMarine **creatures,
         for (size_t i = 0; i < nb_creatures; i++) {
             if (creatures[i]->pv > 0 && (creatures[i]->vitesse >= joueur->vitesse)) {
                 afficherInterface(joueur, creatures, nb_creatures);
-                res = appliquerTourCreature(creatures[i], i, joueur);
+                res = appliquerTourCreature(creatures, nb_creatures, creatures[i], i, joueur);
                 if (res == EXIT_FAILURE) {
                     fprintf(stderr, "Erreur: combat() // Monstres autant ou plus rapides: appliquerTourCreature()\n");
                     return EXIT_FAILURE;
@@ -309,7 +351,6 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur, CreatureMarine **creatures,
         printf("--- Votre tour ---\n");
         printf("Effet Subis au début du tour: ");
         printListeEtat(joueur->liste_etats);
-        printf("\n");
 
         int pv_before_player = joueur->pv;
         int oxy_before = joueur->oxygene;
@@ -483,7 +524,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur, CreatureMarine **creatures,
                             printf("\nQuelle cible ? (0 pour annuler) [coût: %d action%s]\n", cout_actions, cout_actions > 1 ? "s" : "");
                             for (size_t i = 0; i < nb_creatures; i++) {
                                 if (creatures[i]->pv > 0)
-                                    printf("[%zu] %s\n", i+1, creatures[i]->nom);
+                                    printf("[%zu] %s (%d/%d PV)\n", i+1, creatures[i]->nom, creatures[i]->pv, creatures[i]->pv_max);
                             }
                             printf("> ");
                             cible = lireEntier();
@@ -595,7 +636,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur, CreatureMarine **creatures,
                     }
 
                     actions_restantes -= cout_actions;
-                    updateFatigue(joueur, cout_actions);
+                    // updateFatigue(joueur, cout_actions); // On considère que consommer un objet ne fatigue pas
                     if (pressToContinueOrSave(actualSave) == -1) return -1;
                     break;
 
@@ -652,7 +693,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur, CreatureMarine **creatures,
                         joueur->arme_equipee = NULL;
                         printf("\n→ Vous équipez vos poings.\n");
                         actions_restantes -= cout_actions;
-                        // updateFatigue(joueur, cout_actions); // On considère que changer d'arme ne fatigue pas
+                        updateFatigue(joueur, cout_actions);
                         if (pressToContinueOrSave(actualSave) == -1) return -1;
                         break;
                     }
@@ -673,7 +714,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur, CreatureMarine **creatures,
                         continue; // Ne termine pas le tour, redemande une action
                     }
 
-                    if (equiperArme(joueur, choix_arme - 2) == EXIT_FAILURE) {
+                    if (equiperArme(joueur, joueur->arsenal->armes[choix_arme - 2]) == EXIT_FAILURE) {
                         printf(">> Erreur interne: combat(): equiperArme()\n");
                         if (pressToContinueOrSave(actualSave) == -1) return -1;
                         afficherInterface(joueur, creatures, nb_creatures);
@@ -683,7 +724,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur, CreatureMarine **creatures,
 
                     printf("\n→ Vous équipez [%s].\n", joueur->arme_equipee->nom);
                     actions_restantes -= cout_actions;
-                    // updateFatigue(joueur, cout_actions); // On considère que changer d'arme ne fatigue pas
+                    updateFatigue(joueur, cout_actions);
                     if (pressToContinueOrSave(actualSave) == -1) return -1;
                     break;
 
@@ -719,7 +760,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur, CreatureMarine **creatures,
             if (creatures[i]->pv > 0 && (creatures[i]->vitesse < joueur->vitesse)) {
                 
                 afficherInterface(joueur, creatures, nb_creatures);
-                res = appliquerTourCreature(creatures[i], i, joueur);
+                res = appliquerTourCreature(creatures, nb_creatures, creatures[i], i, joueur);
                 if (res == EXIT_FAILURE) {
                     fprintf(stderr, "Erreur: combat() // Monstres strictement moins rapides: appliquerTourCreature()\n");
                     return EXIT_FAILURE;

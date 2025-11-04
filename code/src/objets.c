@@ -2,15 +2,15 @@
 
 
 // ActionReverseType type: `NO_REVERSE` = appliquer l'effet normalement / `REVERSE` = inverser l'effet de l'action (ex: soin -> dégats) -> `MODIFIER_STAT` et `AJOUTER_IMMUNITE_EFFET` uniquement pour le moment
-int appliquerActionsObjet(Objet *c, void *user_ptr, EntiteType user_type, ActionReverseType type) {
+int appliquerActionsObjet(Objet *c, void *user_ptr, EntiteType user_type, ActionReverseType reverseType) {
     if (!c || !user_ptr || user_type == ENTITE_TYPE_INVALIDE) {
         fprintf(stderr, "Erreur: appliquerActionsObjet(): arguments invalides\n");
         return EXIT_FAILURE;
     }
     // Appliquer les effets du objet
-    printf("\n>> L'effet de '%s' a été %s\n", c->nom, type == NO_REVERSE ? "appliqué" : "enlevé");
+    printf("\n>> L'effet de '%s' a été %s\n", c->nom, reverseType == NO_REVERSE ? "appliqué" : "enlevé");
     for (size_t i = 0; i < c->listeAction.longueur; i++) {
-        if (executerAction(&c->listeAction.actions[i], user_ptr, user_type, user_ptr, user_type, type) == EXIT_FAILURE) {
+        if (executerAction(&c->listeAction.actions[i], user_ptr, user_type, user_ptr, user_type, reverseType) == EXIT_FAILURE) {
             fprintf(stderr, "Erreur: appliquerActionsObjet(): executerAction(%zu)\n", i);
             return EXIT_FAILURE;
         }
@@ -20,13 +20,13 @@ int appliquerActionsObjet(Objet *c, void *user_ptr, EntiteType user_type, Action
 
 // Pour utiliser sans prendre en compte la quantité
 // ActionReverseType type: `NO_REVERSE` = appliquer l'effet normalement / `REVERSE` = inverser l'effet de l'action (ex: soin -> dégats) -> `MODIFIER_STAT` et `AJOUTER_IMMUNITE_EFFET` uniquement pour le moment
-int appliquerActionsListeObjet(ListeObjet *listeObjet, void *user_ptr, EntiteType user_type, ActionReverseType type) {
+int appliquerActionsListeObjet(ListeObjet *listeObjet, void *user_ptr, EntiteType user_type, ActionReverseType reverseType) {
     if (!listeObjet || !user_ptr || user_type == ENTITE_TYPE_INVALIDE) {
         fprintf(stderr, "Erreur: appliquerActionsListeObjet(): arguments invalides\n");
         return EXIT_FAILURE;
     }
     for (size_t i = 0; i < listeObjet->longueur; i++) {
-        if (appliquerActionsObjet(listeObjet->objets[i], user_ptr, user_type, type) == EXIT_FAILURE) {
+        if (appliquerActionsObjet(listeObjet->objets[i], user_ptr, user_type, reverseType) == EXIT_FAILURE) {
             fprintf(stderr, "Erreur: appliquerActionsListeObjet(): appliquerActionsObjet(%zu)\n", i);
             return EXIT_FAILURE;
         }
@@ -128,12 +128,12 @@ Objet *duplicateObjet(Objet *c) {
     return new_c;
 }
 
-int ajouterObjet(ListeObjet *modal, ListeObjet *list, size_t id_objet) {
+int ajouterObjet(ListeObjet *modal, ListeObjet *list, long id_objet) {
     if (!list || !modal) {
         fprintf(stderr, "Erreur: ajouterObjet(): arguments invalides\n");
         return EXIT_FAILURE;
     }
-    if (id_objet >= modal->longueur) {
+    if ((size_t) id_objet >= modal->longueur) {
         fprintf(stderr, "Erreur: ajouterObjet(): id_objet invalide\n");
         return EXIT_FAILURE;
     }
@@ -166,7 +166,7 @@ int ajouterObjet(ListeObjet *modal, ListeObjet *list, size_t id_objet) {
     return EXIT_SUCCESS;
 }
 
-int supprimerObjet(ListeObjet *list, size_t id) {
+int supprimerObjet(ListeObjet *list, long id) {
     if (!list) {
         fprintf(stderr, "Erreur: supprimerObjet(): arguments invalides\n");
         return EXIT_FAILURE;

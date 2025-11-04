@@ -99,7 +99,7 @@ int ajouterEffet(ListeEtat *listeEtat, ListeEffet *effets_immunises, Effet type,
             if (etat->duree_combat < dureeCombat) etat->duree_combat = dureeCombat;
             if (etat->duree_zone < dureeZone) etat->duree_zone = dureeZone;
             etat->estPermanent = etat->estPermanent || estPermanent;
-            printf(">> Effet [%s] (%d) rafraîchi.\n", enumEffectToChar(type), type);
+            printf(">> Effet [%s] rafraîchi.\n", enumEffectToChar(type));
             return EXIT_SUCCESS;
         }
     }
@@ -154,7 +154,7 @@ int calculerDefenseEffet(int defenseBase, ListeEtat *etats) {
             
             case DEFENSE_AUGMENTEE:
                 defenseFinal *= 1.5;
-                printf("[DEFENSE_AUGMENTEE] s'applique\n");
+                printf(">> [DEFENSE_AUGMENTEE] s'applique\n");
                 break;
 
             default:
@@ -164,19 +164,53 @@ int calculerDefenseEffet(int defenseBase, ListeEtat *etats) {
     return defenseFinal;
 }
 
-int calculerDegatsInfligesEffet(ListeEtat *etatsCible, int degatsBase) {
+int calculerDegatsInfligesEtatsCible(ListeEtat *etatsCible, int degatsBase) {
     int degatsFinaux = degatsBase;
     for (size_t i = 0; i < etatsCible->longueur; i++) {
         switch (etatsCible->etats[i].effet) {
             
             case BENEDICTION_OCEAN:
                 degatsFinaux *= 0.9;
-                printf("[BENEDICTION_OCEAN] s'applique\n");
+                printf(">> [BENEDICTION_OCEAN] s'applique (réduction des dégâts de 10%%)\n");
                 break;
             
             case MALEDICTION_OCEAN:
                 degatsFinaux *= 1.1;
-                printf("[MALEDICTION_OCEAN] s'applique\n");
+                printf(">> [MALEDICTION_OCEAN] s'applique (augmentation des dégâts de 10%%)\n");
+                break;
+            
+            default:
+                break;
+        }
+    }
+    return degatsFinaux;
+}
+
+int calculerDegatsInfligesEtatsLanceur(ListeEtat *etatsLanceur, int degatsBase) {
+    int degatsFinaux = degatsBase;
+    for (size_t i = 0; i < etatsLanceur->longueur; i++) {
+        switch (etatsLanceur->etats[i].effet) {
+            
+            case BENEDICTION_OCEAN:
+                degatsFinaux *= 1.1;
+                printf(">> [BENEDICTION_OCEAN] s'applique (augmentation des dégâts de 10%%)\n");
+                break;
+            
+            case MALEDICTION_OCEAN:
+                degatsFinaux *= 0.9;
+                printf(">> [MALEDICTION_OCEAN] s'applique (réduction des dégâts de 10%%)\n");
+                break;
+
+            case PRECISION_REDUITE:
+                int res = random_int(1, 100);
+
+                // 30% de chance de rater
+                if (res <= 30) {
+                    printf(">> [PRECISION_REDUITE] fait rater l'attaque !\n");
+                    return 0;
+                }
+                
+                printf(">> [PRECISION_REDUITE] n'a pas fait rater l'attaque.\n");
                 break;
             
             default:
@@ -196,21 +230,21 @@ int calculerDegatsSubiDebutTourEffet(ListeEtat *etats, int *pv, int maxPv, int d
             case ETREINTE:
                 degats = (maxPv + defense) * 0.8; // 2% des (PV max + défense)
                 degatsFinaux += degats;
-                printf("L'effet [ETREINTE] vous inflige des dégats\n");
+                printf(">> L'effet [ETREINTE] vous inflige des dégats\n");
                 break;
 
             case SAIGNEMENT:
                 // Passe outre la défense donc on enleve les pv directement -> pv -= 5% des PV max
                 degats = maxPv * 0.05;
                 *pv -= degats;
-                printf("[SAIGNEMENT] -> -%d pv\n", degats);
+                printf(">> [SAIGNEMENT] -> -%d pv\n", degats);
                 break;
 
             case POISON:
                 // Passe outre la défense donc on enleve les pv directement -> pv -= 5% des PV max
                 degats = maxPv * 0.05;
                 *pv -= degats;
-                printf("[POISON] -> -%d pv", degats);
+                printf(">> [POISON] -> -%d pv", degats);
                 if (oxygene) {
                     degats = maxOxygene * 0.05;
                     *oxygene -= degats;
@@ -295,7 +329,7 @@ int decrementerDureesEtNettoyer(ListeEtat *listeEtat, int estFinDeTourCombat, in
 
     for (size_t i = 0, j = 0; i < listeEtat->longueur || j < listeEtatTemp.longueur; i++) {
         if (etat_a_nettoyer[i]) {
-            printf(">> L'effet [%s] (%d) a expiré et a été supprimé.\n", enumEffectToChar(listeEtat->etats[i].effet), listeEtat->etats[i].effet);
+            printf(">> L'effet [%s] a expiré et a été supprimé.\n", enumEffectToChar(listeEtat->etats[i].effet));
             res = -1;
         }
         else

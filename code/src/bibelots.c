@@ -1,13 +1,13 @@
 #include "../include/bibelots.h"
 
 
-int ajouterBibelot(ListeObjet *modal, Plongeur *joueur, size_t id_objet) {
+int ajouterBibelot(ListeObjet *modal, Plongeur *joueur, long id_objet) {
     if (!modal || !modal->objets || !joueur || !joueur->liste_bibelots) {
         fprintf(stderr, "Erreur: ajouterBibelot(): arguments invalides\n");
         return EXIT_FAILURE;
     }
-    if (id_objet >= modal->longueur) {
-        fprintf(stderr, "Erreur: ajouterBibelot(): L'objet avec l'id %zu n'existe pas dans la liste des bibelots modaux.\n", id_objet);
+    if ((size_t) id_objet >= modal->longueur) {
+        fprintf(stderr, "Erreur: ajouterBibelot(): L'objet avec l'id %ld n'existe pas dans la liste des bibelots modaux.\n", id_objet);
         return EXIT_FAILURE;
     }
 
@@ -32,7 +32,7 @@ int ajouterBibelot(ListeObjet *modal, Plongeur *joueur, size_t id_objet) {
     return EXIT_SUCCESS;
 }
 
-int supprimerBibelot(Plongeur *joueur, size_t id) {
+int supprimerBibelot(Plongeur *joueur, long id) {
     if (!joueur || !joueur->liste_bibelots) {
         fprintf(stderr, "Erreur: supprimerBibelot(): arguments invalides\n");
         return EXIT_FAILURE;
