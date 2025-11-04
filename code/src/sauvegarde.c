@@ -499,14 +499,12 @@ Plongeur *loadDiver(FILE *file) {
         freeDiver(diver);
         return NULL;
     }
-    for (size_t i = 0; i < diver->arsenal->longueur; i++) {
-        // On a trouvé l'arme équipée
-        if (diver->arsenal->armes[i]->id == index_arme_equipee) {
-            if (equiperArme(diver, index_arme_equipee) == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: loadDiver(): erreur rééquipement arme\n");
-                freeDiver(diver);
-                return NULL;
-            }
+    // Vérifier si l'index est valide
+    if (index_arme_equipee > -1 && index_arme_equipee < diver->arsenal->longueur) {
+        if (equiperArme(diver, diver->arsenal->armes[index_arme_equipee]) == EXIT_FAILURE) {
+            fprintf(stderr, "Erreur: loadDiver(): erreur rééquipement arme\n");
+            freeDiver(diver);
+            return NULL;
         }
     }
 

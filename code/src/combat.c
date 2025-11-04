@@ -713,7 +713,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur, CreatureMarine **creatures,
                         continue; // Ne termine pas le tour, redemande une action
                     }
 
-                    if (equiperArme(joueur, choix_arme - 2) == EXIT_FAILURE) {
+                    if (equiperArme(joueur, joueur->arsenal->armes[choix_arme - 2]) == EXIT_FAILURE) {
                         printf(">> Erreur interne: combat(): equiperArme()\n");
                         if (pressToContinueOrSave(actualSave) == -1) return -1;
                         afficherInterface(joueur, creatures, nb_creatures);
