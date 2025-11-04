@@ -178,6 +178,19 @@ int calculerDegatsInfligesEffet(ListeEtat *etatsCible, int degatsBase) {
                 degatsFinaux *= 1.1;
                 printf(">> [MALEDICTION_OCEAN] s'applique\n");
                 break;
+
+            case PRECISION_REDUITE:
+                int res = random_int(1, 100);
+
+                // 30% de chance de rater
+                if (res <= 30) {
+                    degatsFinaux = 0;
+                    printf(">> [PRECISION_REDUITE] fait rater l'attaque !\n");
+                    break;
+                }
+                
+                printf(">> [PRECISION_REDUITE] n'a pas fait rater l'attaque.\n");
+                break;
             
             default:
                 break;
