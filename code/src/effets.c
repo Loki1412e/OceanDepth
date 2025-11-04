@@ -154,7 +154,7 @@ int calculerDefenseEffet(int defenseBase, ListeEtat *etats) {
             
             case DEFENSE_AUGMENTEE:
                 defenseFinal *= 1.5;
-                printf("[DEFENSE_AUGMENTEE] s'applique\n");
+                printf(">> [DEFENSE_AUGMENTEE] s'applique\n");
                 break;
 
             default:
@@ -171,12 +171,12 @@ int calculerDegatsInfligesEffet(ListeEtat *etatsCible, int degatsBase) {
             
             case BENEDICTION_OCEAN:
                 degatsFinaux *= 0.9;
-                printf("[BENEDICTION_OCEAN] s'applique\n");
+                printf(">> [BENEDICTION_OCEAN] s'applique\n");
                 break;
             
             case MALEDICTION_OCEAN:
                 degatsFinaux *= 1.1;
-                printf("[MALEDICTION_OCEAN] s'applique\n");
+                printf(">> [MALEDICTION_OCEAN] s'applique\n");
                 break;
             
             default:
@@ -196,21 +196,21 @@ int calculerDegatsSubiDebutTourEffet(ListeEtat *etats, int *pv, int maxPv, int d
             case ETREINTE:
                 degats = (maxPv + defense) * 0.8; // 2% des (PV max + défense)
                 degatsFinaux += degats;
-                printf("L'effet [ETREINTE] vous inflige des dégats\n");
+                printf(">> L'effet [ETREINTE] vous inflige des dégats\n");
                 break;
 
             case SAIGNEMENT:
                 // Passe outre la défense donc on enleve les pv directement -> pv -= 5% des PV max
                 degats = maxPv * 0.05;
                 *pv -= degats;
-                printf("[SAIGNEMENT] -> -%d pv\n", degats);
+                printf(">> [SAIGNEMENT] -> -%d pv\n", degats);
                 break;
 
             case POISON:
                 // Passe outre la défense donc on enleve les pv directement -> pv -= 5% des PV max
                 degats = maxPv * 0.05;
                 *pv -= degats;
-                printf("[POISON] -> -%d pv", degats);
+                printf(">> [POISON] -> -%d pv", degats);
                 if (oxygene) {
                     degats = maxOxygene * 0.05;
                     *oxygene -= degats;
