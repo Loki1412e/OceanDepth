@@ -142,6 +142,15 @@ Bestiaire *initRandomBestiaryFromDangerosityGroupLevel(Bestiaire *modalBestiary,
 
     sortCreaturesBySpeed(bestiary->creatures, bestiary->longueur_creatures);
 
+    bestiary->groupes = calloc(1, sizeof(GroupeCreatureMarine*));
+    if (!bestiary->groupes) {
+        fprintf(stderr, "Erreur: initRandomBestiaryFromDangerosityGroupLevel(): Allocation mémoire échouée\n");
+        freeBestiary(bestiary);
+        return NULL;
+    }
+    bestiary->longueur_groupes = 1;
+    bestiary->groupes[0] = group;
+
     return bestiary;
 }
 
