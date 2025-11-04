@@ -13,17 +13,28 @@
 Repartition dans le code :
 
 ```c
+// Calcul de la défense de la cible (avec effets)
 int defenseCible = calculerDefenseEffet(
-    entitee->defense,
-    &entitee->etats
+    cible->defense,
+    &cible->etats
 );
 
-// int degatsBase = degats subi par l'entitee
+// Calcul des dégâts de base
+int degats = calculerDegats(attaquant->attaque_min, attaquant->attaque_max, defenseCible);
 
-int degats = calculerDegatsInfligesEffet(
-    &entitee->etats,
-    degatsBase
+// Application des effets du lanceur (celui qui attaque)
+degats = calculerDegatsInfligesEtatsLanceur(
+    &attaquant->etats,
+    degats
 );
+
+// Application des effets de la cible (celui qui subit)
+if (degats > 0) {
+    degats = calculerDegatsInfligesEtatsCible(
+        &cible->etats,
+        degats
+    );
+}
 
 // Debut tour entite
 
@@ -31,19 +42,37 @@ int degats = calculerDegatsSubiDebutTourEffet(
     &entitee->etats,
     &entitee->pv,
     entitee->max_pv,
-    defenseCible
+    defenseCible,
+    &entitee->oxygene,
+    entitee->oxygene_max
 );
 ```
 
-## 1. Avant que l'entitée ne subisse des degats
-
-- `BENEDICTION_OCEAN` : Dégat -10%
-
-- `MALEDICTION_OCEAN` : Dégat +10%
+## 1. Modificateurs de défense de la cible (avant calcul des dégâts)
 
 - `DEFENSE_AUGMENTEE` : La défense augmente de 50%
 
-## 2. Avant que l'entitée ne fasse une action (debut tour de l'entitée)
+## 2. Modificateurs de dégâts du lanceur (celui qui attaque)
+
+- `BENEDICTION_OCEAN` : Dégâts infligés +10%
+
+- `MALEDICTION_OCEAN` : Dégâts infligés -10%
+
+- `PRECISION_REDUITE` : 30% de chance de rater l'attaque (dégâts = 0)
+
+## 3. Modificateurs de dégâts de la cible (celui qui subit)
+
+- `BENEDICTION_OCEAN` : Dégâts reçus -10%
+
+- `MALEDICTION_OCEAN` : Dégâts reçus +10%
+
+## 3. Modificateurs de dégâts de la cible (celui qui subit)
+
+- `BENEDICTION_OCEAN` : Dégâts reçus -10%
+
+- `MALEDICTION_OCEAN` : Dégâts reçus +10%
+
+## 4. Effets de début de tour (appliqués au début du tour de l'entité)
 
 - `SAIGNEMENT` : PV -= 5% des *`pv_max`*
 
@@ -51,10 +80,8 @@ int degats = calculerDegatsSubiDebutTourEffet(
 
 - `ETREINTE` : Empêche d'attaquer && PV -= 2% (pv_max + defense)
 
-## 3. Avant que l'entitée attaque
+## 5. Effets qui empêchent d'agir (vérifiés avant l'action)
 
-- `ETREINTE` : Empêche d'attaquer && PV -= 2% (pv_max + defense)
+- `ETREINTE` : Empêche d'attaquer
 
 - `PARALYSIE` : Empêche d'attaquer
-
-- `PRECISION_REDUITE` : 30% de chance de rater son attaque
