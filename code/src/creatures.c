@@ -73,26 +73,23 @@ GroupeCreatureMarine *getRandomGroupByDangerosity(Bestiaire *modalBestiary, int 
         return NULL;
     }
 
-    long *id_match_groups = NULL;
-    long *tmp = NULL;
-    size_t index = 0;
+    size_t *indices_match_groups = NULL;
+    size_t *tmp = NULL;
     size_t len = 0;
 
     for (size_t i = 0; i < modalBestiary->longueur_groupes; i++) {
         if (modalBestiary->groupes[i]->dangerosite == dangerosityLevel) {
-            
-            len++;
-            index = len - 1;
 
-            tmp = realloc(id_match_groups, sizeof(long) * len);
+            tmp = realloc(indices_match_groups, sizeof(size_t) * ++len);
             if (!tmp) {
                 fprintf(stderr, "Erreur: getRandomGroupByDangerosity(): Echec realloc\n");
-                if (id_match_groups) free(id_match_groups);
+                if (indices_match_groups) free(indices_match_groups);
                 return NULL;
             }
-            id_match_groups = tmp;
+            indices_match_groups = tmp;
 
-            id_match_groups[index] = modalBestiary->groupes[i]->id;
+            // On stocke l'index
+            indices_match_groups[len - 1] = i;
         }
     }
 
@@ -102,10 +99,10 @@ GroupeCreatureMarine *getRandomGroupByDangerosity(Bestiaire *modalBestiary, int 
     }
 
     // On choisit un groupe aléatoire parmi les groupes correspondants
-    long id_group = id_match_groups[random_int(0, len - 1)];
+    size_t index_group = indices_match_groups[random_int(0, len - 1)];
 
-    free(id_match_groups);
-    return modalBestiary->groupes[id_group];
+    free(indices_match_groups);
+    return modalBestiary->groupes[index_group];
 }
 
 Bestiaire *initRandomBestiaryFromDangerosityGroupLevel(Bestiaire *modalBestiary, int dangerosityLevel) {
