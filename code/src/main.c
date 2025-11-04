@@ -44,11 +44,17 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
             attemp = 0;
             while (!actualSave && attemp < maxAttemp) {
                 actualSave = loadSave(listSaves->sauvegardes[0]->nom, false); // false: on veut tte la save (pas de preLoad)
+                if (!actualSave) {
+                    fprintf(stderr, "\n>>> Erreur lors du chargement de la sauvegarde.\n");
+                    pressEnterToContinue();
+                    break;
+                }
                 if (actualSave) {
                     // Normalement sert à rien vu que deja verif car existe dans listSaves
                     if (!actualSave->nom) {
                         printf("Sauvegarde innexistante.\n> ");
                         freeSauvegarde(actualSave);
+                        pressEnterToContinue();
                         break;
                     }
                 }
@@ -156,11 +162,17 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
             attemp = 0;
             while (!actualSave && attemp < maxAttemp) {
                 actualSave = loadSave(listSaves->sauvegardes[choice]->nom, false); // false: on veut tte la save (pas de preLoad)
+                if (!actualSave) {
+                    fprintf(stderr, "\n>>> Erreur lors du chargement de la sauvegarde.\n");
+                    pressEnterToContinue();
+                    break;
+                }
                 if (actualSave) {
                     // Normalement sert à rien vu que deja verif car existe dans listSaves
                     if (!actualSave->nom) {
                         printf("Sauvegarde innexistante.\n> ");
                         freeSauvegarde(actualSave);
+                        pressEnterToContinue();
                         break;
                     }
                 }
