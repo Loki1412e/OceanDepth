@@ -170,7 +170,7 @@ void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_c
 
     // Afficher arme équipée (nom, stats, description, effets, etc.)
     Arme *a = joueur->arme_equipee;
-    printf("\n\n\t    Arme équipée : [ %s ]\n", a ? a->nom : "Aucune (poings)");
+    printf("\n\t    Arme équipée : [ %s ]\n", a ? a->nom : "Aucune (poings)");
     if (a) {
         printf("\t        %s\n", a->description);
         printf("\t        (Attaque: %d-%d, Coût Oxygène: %d)\n", a->attaque_min, a->attaque_max, a->cout_oxygene);

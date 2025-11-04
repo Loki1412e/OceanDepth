@@ -323,6 +323,10 @@ void printCreatures(CreatureMarine **creatures, size_t length) {
 }
 
 void printGroupsCreatures(Bestiaire *bestiary) {
+    if (!bestiary || !bestiary->groupes || bestiary->longueur_groupes == 0) {
+        printf("Aucun groupe de créatures marines.\n");
+        return;
+    }
     printf("Groupes de créatures marines (%zu):\n\n", bestiary->longueur_groupes);
     for (size_t i = 0; i < bestiary->longueur_groupes; i++) {
         GroupeCreatureMarine *g = bestiary->groupes[i];
