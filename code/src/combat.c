@@ -64,7 +64,8 @@ int finDuCombat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creature
 void joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature) {
     int defenseCible = calculerDefenseEffet(creature->defense, &creature->liste_etats);
     int degats = calculerDegats(joueur->attaque_min, joueur->attaque_max, defenseCible);
-    degats = calculerDegatsInfligesEffet(&creature->liste_etats, degats);
+    degats = calculerDegatsInfligesEtatsLanceur(&joueur->liste_etats, degats);
+    degats = degats > 0 ? calculerDegatsInfligesEtatsCible(&creature->liste_etats, degats) : 0;
 
     creature->pv -= degats;
     if (creature->pv < 0) creature->pv = 0;
