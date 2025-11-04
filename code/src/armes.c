@@ -48,7 +48,7 @@ Arsenal *chargerArmesDepuisFichier(char *filename) {
 
             // Si dépassement alors on arrete de load mais on garde la conf actuelle
             if (index >= arsenal->longueur) {
-                fprintf(stderr, "Warning: setListeCompetenceFromConf(): index %zu hors des limites de creatures\n", index);
+                fprintf(stderr, "Warning: chargerArmesDepuisFichier(): index %zu hors des limites de l'arsenal\n", index);
                 break;
             }
 
@@ -59,29 +59,105 @@ Arsenal *chargerArmesDepuisFichier(char *filename) {
         }
 
         if (strncmp(line, "nom=", 4) == 0) {
-            line[strcspn(line, "\n")] = 0;
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+            
             arme->nom = my_strdup(line + 4);
+            if (!arme->nom) {
+                fprintf(stderr, "Erreur: chargerArmesDepuisFichier(): my_strdup() -> \"nom=\"\n");
+                freeArsenal(arsenal);
+                fclose(f);
+                return NULL;
+            }
         }
 
         else if (strncmp(line, "description=", 12) == 0) {
-            line[strcspn(line, "\n")] = 0;
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
             arme->description = my_strdup(line + 12);
+            if (!arme->description) {
+                fprintf(stderr, "Erreur: chargerArmesDepuisFichier(): my_strdup() -> \"description=\"\n");
+                freeArsenal(arsenal);
+                fclose(f);
+                return NULL;
+            }
         }
         
-        else if (strncmp(line, "attaque_min=", 12) == 0)
-            arme->attaque_min = atoi(line + 12);
-        
-        else if (strncmp(line, "attaque_max=", 12) == 0)
-            arme->attaque_max = atoi(line + 12);
-        
-        else if (strncmp(line, "cout_oxygene=", 13) == 0)
-            arme->cout_oxygene = atoi(line + 13);
-        
-        else if (strncmp(line, "bonus_defense=", 14) == 0)
-            arme->bonus_defense = atoi(line + 14);
+        else if (strncmp(line, "attaque_min=", 12) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            arme->attaque_min = my_strToInt(line + 12, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: chargerArmesDepuisFichier(): my_strToInt() -> \"attaque_min=\"\n");
+                freeArsenal(arsenal);
+                fclose(f);
+                return NULL;
+            }
+        }
+
+        else if (strncmp(line, "attaque_max=", 12) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            arme->attaque_max = my_strToInt(line + 12, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: chargerArmesDepuisFichier(): my_strToInt() -> \"attaque_max=\"\n");
+                freeArsenal(arsenal);
+                fclose(f);
+                return NULL;
+            }
+        }
+
+        else if (strncmp(line, "cout_oxygene=", 13) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            arme->cout_oxygene = my_strToInt(line + 13, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: chargerArmesDepuisFichier(): my_strToInt() -> \"cout_oxygene=\"\n");
+                freeArsenal(arsenal);
+                fclose(f);
+                return NULL;
+            }
+        }
+
+        else if (strncmp(line, "bonus_defense=", 14) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            arme->bonus_defense = my_strToInt(line + 14, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: chargerArmesDepuisFichier(): my_strToInt() -> \"bonus_defense=\"\n");
+                freeArsenal(arsenal);
+                fclose(f);
+                return NULL;
+            }
+        }
+
+        else if (strncmp(line, "rarete=", 7) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[0] == '\0') continue; // ligne vide
+
+            int rarete = my_strToInt(line + 7, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: chargerArmesDepuisFichier(): my_strToInt() -> \"rarete=\"\n");
+                freeArsenal(arsenal);
+                fclose(f);
+                return NULL;
+            }
+            if (rarete >= LENGTH_Rarete) {
+                fprintf(stderr, "Warning: setBestiaryCreaturesFromConf(): rarete >= LENGTH_Rarete --> init à max_rarete (%d)\n", LENGTH_Rarete - 1);
+                rarete = LENGTH_Rarete - 1;
+            }
+            else if (rarete < 0) {
+                fprintf(stderr, "Warning: setBestiaryCreaturesFromConf(): rarete < 0 --> init à DESACTIVE (0)\n");
+                rarete = 0;
+            }
             
-        else if (strncmp(line, "rarete=", 7) == 0)
-            arme->rarete = (Rarete)atoi(line + 7);
+            arme->rarete = (Rarete) rarete;
+        }
 
         else if (strncmp(line, "actions=", 8) == 0) {
             line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
@@ -89,7 +165,7 @@ Arsenal *chargerArmesDepuisFichier(char *filename) {
 
             arme->listeAction.actions = parseActions(line + 8, &arme->listeAction.longueur, &res);
             if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setListeCompetenceFromConf(): actions = calloc()\n");
+                fprintf(stderr, "Erreur: chargerArmesDepuisFichier(): actions = calloc()\n");
                 freeArsenal(arsenal);
                 fclose(f);
                 return NULL;
