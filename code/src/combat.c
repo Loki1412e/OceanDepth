@@ -358,6 +358,10 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur, CreatureMarine **creatures,
                 // Quitter et Sauvegarder
                 case 0:
                     printf("\n→ Sauvegarde et sortie du combat...\n");
+                    if (saveGame(actualSave) == EXIT_FAILURE) {
+                        fprintf(stderr, "Erreur: combat(): saveGame()\n");
+                        return EXIT_FAILURE;
+                    }
                     return -1;
 
 
