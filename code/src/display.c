@@ -197,6 +197,30 @@ void printModififierStatActions(ListeAction actions) {
     }
 }
 
+void printImmuneEffetActions(ListeAction actions) {
+    if (actions.longueur == 0 || actions.actions == NULL) {
+        return;
+    }
+
+    Effet effet;
+    size_t count = 0;
+
+    for (size_t i = 0; i < actions.longueur; i++) {
+        if (actions.actions[i].type != AJOUTER_IMMUNITE_EFFET || actions.actions[i].longueur_params < 1) 
+            continue;
+    
+        effet = charToEnumEffect(actions.actions[i].params[0]);
+        if (effet == AUCUN_Effet) {
+            fprintf(stderr, "Warning: printImmuneEffetActions(): charToEnumEffect(%s)\n", actions.actions[i].params[0]);
+            continue;
+        }
+
+        if (count++ > 0) printf(" ");
+        else printf(" → ");
+        printf("[Immunisé %s]", enumEffectToChar(effet));
+    }
+}
+
 void printListeEtat(ListeEtat etats) {
     if (etats.longueur == 0 || etats.etats == NULL) {
         printf("Aucun");
@@ -210,6 +234,8 @@ void printListeEtat(ListeEtat etats) {
             (i < etats.longueur - 1) ? ", " : ""
         );
     }
+
+    printf("\n");
 }
 
 void printObjectsList(ListeObjet *objects_list) {
@@ -245,6 +271,7 @@ void printBibelotsActifs(ListeObjet *bibelots) {
         if (!c) continue;
         printf("\t      - %s", c->nom ? c->nom : "(null)");
         printModififierStatActions(c->listeAction);
+        printImmuneEffetActions(c->listeAction);
         printf("\n");
     }
 }
