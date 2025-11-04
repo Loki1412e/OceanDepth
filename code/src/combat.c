@@ -184,11 +184,10 @@ void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_c
     printf("╔═════════════════════════════ COMBAT DANS LES ABYSSES ═════════════════════════════╗\n\n");
 
     // --- STATS DU JOUEUR ---
-    printf("\n\t    [ %s ]\n", joueur->nom);
+    printf("%-10s: [ %s ]\n", "\n\t    Nom", joueur->nom);
     printf("\n\t    "); printProgressBar("Vie", joueur->pv, joueur->pv_max, 40);
     printf("\n\t    "); printProgressBar("Oxygène", joueur->oxygene, joueur->oxygene_max, 40);
     printf("\n\t    "); printProgressBar("Fatigue", joueur->fatigue, joueur->fatigue_max, 10);
-    
 
     if (joueur->liste_etats.longueur > 0) {
         printf("\n\n\t    Etats :  ");
@@ -219,13 +218,14 @@ void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_c
             printProgressBar("  PV", creatures[i]->pv, creatures[i]->pv_max, 20);
         }
         else printf("\n\n\t   %-16s |  ☠️  VAINCU\n", creatures[i]->nom);
+        printf("\n");
         if (creatures[i]->liste_etats.longueur > 0) {
-            printf("\n\t       Etats :  ");
+            printf("\t       Etats :  ");
             printListeEtat(creatures[i]->liste_etats);
         }
     }
 
-    printf("\n\n\n╚═══════════════════════════════════════════════════════════════════════════════════╝\n\n");
+    printf("\n\n╚═══════════════════════════════════════════════════════════════════════════════════╝\n\n");
 }
 
 void afficherActionsDisponibles(Plongeur *joueur, int actions_restantes, int actions_max) {
