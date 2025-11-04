@@ -206,9 +206,24 @@ int ajouterArme(Arsenal *modal, Arsenal *arsenal, long id_arme) {
     return EXIT_SUCCESS;
 }
 
-int equiperArme(Plongeur *joueur, long id_arme) {
-    if (!joueur || joueur->arsenal->longueur == 0 || (size_t) id_arme >= joueur->arsenal->longueur) {
+int equiperArme(Plongeur *joueur, Arme *arme) {
+    if (!joueur || !joueur->arsenal || !joueur->arsenal->armes || joueur->arsenal->longueur == 0 || !arme) {
         fprintf(stderr, "Erreur: equiperArme(): paramètres invalides\n");
+        return EXIT_FAILURE;
+    }
+
+    size_t index_new_arme = 0;
+    short found = false;
+
+    for (index_new_arme = 0; index_new_arme < joueur->arsenal->longueur; index_new_arme++) {
+        if (joueur->arsenal->armes[index_new_arme] == arme) {
+            joueur->arme_equipee = arme;
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        fprintf(stderr, "Erreur: equiperArme(): l'arme n'est pas dans l'arsenal du joueur\n");
         return EXIT_FAILURE;
     }
 
@@ -218,7 +233,7 @@ int equiperArme(Plongeur *joueur, long id_arme) {
         joueur->attaque_min -= joueur->arme_equipee->attaque_min;
     }
 
-    joueur->arme_equipee = joueur->arsenal->armes[id_arme];
+    joueur->arme_equipee = joueur->arsenal->armes[index_new_arme];
     
     // Ajouter les bonus de la nouvelle arme
     joueur->attaque_max += joueur->arme_equipee->attaque_max;
