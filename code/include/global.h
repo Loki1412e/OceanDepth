@@ -67,19 +67,20 @@
 
 
     typedef enum {
-        AUCUN_Effets,
+        AUCUN_Effet,
         BENEDICTION_OCEAN,
         MALEDICTION_OCEAN,
         SAIGNEMENT,
         POISON,
         PARALYSIE,
+        PACIFICATION,
         ETREINTE,
         PRECISION_REDUITE,
         DEFENSE_AUGMENTEE,
         VOIX_DU_COURANT,
         // Suite ...
-        LENGTH_Effets
-    } Effets;
+        LENGTH_Effet
+    } Effet;
 
 
     typedef enum {
@@ -92,6 +93,7 @@
         // VOL_DE_VIE,
         APPLIQUER_EFFET,
         RETIRER_EFFET,
+        AJOUTER_IMMUNITE_EFFET,
         // Suite ...
         LENGTH_ActionType
     } ActionType;
@@ -108,7 +110,13 @@
     /* Struct */
 
     typedef struct {
-        Effets effet;
+        Effet *effets;
+        size_t longueur;
+    } ListeEffet;
+
+
+    typedef struct {
+        Effet effet;
         int estPermanent;
         int duree_zone;
         int duree_combat;
@@ -195,6 +203,7 @@
         int vitesse;
         ListeEtat liste_etats;
         ListeCompetence liste_competences;
+        ListeEffet *effets_immunises; // --> si immunisé alors executerAction(APPLIQUER_EFFET, <cible=ENTITE_CREATURE>) ne s'appliquera pas
         Rarete rarete;
     } CreatureMarine;
 
@@ -224,6 +233,7 @@
         ListeObjet *liste_bibelots;
         Arme *arme_equipee;   // arme actuelle du joueur
         Arsenal *arsenal;
+        ListeEffet *effets_immunises; // --> si immunisé alors executerAction(APPLIQUER_EFFET, <cible=ENTITE_PLONGEUR>) ne s'appliquera pas
     } Plongeur;
 
     typedef struct {

@@ -49,12 +49,12 @@ Le jeu intègre un système complet de gestion des créatures.
 
 ---
 
-### 5. ✨ Compétences et Effets
+### 5. ✨ Compétences et Effet
 
 Un système d'effets et de compétences ajoute de la profondeur stratégique au combat.
 
-* **Effets de Statut** : De nombreux effets (poison, saignement, paralysie, etc.) peuvent être appliqués au joueur ou aux créatures.
-* **Gestion des Effets** :
+* **Effet de Statut** : De nombreux effets (poison, saignement, paralysie, etc.) peuvent être appliqués au joueur ou aux créatures.
+* **Gestion des Effet** :
     * **Durée** : Les effets ont une durée en tours de combat ou en nombre de zones explorées. Ils peuvent aussi être permanents.
     * **Impact** : Les effets ont des impacts variés : dégâts sur la durée, empêchement d'attaquer, augmentation ou réduction de statistiques.
     * **Application et Nettoyage** : Le système gère l'ajout, le rafraîchissement et la suppression des effets à la fin de leur durée.

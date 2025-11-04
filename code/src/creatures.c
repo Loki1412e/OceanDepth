@@ -443,6 +443,22 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreature
 
             free(arrayLong);
         }
+
+        else if (strncmp(line, "effets_immunises=", 17) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[17] == '\0') continue; // ligne vide
+            if (modalBestiary->creatures[index]->effets_immunises) {
+                freeListeEffet(modalBestiary->creatures[index]->effets_immunises);
+                modalBestiary->creatures[index]->effets_immunises = NULL;
+            }
+            modalBestiary->creatures[index]->effets_immunises = initListeEffetFromStringList(line + 17);
+            if (!modalBestiary->creatures[index]->effets_immunises) {
+                fprintf(stderr, "Erreur: setBestiaryFromConf(): initListeEffetFromStringList() -> \"effets_immunises=\"\n");
+                freeBestiary(modalBestiary);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
     }
 
     if (modalBestiary->longueur_creatures < length) {
@@ -535,6 +551,7 @@ void freeCreature(CreatureMarine *creature) {
     
     freeListeEtat(&creature->liste_etats);
     freeListeCompetence(&creature->liste_competences);
+    freeListeEffet(creature->effets_immunises);
 
     free(creature);
     creature = NULL;
