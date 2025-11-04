@@ -102,6 +102,7 @@
         AUCUN_CiblageType,
         ENNEMI_UNIQUE,
         SOI_MEME,
+        GROUPE_ALLIE,
         // Suite ...
         LENGTH_CiblageType
     } CiblageType;
