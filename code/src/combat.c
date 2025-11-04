@@ -111,7 +111,11 @@ int botAttaque(void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, Enti
         return -1;
     }
 
-    res = utiliserCompetence(comp, lanceur_ptr, lanceur_type, cible_ptr, cible_type);
+    if (comp->ciblage == SOI_MEME)
+        res = utiliserCompetence(comp, lanceur_ptr, lanceur_type, lanceur_ptr, lanceur_type);
+    else
+        res = utiliserCompetence(comp, lanceur_ptr, lanceur_type, cible_ptr, cible_type);
+    
     if (res == EXIT_FAILURE) {
         fprintf(stderr, "Erreur: botAttaque(): utiliserCompetence()\n");
         return EXIT_FAILURE;
@@ -220,7 +224,6 @@ int appliquerTourCreature(CreatureMarine *creature, size_t index, Plongeur *joue
     printf("--- Tour de [%s] #%zu ---\n", creature->nom, index + 1);
     printf("Effet Subis au début du tour: ");
     printListeEtat(creature->liste_etats);
-    printf("\n");
 
     int pv_before = creature->pv;
     appliquerDegatsAvantTour(&creature->liste_etats, &creature->pv, creature->pv_max, creature->defense, NULL, false);
@@ -309,7 +312,6 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur, CreatureMarine **creatures,
         printf("--- Votre tour ---\n");
         printf("Effet Subis au début du tour: ");
         printListeEtat(joueur->liste_etats);
-        printf("\n");
 
         int pv_before_player = joueur->pv;
         int oxy_before = joueur->oxygene;
