@@ -8,6 +8,7 @@ char *enumCiblageTypeToChar(CiblageType type) {
     switch (type) {
         case ENNEMI_UNIQUE: return "ENNEMI_UNIQUE";
         case SOI_MEME: return "SOI_MEME";
+        case GROUPE_ALLIE: return "GROUPE_ALLIE";
         default: return "AUCUN_CiblageType";
     }
 }

@@ -240,7 +240,7 @@ void afficherActionsDisponibles(Plongeur *joueur, int actions_restantes, int act
 
 // Return `-1` si la créature est morte durant son tour
 // Return `EXIT_FAILURE` ou `EXIT_SUCCESS`
-int appliquerTourCreature(Bestiaire *bestiaire, CreatureMarine *creature, size_t index, Plongeur *joueur) {
+int appliquerTourCreature(CreatureMarine **creatures, size_t nb_creatures, CreatureMarine *creature, size_t index, Plongeur *joueur) {
     if (!creature || !joueur) {
         fprintf(stderr, "Erreur: appliquerTourCreature(): Invalid params\n");
         return EXIT_FAILURE;
@@ -274,21 +274,21 @@ int appliquerTourCreature(Bestiaire *bestiaire, CreatureMarine *creature, size_t
     }
 
     // Pour le moment on fait en dur :
-    long *creatures_type = malloc(sizeof(long) * bestiaire->longueur_creatures);
-    if (!creatures_type) {
-        fprintf(stderr, "Erreur: appliquerTourCreature(): malloc creatures_type\n");
+    long *groupe_type = malloc(sizeof(long) * nb_creatures);
+    if (!groupe_type) {
+        fprintf(stderr, "Erreur: appliquerTourCreature(): malloc groupe_type\n");
         return EXIT_FAILURE;
     }
-    for (size_t i = 0; i < bestiaire->longueur_creatures; i++) {
-        creatures_type[i] = ENTITE_CREATURE;
+    for (size_t i = 0; i < nb_creatures; i++) {
+        groupe_type[i] = ENTITE_CREATURE;
     }
-    if (botAttaque(creature, ENTITE_CREATURE, joueur, ENTITE_PLONGEUR, bestiaire->creatures, creatures_type, bestiaire->longueur_creatures) != EXIT_SUCCESS) {
+    if (botAttaque(creature, ENTITE_CREATURE, joueur, ENTITE_PLONGEUR, (void**) creatures, groupe_type, nb_creatures) != EXIT_SUCCESS) {
         printf(">> [%s] n'a pas pu attaquer.\n", creature->nom);
-        free(creatures_type);
+        free(groupe_type);
         return EXIT_SUCCESS;
     }
-    
-    free(creatures_type);
+
+    free(groupe_type);
     return EXIT_SUCCESS;
 }
 
@@ -312,7 +312,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur, CreatureMarine **creatures,
         for (size_t i = 0; i < nb_creatures; i++) {
             if (creatures[i]->pv > 0 && (creatures[i]->vitesse >= joueur->vitesse)) {
                 afficherInterface(joueur, creatures, nb_creatures);
-                res = appliquerTourCreature(creatures[i], i, joueur);
+                res = appliquerTourCreature(creatures, nb_creatures, creatures[i], i, joueur);
                 if (res == EXIT_FAILURE) {
                     fprintf(stderr, "Erreur: combat() // Monstres autant ou plus rapides: appliquerTourCreature()\n");
                     return EXIT_FAILURE;
@@ -759,7 +759,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur, CreatureMarine **creatures,
             if (creatures[i]->pv > 0 && (creatures[i]->vitesse < joueur->vitesse)) {
                 
                 afficherInterface(joueur, creatures, nb_creatures);
-                res = appliquerTourCreature(creatures[i], i, joueur);
+                res = appliquerTourCreature(creatures, nb_creatures, creatures[i], i, joueur);
                 if (res == EXIT_FAILURE) {
                     fprintf(stderr, "Erreur: combat() // Monstres strictement moins rapides: appliquerTourCreature()\n");
                     return EXIT_FAILURE;
