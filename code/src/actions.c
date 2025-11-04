@@ -153,9 +153,11 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
 
             // Application des dégâts (bruts mais affectés par les effets de la cible)
             ListeEtat *etats_cible = cible_plongeur ? &cible_plongeur->liste_etats : &cible_creature->liste_etats;
+            ListeEtat *etats_lanceur = lanceur_plongeur ? &lanceur_plongeur->liste_etats : &lanceur_creature->liste_etats;
             int defense_cible = cible_plongeur ? cible_plongeur->defense : cible_creature->defense;
             int degats = calculerDegats(montant, montant, defense_cible);
-            degats = calculerDegatsInfligesEffet(etats_cible, degats);
+            degats = calculerDegatsInfligesEtatsLanceur(etats_lanceur, degats);
+            degats = degats > 0 ? calculerDegatsInfligesEtatsCible(etats_cible, degats) : 0;
 
             int *pv_cible = cible_plongeur ? &cible_plongeur->pv : &cible_creature->pv;
 
@@ -242,8 +244,9 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
                 defense_effective
             );
 
-            ListeEtat *etats_cible = cible_plongeur ? &cible_plongeur->liste_etats : &cible_creature->liste_etats;
-            degats = calculerDegatsInfligesEffet(etats_cible, degats);
+            ListeEtat *etats_lanceur = lanceur_plongeur ? &lanceur_plongeur->liste_etats : &lanceur_creature->liste_etats;
+            degats = calculerDegatsInfligesEtatsLanceur(etats_lanceur, degats);
+            degats = degats > 0 ? calculerDegatsInfligesEtatsCible(&cible_plongeur ? &cible_plongeur->liste_etats : &cible_creature->liste_etats, degats) : 0;
 
             int *pv_cible = cible_plongeur ? &cible_plongeur->pv : &cible_creature->pv;
             *pv_cible -= degats;
