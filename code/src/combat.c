@@ -91,13 +91,11 @@ void joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature) {
 
 // Return -1 si n'a pas de compétence activable
 // Return EXIT_FAILURE ou EXIT_SUCCESS
-int botAttaque(void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, EntiteType cible_type) {
+int botAttaque(void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, EntiteType cible_type, void** groupe_allie, long *groupe_allie_type, size_t len_groupe) {
     if (!lanceur_ptr || !cible_ptr) {
         fprintf(stderr, "Erreur: botAttaque(): Invalid params\n");
         return EXIT_FAILURE;
     }
-
-    short res;
 
     ListeCompetence *liste_competences = lanceur_type == ENTITE_CREATURE ?
         &((CreatureMarine*)lanceur_ptr)->liste_competences :
@@ -111,14 +109,43 @@ int botAttaque(void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, Enti
         return -1;
     }
 
-    if (comp->ciblage == SOI_MEME)
-        res = utiliserCompetence(comp, lanceur_ptr, lanceur_type, lanceur_ptr, lanceur_type);
-    else
-        res = utiliserCompetence(comp, lanceur_ptr, lanceur_type, cible_ptr, cible_type);
-    
-    if (res == EXIT_FAILURE) {
-        fprintf(stderr, "Erreur: botAttaque(): utiliserCompetence()\n");
-        return EXIT_FAILURE;
+    switch (comp->ciblage) {
+        
+        case GROUPE_ALLIE: {
+            if (len_groupe == 0 || !groupe_allie) {
+                fprintf(stderr, "Erreur: botAttaque(): GROUPE_ALLIE mais groupe_allie est NULL ou vide\n");
+                return EXIT_FAILURE;
+            }
+            for (size_t i = 0; i < len_groupe; i++) {
+                if (lanceur_ptr != groupe_allie[i] && utiliserCompetence(comp, lanceur_ptr, lanceur_type, groupe_allie[i], groupe_allie_type[i]) == EXIT_FAILURE) {
+                    fprintf(stderr, "Erreur: botAttaque(): utiliserCompetence() sur GROUPE_ALLIE -> allié [%zu]\n", i);
+                    return EXIT_FAILURE;
+                }
+            }
+            break;
+        }
+
+        case ENNEMI_UNIQUE: {
+            if (utiliserCompetence(comp, lanceur_ptr, lanceur_type, cible_ptr, cible_type) == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: botAttaque(): utiliserCompetence() sur ENNEMI_UNIQUE\n");
+                return EXIT_FAILURE;
+            }
+
+            break;
+        }
+
+        case SOI_MEME: {
+            if (utiliserCompetence(comp, lanceur_ptr, lanceur_type, lanceur_ptr, lanceur_type) == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: botAttaque(): utiliserCompetence() sur SOI_MEME\n");
+                return EXIT_FAILURE;
+            }
+            break;
+        }
+        
+        default: {
+            fprintf(stderr, "Erreur: botAttaque(): CiblageType non géré (%d)\n", comp->ciblage);
+            return EXIT_FAILURE;
+        }
     }
 
     return EXIT_SUCCESS;
@@ -213,7 +240,7 @@ void afficherActionsDisponibles(Plongeur *joueur, int actions_restantes, int act
 
 // Return `-1` si la créature est morte durant son tour
 // Return `EXIT_FAILURE` ou `EXIT_SUCCESS`
-int appliquerTourCreature(CreatureMarine *creature, size_t index, Plongeur *joueur) {
+int appliquerTourCreature(Bestiaire *bestiaire, CreatureMarine *creature, size_t index, Plongeur *joueur) {
     if (!creature || !joueur) {
         fprintf(stderr, "Erreur: appliquerTourCreature(): Invalid params\n");
         return EXIT_FAILURE;
@@ -246,11 +273,22 @@ int appliquerTourCreature(CreatureMarine *creature, size_t index, Plongeur *joue
         return EXIT_SUCCESS;
     }
 
-    if (botAttaque(creature, ENTITE_CREATURE, joueur, ENTITE_PLONGEUR) != EXIT_SUCCESS) {
+    // Pour le moment on fait en dur :
+    long *creatures_type = malloc(sizeof(long) * bestiaire->longueur_creatures);
+    if (!creatures_type) {
+        fprintf(stderr, "Erreur: appliquerTourCreature(): malloc creatures_type\n");
+        return EXIT_FAILURE;
+    }
+    for (size_t i = 0; i < bestiaire->longueur_creatures; i++) {
+        creatures_type[i] = ENTITE_CREATURE;
+    }
+    if (botAttaque(creature, ENTITE_CREATURE, joueur, ENTITE_PLONGEUR, bestiaire->creatures, creatures_type, bestiaire->longueur_creatures) != EXIT_SUCCESS) {
         printf(">> [%s] n'a pas pu attaquer.\n", creature->nom);
+        free(creatures_type);
         return EXIT_SUCCESS;
     }
-
+    
+    free(creatures_type);
     return EXIT_SUCCESS;
 }
 
