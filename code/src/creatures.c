@@ -3,7 +3,7 @@
 
 Bestiaire *initModalBestiary(ListeCompetence *modalCreaturesSkills);
 int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary);
-int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, unsigned idConf);
+int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, long idConf);
 void freeBestiary(Bestiaire *bestiary);
 void freeBestiaryContent(Bestiaire *bestiary);
 void freeCreatures(CreatureMarine **creatures, size_t length);
@@ -183,7 +183,7 @@ Bestiaire *initRandomBestiaryFromDangerosityGroupLevel(Bestiaire *modalBestiary,
 }
 
 
-int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, unsigned idConf) {
+int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, long idConf) {
     if (!modalBestiary || !modalBestiary->creatures || modalBestiary->longueur_creatures == 0 || !bestiary)
         return EXIT_FAILURE;
 
@@ -229,7 +229,7 @@ int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, unsigne
     }
 
     if (!existInModel) {
-        fprintf(stderr, "Erreur: addCreatureInBestiary(): Aucune creature dans le model ne correspond (id=%hu)\n", idConf);
+        fprintf(stderr, "Erreur: addCreatureInBestiary(): Aucune creature dans le model ne correspond (id=%ld)\n", idConf);
         return -1;
     }
 
