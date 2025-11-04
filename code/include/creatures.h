@@ -8,6 +8,7 @@
     
     Bestiaire *initModalBestiary(ListeCompetence *modalCreaturesSkills);
     int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary);
+    Bestiaire *initRandomBestiaryFromDangerosityGroupLevel(Bestiaire *modalBestiary, int dangerosityLevel);
     int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, unsigned idConf);
     int setDeathStateCreature(CreatureMarine *creature);
     void freeBestiary(Bestiaire *bestiary);
