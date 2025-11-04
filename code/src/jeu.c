@@ -11,7 +11,6 @@ int runGame(Sauvegarde *actualSave) {
 
     Plongeur *diver = actualSave->diver;
     Bestiaire *modalBestiary = NULL;
-    Bestiaire *bestiary = NULL;
     ListeCompetence modalCreaturesSkills = {0};
     ListeObjet *modalConsumablesList = NULL;
     ListeObjet *modalOrnamentsList = NULL;
@@ -34,17 +33,8 @@ int runGame(Sauvegarde *actualSave) {
         return EXIT_FAILURE;
     }
 
-    bestiary = calloc(1, sizeof(Bestiaire));
-    if (!bestiary) {
-        fprintf(stderr, "runGame(): Erreur lors de la création du bestiaire.\n");
-        freeBestiary(modalBestiary);
-        freeListeCompetence(&modalCreaturesSkills);
-        return EXIT_FAILURE;
-    }
-
     modalConsumablesList = initModalListeObjet("config/objets/consommables.conf");
     if (!modalConsumablesList) {
-        freeBestiary(bestiary);
         freeBestiary(modalBestiary);
         freeListeCompetence(&modalCreaturesSkills);
         fprintf(stderr, "runGame(): Erreur lors du chargement de la liste des consommables.\n");
@@ -54,7 +44,6 @@ int runGame(Sauvegarde *actualSave) {
     modalOrnamentsList = initModalListeObjet("config/objets/bibelots.conf");
     if (!modalOrnamentsList) {
         freeListeObjets(modalConsumablesList);
-        freeBestiary(bestiary);
         freeBestiary(modalBestiary);
         freeListeCompetence(&modalCreaturesSkills);
         fprintf(stderr, "runGame(): Erreur lors du chargement de la liste des bibelots.\n");
@@ -66,7 +55,6 @@ int runGame(Sauvegarde *actualSave) {
         fprintf(stderr, "runGame(): Erreur lors du chargement des armes.\n");
         freeListeObjets(modalOrnamentsList);
         freeListeObjets(modalConsumablesList);
-        freeBestiary(bestiary);
         freeBestiary(modalBestiary);
         freeListeCompetence(&modalCreaturesSkills);
         return EXIT_FAILURE;
@@ -91,14 +79,12 @@ int runGame(Sauvegarde *actualSave) {
     while (runProgram) {
         
         // Génération aléatoire de créatures
-        size_t longueur_creatures = 2;
-        for (size_t i = 0; i < longueur_creatures; i++) {
-            if (generateCreatureInBestiary(modalBestiary, bestiary)) {
-                runProgram = false;
-                break;
-            }
+        Bestiaire *bestiary = initRandomBestiaryFromDangerosityGroupLevel(modalBestiary, 2);
+        if (!bestiary) {
+            fprintf(stderr, "Erreur: runGame(): initRandomBestiaryFromDangerosityGroupLevel()\n");
+            runProgram = false;
+            continue;
         }
-        if (!runProgram) break;
 
         // Test ajout effets
         printf("\nAjout d'effets pour les tests:\n");
@@ -107,7 +93,7 @@ int runGame(Sauvegarde *actualSave) {
         ajouterEffet(&bestiary->creatures[0]->liste_etats, bestiary->creatures[0]->effets_immunises, PARALYSIE, 5, 0, 0);
         ajouterEffet(&bestiary->creatures[1]->liste_etats, bestiary->creatures[1]->effets_immunises, SAIGNEMENT, 5, 0, 0);
         if (pressToContinueOrSave(actualSave) == -1) {
-            freeBestiaryContent(bestiary);
+            freeBestiary(bestiary);
             break;
         }
 
@@ -117,7 +103,7 @@ int runGame(Sauvegarde *actualSave) {
         printf("\nConsommables ajoutés");
         printObjectsList(diver->liste_consommables);
         if (pressToContinueOrSave(actualSave) == -1) {
-            freeBestiaryContent(bestiary);
+            freeBestiary(bestiary);
             break;
         }
 
@@ -128,7 +114,7 @@ int runGame(Sauvegarde *actualSave) {
         printf("\nBibelots ajoutés");
         printObjectsList(diver->liste_bibelots);
         if (pressToContinueOrSave(actualSave) == -1) {
-            freeBestiaryContent(bestiary);
+            freeBestiary(bestiary);
             break;
         }
 
@@ -136,16 +122,16 @@ int runGame(Sauvegarde *actualSave) {
         res = combat(actualSave, diver, bestiary->creatures, bestiary->longueur_creatures);
         if (res == EXIT_FAILURE) {
             fprintf(stderr, "Erreur: runGame(): res = combat()\n");
-            freeBestiaryContent(bestiary);
+            freeBestiary(bestiary);
             break;
         }
         // Si le joueur a choisi de quitter
         if (res == -1) {
-            freeBestiaryContent(bestiary);
+            freeBestiary(bestiary);
             break;
         }
 
-        freeBestiaryContent(bestiary);
+        freeBestiary(bestiary);
         runProgram = false;
     }
 
@@ -158,7 +144,6 @@ int runGame(Sauvegarde *actualSave) {
 
     /*===== free && return ====*/
     
-    freeBestiary(bestiary);
     freeBestiary(modalBestiary);
     
     freeListeCompetence(&modalCreaturesSkills);
