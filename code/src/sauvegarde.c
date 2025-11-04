@@ -195,7 +195,7 @@ int loadInfo(Sauvegarde *save, FILE *file) {
     if (!save || !file) return EXIT_FAILURE;
 
     if (fread(&(save->derniere_modification), sizeof(size_t), 1, file) != 1) {
-        perror("loadInfo fread derniere_modification");
+        fprintf(stderr, "Erreur: loadInfo(): fread derniere_modification\n");
         return EXIT_FAILURE;
     }
 
