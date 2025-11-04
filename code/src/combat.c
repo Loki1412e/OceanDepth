@@ -635,7 +635,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur, CreatureMarine **creatures,
                     }
 
                     actions_restantes -= cout_actions;
-                    updateFatigue(joueur, cout_actions);
+                    // updateFatigue(joueur, cout_actions); // On considère que consommer un objet ne fatigue pas
                     if (pressToContinueOrSave(actualSave) == -1) return -1;
                     break;
 
@@ -692,7 +692,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur, CreatureMarine **creatures,
                         joueur->arme_equipee = NULL;
                         printf("\n→ Vous équipez vos poings.\n");
                         actions_restantes -= cout_actions;
-                        // updateFatigue(joueur, cout_actions); // On considère que changer d'arme ne fatigue pas
+                        updateFatigue(joueur, cout_actions);
                         if (pressToContinueOrSave(actualSave) == -1) return -1;
                         break;
                     }
@@ -723,7 +723,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur, CreatureMarine **creatures,
 
                     printf("\n→ Vous équipez [%s].\n", joueur->arme_equipee->nom);
                     actions_restantes -= cout_actions;
-                    // updateFatigue(joueur, cout_actions); // On considère que changer d'arme ne fatigue pas
+                    updateFatigue(joueur, cout_actions);
                     if (pressToContinueOrSave(actualSave) == -1) return -1;
                     break;
 
