@@ -78,7 +78,7 @@ int runGame(Sauvegarde *actualSave) {
 
     while (runProgram) {
         
-        // Génération aléatoire de créatures
+        // Génération aléatoire de créatures via groupe / niveau de dangerosité
         Bestiaire *bestiary = initRandomBestiaryFromDangerosityGroupLevel(modalBestiary, 2);
         if (!bestiary) {
             fprintf(stderr, "Erreur: runGame(): initRandomBestiaryFromDangerosityGroupLevel()\n");
@@ -124,18 +124,16 @@ int runGame(Sauvegarde *actualSave) {
 
         // Lancer le combat
         res = combat(actualSave, diver, bestiary->creatures, bestiary->longueur_creatures);
+        freeBestiary(bestiary); // On libère le bestiaire après le combat
         if (res == EXIT_FAILURE) {
             fprintf(stderr, "Erreur: runGame(): res = combat()\n");
-            freeBestiary(bestiary);
             break;
         }
         // Si le joueur a choisi de quitter
         if (res == -1) {
-            freeBestiary(bestiary);
             break;
         }
 
-        freeBestiary(bestiary);
         runProgram = false;
     }
 
