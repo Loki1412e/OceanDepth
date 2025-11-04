@@ -19,6 +19,9 @@ Les poids des différentes raretés sont calculés à l’aide de la fonction ex
 ```yml
 f(r) = 100 * 1.5^(1 - r)
 ```
+*Voir la courbe de la fonction: [desmos.com](https://www.desmos.com/calculator/srums3bofj)*
+
+*Voir la courbe de la fonction: <a href="https://www.desmos.com/calculator/srums3bofj" target="_blank">desmos.com</a>*
 
 ```c
 unsigned rareteToPoids(RARETE rarete) {
