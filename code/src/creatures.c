@@ -8,6 +8,7 @@ void freeBestiary(Bestiaire *bestiary);
 void freeBestiaryContent(Bestiaire *bestiary);
 void freeCreatures(CreatureMarine **creatures, size_t length);
 void freeCreature(CreatureMarine *creature);
+void freeGroup(GroupeCreatureMarine *group);
 
 void sortCreaturesBySpeed(CreatureMarine **creatures, size_t nb_creatures);
 int setBestiaryCreaturesFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreaturesSkills, char *path);
@@ -67,9 +68,44 @@ int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary) {
     return EXIT_FAILURE;
 }
 
-GroupeCreatureMarine *getRandomGroupByDangerosity(Bestiaire *modalBestiary, int dangerosityLevel) {
+GroupeCreatureMarine *duplicateCreatureGroup(GroupeCreatureMarine *modal) {
+    if (!modal || !modal->id_creatures || modal->longueur == 0) {
+        fprintf(stderr, "Erreur: duplicateCreatureGroup(): Parametre(s) mal initialisé(s)\n");
+        return NULL;
+    }
+
+    GroupeCreatureMarine *duplicate = calloc(1, sizeof(GroupeCreatureMarine));
+    if (!duplicate) {
+        fprintf(stderr, "Erreur: duplicateCreatureGroup(): Allocation mémoire échouée\n");
+        return NULL;
+    }
+
+    duplicate->id = modal->id;
+    duplicate->dangerosite = modal->dangerosite;
+    duplicate->longueur = modal->longueur;
+
+    if (modal->id_creatures && modal->longueur > 0) {
+                
+        duplicate->id_creatures = calloc(modal->longueur, sizeof(long));
+        if (!duplicate->id_creatures) {
+            fprintf(stderr, "Erreur: duplicateCreatureGroup(): Allocation mémoire id_creatures échouée\n");
+            freeGroup(duplicate);
+            return NULL;
+        }
+        for (size_t j = 0; j < modal->longueur; j++) {
+            duplicate->id_creatures[j] = modal->id_creatures[j];
+        }
+    }
+
+    return duplicate;
+}
+
+// Return :
+// - `GroupeCreatureMarine*` -> `modalBestiary->groupes[i]` where `group->dangerosite == dangerosityLevel`
+// - `NULL`
+GroupeCreatureMarine *initRandomGroupByDangerosity(Bestiaire *modalBestiary, int dangerosityLevel) {
     if (!modalBestiary || !modalBestiary->groupes || modalBestiary->longueur_groupes == 0) {
-        fprintf(stderr, "Erreur: getRandomGroupByDangerosity(): Parametre(s) mal initialisé(s)\n");
+        fprintf(stderr, "Erreur: initRandomGroupByDangerosity(): Parametre(s) mal initialisé(s)\n");
         return NULL;
     }
 
@@ -82,7 +118,7 @@ GroupeCreatureMarine *getRandomGroupByDangerosity(Bestiaire *modalBestiary, int 
 
             tmp = realloc(indices_match_groups, sizeof(size_t) * ++len);
             if (!tmp) {
-                fprintf(stderr, "Erreur: getRandomGroupByDangerosity(): Echec realloc\n");
+                fprintf(stderr, "Erreur: initRandomGroupByDangerosity(): Echec realloc\n");
                 if (indices_match_groups) free(indices_match_groups);
                 return NULL;
             }
@@ -94,7 +130,7 @@ GroupeCreatureMarine *getRandomGroupByDangerosity(Bestiaire *modalBestiary, int 
     }
 
     if (len == 0) {
-        fprintf(stderr, "Erreur: getRandomGroupByDangerosity(): Aucune groupe dans le model ne correspond au niveau de dangerosité [%d]\n", dangerosityLevel);
+        fprintf(stderr, "Erreur: initRandomGroupByDangerosity(): Aucune groupe dans le model ne correspond au niveau de dangerosité [%d]\n", dangerosityLevel);
         return NULL;
     }
 
@@ -102,6 +138,7 @@ GroupeCreatureMarine *getRandomGroupByDangerosity(Bestiaire *modalBestiary, int 
     size_t index_group = indices_match_groups[random_int(0, len - 1)];
 
     free(indices_match_groups);
+
     return modalBestiary->groupes[index_group];
 }
 
@@ -111,7 +148,7 @@ Bestiaire *initRandomBestiaryFromDangerosityGroupLevel(Bestiaire *modalBestiary,
         return NULL;
     }
 
-    GroupeCreatureMarine *group = getRandomGroupByDangerosity(modalBestiary, dangerosityLevel);
+    GroupeCreatureMarine *group = initRandomGroupByDangerosity(modalBestiary, dangerosityLevel);
     if (!group) {
         fprintf(stderr, "Erreur: initRandomBestiaryFromDangerosityGroupLevel(): Aucune groupe valide trouvée\n");
         return NULL;
@@ -127,7 +164,7 @@ Bestiaire *initRandomBestiaryFromDangerosityGroupLevel(Bestiaire *modalBestiary,
     bestiary->creatures = calloc(group->longueur, sizeof(CreatureMarine*));
     if (!bestiary->creatures) {
         fprintf(stderr, "Erreur: initRandomBestiaryFromDangerosityGroupLevel(): Allocation mémoire échouée\n");
-        free(bestiary);
+        freeBestiary(bestiary);
         return NULL;
     }
 
@@ -141,15 +178,6 @@ Bestiaire *initRandomBestiaryFromDangerosityGroupLevel(Bestiaire *modalBestiary,
     }
 
     sortCreaturesBySpeed(bestiary->creatures, bestiary->longueur_creatures);
-
-    bestiary->groupes = calloc(1, sizeof(GroupeCreatureMarine*));
-    if (!bestiary->groupes) {
-        fprintf(stderr, "Erreur: initRandomBestiaryFromDangerosityGroupLevel(): Allocation mémoire échouée\n");
-        freeBestiary(bestiary);
-        return NULL;
-    }
-    bestiary->longueur_groupes = 1;
-    bestiary->groupes[0] = group;
 
     return bestiary;
 }
@@ -771,20 +799,25 @@ void freeCreatures(CreatureMarine **creatures, size_t length) {
     creatures = NULL;
 }
 
+void freeGroup(GroupeCreatureMarine *group) {
+    if (!group) return;
+    if (group->id_creatures) {
+        free(group->id_creatures);
+        group->id_creatures = NULL;
+    }
+    free(group);
+    group = NULL;
+}
+
 void freeGroups(GroupeCreatureMarine **groups, size_t length) {
     if (!groups) return;
     for (size_t i = 0; i < length; i++) {
-        if (groups[i]) {
-            if (groups[i]->id_creatures) {
-                free(groups[i]->id_creatures);
-                groups[i]->id_creatures = NULL;
-            }
-            free(groups[i]);
-            groups[i] = NULL;
-        }
+        freeGroup(groups[i]);
+        groups[i] = NULL;
     }
     free(groups);
     groups = NULL;
+    length = 0;
 }
 
 void freeBestiaryContent(Bestiaire *bestiary) {
