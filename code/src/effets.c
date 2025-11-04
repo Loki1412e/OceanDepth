@@ -205,8 +205,7 @@ int calculerDegatsInfligesEtatsLanceur(ListeEtat *etatsLanceur, int degatsBase) 
                 int res = random_int(1, 100);
 
                 // 30% de chance de rater
-                // test a 100%
-                if (res <= 100) {
+                if (res <= 30) {
                     printf(">> [PRECISION_REDUITE] fait rater l'attaque !\n");
                     return 0;
                 }
