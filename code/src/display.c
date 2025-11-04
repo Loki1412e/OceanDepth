@@ -199,7 +199,7 @@ void printModififierStatActions(ListeAction actions) {
 
 void printListeEtat(ListeEtat etats) {
     if (etats.longueur == 0 || etats.etats == NULL) {
-        printf("Aucun\n");
+        printf("Aucun");
         return;
     }
 
