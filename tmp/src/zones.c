@@ -58,20 +58,34 @@ void build_tier(int tier, unsigned int seed, TierMap *m, int start_col){
         }
     }
 
-    // 2) Carve un chemin garanti du haut (row 0) jusqu’au boss en bas
+    // 2) Carve un chemin garanti...
     int c = (start_col>=0 && start_col<LANES)? start_col : trnd_int(0, LANES-1);
-    for(int r=0;r<height;r++){
-        AT(m,r,c).type = (r==height-1)? ZONE_BOSS : ZONE_PATH;
-        // petit déplacement latéral aléatoire pour sinuer
-        if(r<height-1){
-            int move = trnd_int(-1,1); // -1 gauche, 0, +1 droite
-            int nc = c + move;
-            if(nc<0) nc=0;
-            if(nc>=LANES) nc=LANES-1;
-            c = nc;
+    for(int r=0; r < height - 1; r++){
+        AT(m,r,c).type = ZONE_PATH; // Ouvre la case actuelle
+
+        // Détermine la colonne de la prochaine rangée
+        int move = trnd_int(-1,1);
+        int nc = c + move;
+        if(nc<0) nc=0;
+        if(nc>=LANES) nc=LANES-1;
+
+        // On ouvre aléatoirement un "pont" pour permettre le déplacement
+        if(trnd_int(0,1) == 0){
+            // Ouvre le chemin "Bas -> Côté"
+            AT(m, r+1, c).type = ZONE_PATH;
+        } else {
+            // Ouvre le chemin "Côté -> Bas"
+            AT(m, r, nc).type = ZONE_PATH;
         }
+        
+        // On ouvre TOUJOURS la destination finale sur la rangée suivante
+        AT(m, r+1, nc).type = ZONE_PATH; 
+
+        c = nc; // On passe à la colonne suivante
     }
-    m->boss_col = c; // position finale en bas
+    // La dernière rangée est le Boss
+    AT(m,height-1,c).type = ZONE_BOSS;
+    m->boss_col = c;
 
     // 3) S’assurer que la ligne de départ est franchissable sur la colonne de départ
     AT(m,0,(start_col>=0 && start_col<LANES)? start_col:0).type = ZONE_PATH;
