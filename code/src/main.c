@@ -60,10 +60,9 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
             pressEnterToContinue();
             res = runGame(actualSave);
 
-            // Sauvegarde dans un fichier de la save actuelle
+            // Affichage la save après le jeu
             printSave(actualSave);
             pressEnterToContinue();
-            save(actualSave);
             break;
 
 
@@ -135,10 +134,9 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
             pressEnterToContinue();
             res = runGame(actualSave);
 
-            // Sauvegarde dans un fichier de la save actuelle
+            // Affichage la save après le jeu
             printSave(actualSave);
             pressEnterToContinue();
-            save(actualSave);
             break;
             
             
@@ -174,10 +172,9 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
             pressEnterToContinue();
             res = runGame(actualSave);
 
-            // Sauvegarde dans un fichier de la save actuelle
+            // Affichage la save après le jeu
             printSave(actualSave);
             pressEnterToContinue();
-            save(actualSave);
             break;
 
 
