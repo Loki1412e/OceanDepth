@@ -49,7 +49,7 @@ actions=DEGATS_SCALES:attaque:150;MODIFIER_STAT:vitesse:-5
 
 ---
 
-### Actions d'Effets
+### Actions d'Effet
 
 #### `APPLIQUER_EFFET`
 - **Description** : Applique un effet de statut à la cible pour une durée donnée, avec une certaine probabilité.
@@ -62,3 +62,9 @@ actions=DEGATS_SCALES:attaque:150;MODIFIER_STAT:vitesse:-5
 - **Syntaxe** : `RETIRER_EFFET:<nom_effet>`
 - **Nom Effet Valides** : Voir la **[liste des effets](./liste_effets.md).**
 - **Exemple** : `actions=RETIRER_EFFET:POISON` (agit comme un antidote).
+
+#### `AJOUTER_IMMUNITE_EFFET` (plus pour les bibelots)
+- **Description** : Ajoute un effet dans la liste des effets immunisés
+- **Syntaxe** : `AJOUTER_IMMUNITE_EFFET:<nom_effet>`
+- **Nom Effet Valides** : Voir la **[liste des effets](./liste_effets.md).**
+- **Exemple** : `actions=AJOUTER_IMMUNITE_EFFET:POISON` (ne peut plus être touché par le poison / enleve l'effet si présent).

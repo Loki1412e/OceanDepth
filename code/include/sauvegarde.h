@@ -18,7 +18,7 @@
 
     ListeSauvegardes *preLoadListSaves(char *dir);
     Sauvegarde *loadSave(char *save_name, short preLoad);
-    int save(Sauvegarde *save);
+    int saveGame(Sauvegarde *save);
     int setNewSaveName(Sauvegarde *save, char *save_name);
 
     ListeAction loadListeAction(FILE *file, short *res);

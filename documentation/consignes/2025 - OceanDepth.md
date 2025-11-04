@@ -177,7 +177,7 @@ Fatigue augmentée: +1 (effort physique)
 
 Les créatures attaquent selon leur vitesse (plus rapide = attaque en premier).
 
-### Effets spéciaux des créatures
+### Effet spéciaux des créatures
 
 - **Kraken** : "Étreinte tentaculaire" → 2 attaques consécutives
 - **Méduse** : "Piqûre paralysante" → Réduit les attaques du joueur de 1 au prochain tour
@@ -396,7 +396,7 @@ Conditions: Courant faible, Visibilité bonne, Température 22°C
 ### Amélioration Interface
 
 - Animations textuelles pour les attaques
-- Effets sonores ASCII ("SPLASH!", "CHOMP!")
+- Effet sonores ASCII ("SPLASH!", "CHOMP!")
 - Barres de progression dynamiques
 
 ---

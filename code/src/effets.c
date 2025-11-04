@@ -3,27 +3,28 @@
 void freeListeEtat(ListeEtat *listeEtat);
 
 
-char *enumEffectToChar(Effets type) {
+char *enumEffectToChar(Effet type) {
     switch (type) {
         case BENEDICTION_OCEAN: return "BENEDICTION_OCEAN";
         case MALEDICTION_OCEAN: return "MALEDICTION_OCEAN";
         case SAIGNEMENT: return "SAIGNEMENT";
         case POISON: return "POISON";
         case PARALYSIE: return "PARALYSIE";
+        case PACIFICATION: return "PACIFICATION";
         case ETREINTE: return "ETREINTE";
         case PRECISION_REDUITE: return "PRECISION_REDUITE";
         case DEFENSE_AUGMENTEE: return "DEFENSE_AUGMENTEE";
         case VOIX_DU_COURANT: return "VOIX_DU_COURANT";
-        default: return "AUCUN_Effets";
+        default: return "AUCUN_Effet";
     }
 }
 
-Effets charToEnumEffect(char *type) {
-    for (size_t effet = 0; effet < LENGTH_Effets; effet++) {
-        if (strcmp(type, enumEffectToChar((Effets) effet)) == 0)
-            return (Effets) effet;
+Effet charToEnumEffect(char *type) {
+    for (size_t effet = 0; effet < LENGTH_Effet; effet++) {
+        if (strcmp(type, enumEffectToChar((Effet) effet)) == 0)
+            return (Effet) effet;
     }
-    return AUCUN_Effets;
+    return AUCUN_Effet;
 }
 
 
@@ -77,10 +78,20 @@ ListeEtat duplicateListeEtat(ListeEtat *modal, short *res) {
 
 // Note : La gestion de la mémoire (realloc) est simplifiée ici.
 // Vous devriez ajouter des vérifications robustes.
-int ajouterEffet(ListeEtat *listeEtat, Effets type, int dureeCombat, int dureeZone, int estPermanent) {
+int ajouterEffet(ListeEtat *listeEtat, ListeEffet *effets_immunises, Effet type, int dureeCombat, int dureeZone, int estPermanent) {
     if (!listeEtat) return EXIT_FAILURE;
-    if (type <= AUCUN_Effets || type >= LENGTH_Effets) return EXIT_FAILURE;
-    
+    if (type <= AUCUN_Effet || type >= LENGTH_Effet) return EXIT_FAILURE;
+
+    // Vérifier si la cible est immunisée contre cet effet
+    if (effets_immunises) {
+        for (size_t i = 0; i < effets_immunises->longueur; i++) {
+            if (effets_immunises->effets[i] == type) {
+                printf(">> La cible est immunisée contre l'effet [%s].\n", enumEffectToChar(type));
+                return EXIT_SUCCESS;
+            }
+        }
+    }
+
     // Vérifier si l'effet existe déjà pour le rafraîchir au lieu de le dupliquer
     for (size_t i = 0; i < listeEtat->longueur; i++) {
         Etat *etat = &listeEtat->etats[i];
@@ -88,7 +99,7 @@ int ajouterEffet(ListeEtat *listeEtat, Effets type, int dureeCombat, int dureeZo
             if (etat->duree_combat < dureeCombat) etat->duree_combat = dureeCombat;
             if (etat->duree_zone < dureeZone) etat->duree_zone = dureeZone;
             etat->estPermanent = etat->estPermanent || estPermanent;
-            printf("Effet [%s] (%d) rafraîchi.\n", enumEffectToChar(type), type);
+            printf(">> Effet [%s] (%d) rafraîchi.\n", enumEffectToChar(type), type);
             return EXIT_SUCCESS;
         }
     }
@@ -117,21 +128,18 @@ int ajouterEffet(ListeEtat *listeEtat, Effets type, int dureeCombat, int dureeZo
 }
 
 
-int peutAttaquer(ListeEtat *listeEtat) {
+int peutAgir(ListeEtat *listeEtat) {
     short res = true;
     for (size_t i = 0; i < listeEtat->longueur; i++) {
         switch (listeEtat->etats[i].effet) {
             
             case PARALYSIE:
-                printf("[PARALYSIE] est active\n");
+            case ETREINTE:
+            case PACIFICATION:
+                printf(">> L'effet [%s] est actif\n", enumEffectToChar(listeEtat->etats[i].effet));
                 res = false;
                 break;
 
-            case ETREINTE:
-                printf("[ETREINTE] est active\n");
-                res = false;
-                break;
-            
             default:
                 break;
         }
@@ -220,7 +228,7 @@ int calculerDegatsSubiDebutTourEffet(ListeEtat *etats, int *pv, int maxPv, int d
 }
 
 
-int supprimerEtat(ListeEtat *listeEtat, Effets type) {
+int supprimerEtat(ListeEtat *listeEtat, Effet type) {
     if (!listeEtat || listeEtat->longueur == 0) return EXIT_FAILURE;
     
     for (size_t i = 0; i < listeEtat->longueur; i++) {
@@ -240,7 +248,7 @@ int supprimerEtat(ListeEtat *listeEtat, Effets type) {
             listeEtat->etats = tmp;
             listeEtat->longueur--;
 
-            // printf("L'effet [%s] a été retiré.\n", enumEffectToChar(type));
+            // printf(">> L'effet [%s] a été retiré.\n", enumEffectToChar(type));
             
             i--; // Ajuster l'index après le décalage
         }
@@ -301,6 +309,178 @@ int decrementerDureesEtNettoyer(ListeEtat *listeEtat, int estFinDeTourCombat, in
     return res;
 }
 
+size_t compterEffetsDansStringListe(char *str, short *res) {
+    if (!str) {
+        fprintf(stderr, "Erreur: compterEffetsDansStringListe(): Argument(s) invalide(s)\n");
+        *res = EXIT_FAILURE;
+        return 0;
+    }
+    *res = EXIT_SUCCESS;
+
+    char *strCopy = my_strdup(str);
+    if (!strCopy) {
+        fprintf(stderr, "Erreur: compterEffetsDansStringListe(): Allocation mémoire échouée\n");
+        *res = EXIT_FAILURE;
+        return 0;
+    }
+    
+    size_t count = 0;
+    char *token = strtok(strCopy, ",");
+    while (token != NULL) {
+        Effet effet = charToEnumEffect(token);
+        if (effet != AUCUN_Effet) count++;
+        token = strtok(NULL, ",");
+    }
+
+    free(strCopy);
+    return count;
+}
+
+ListeEffet *initListeEffetFromStringList(char *str) {
+    if (!str) {
+        fprintf(stderr, "Erreur: initListeEffetFromStringList(): Argument(s) invalide(s)\n");
+        return NULL;
+    }
+
+    ListeEffet *listeEffet = NULL;
+    short res;
+    char *strCopy = NULL;
+
+    listeEffet = calloc(1, sizeof(ListeEffet));
+    if (!listeEffet) {
+        fprintf(stderr, "Erreur: initListeEffetFromStringList(): Allocation mémoire échouée\n");
+        return NULL;
+    }
+
+    strCopy = my_strdup(str);
+    if (!strCopy) {
+        fprintf(stderr, "Erreur: initListeEffetFromStringList(): Allocation mémoire échouée\n");
+        freeListeEffet(listeEffet);
+        return NULL;
+    }
+    listeEffet->longueur = compterEffetsDansStringListe(strCopy, &res);
+    if (res == EXIT_FAILURE) {
+        fprintf(stderr, "Erreur: initListeEffetFromStringList(): compterEffetsDansStringListe()\n");
+        freeListeEffet(listeEffet);
+        return NULL;
+    }
+
+    listeEffet->effets = calloc(listeEffet->longueur, sizeof(Effet));
+    if (!listeEffet->effets) {
+        fprintf(stderr, "Erreur: initListeEffetFromStringList(): Allocation mémoire échouée\n");
+        freeListeEffet(listeEffet);
+        return NULL;
+    }
+
+    free(strCopy);
+    strCopy = my_strdup(str);
+    if (!strCopy) {
+        fprintf(stderr, "Erreur: initListeEffetFromStringList(): Allocation mémoire échouée\n");
+        freeListeEffet(listeEffet);
+        return NULL;
+    }
+
+    size_t index = 0;
+    char *token = strtok(strCopy, ",");
+    while (token != NULL) {
+        if (index >= listeEffet->longueur) {
+            fprintf(stderr, "Warning: initListeEffetFromStringList(): index (%zu) >= listeEffet->longueur (%zu) (dépassement de la longueur allouée)\n", index, listeEffet->longueur);
+            break;
+        }
+        
+        Effet effet = charToEnumEffect(token);
+        if (effet != AUCUN_Effet)
+            listeEffet->effets[index++] = effet;
+        
+        token = strtok(NULL, ",");
+    }
+
+    free(strCopy);
+    return listeEffet;
+}
+
+int ajouterEffetImmunise(ListeEffet *listeEffet, Effet type) {
+    if (!listeEffet) {
+        fprintf(stderr, "Erreur: ajouterEffetImmunise(): Argument(s) invalide(s)\n");
+        return EXIT_FAILURE;
+    }
+    if (type <= AUCUN_Effet || type >= LENGTH_Effet) {
+        fprintf(stderr, "Erreur: ajouterEffetImmunise(): type d'effet invalide\n");
+        return EXIT_FAILURE;
+    }
+
+    // Vérifier si l'effet est déjà dans la liste
+    for (size_t i = 0; i < listeEffet->longueur; i++) {
+        // Déjà présent
+        if (listeEffet->effets[i] == type) return EXIT_SUCCESS;
+    }
+
+    // Ajouter le nouvel effet immunisé
+    Effet *tmp = realloc(listeEffet->effets, sizeof(Effet) * (listeEffet->longueur + 1));
+    if (!tmp) {
+        fprintf(stderr, "Erreur: ajouterEffetImmunise(): Allocation mémoire échouée\n");
+        freeListeEffet(listeEffet);
+        return EXIT_FAILURE;
+    }
+    listeEffet->effets = tmp;
+    listeEffet->effets[listeEffet->longueur++] = type;
+
+    return EXIT_SUCCESS;
+}
+
+int retirerEffetImmunise(ListeEffet *listeEffet, Effet type) {
+    if (!listeEffet || listeEffet->longueur == 0) {
+        fprintf(stderr, "Erreur: retirerEffetImmunise(): Argument(s) invalide(s)\n");
+        return EXIT_FAILURE;
+    }
+    
+    for (size_t i = 0; i < listeEffet->longueur; i++) {
+        if (listeEffet->effets[i] == type) {
+
+            // Décalage des éléments
+            for (size_t j = i; j < listeEffet->longueur - 1; j++) {
+                listeEffet->effets[j] = listeEffet->effets[j + 1];
+            }
+            
+            listeEffet->longueur--;
+            
+            // Si la liste est maintenant vide, libérer la mémoire
+            if (listeEffet->longueur == 0) {
+                freeListeEffetContent(listeEffet);
+                return EXIT_SUCCESS;
+            }
+
+            // Réallocation de la mémoire
+            Effet *tmp = realloc(listeEffet->effets, sizeof(Effet) * listeEffet->longueur);
+            if (!tmp) {
+                fprintf(stderr, "Erreur: retirerEffetImmunise(): Allocation mémoire échouée\n");
+                return EXIT_FAILURE;
+            }
+            listeEffet->effets = tmp;
+
+            i--; // Ajuster l'index après le décalage
+        }
+    }
+    
+    // L'effet n'est pas dans la liste
+    return EXIT_SUCCESS;
+}
+
+
+void freeListeEffetContent(ListeEffet *listeEffet) {
+    if (!listeEffet) return;
+    if (listeEffet->effets) {
+        free(listeEffet->effets);
+        listeEffet->effets = NULL;
+    }
+    listeEffet->longueur = 0;
+}
+
+void freeListeEffet(ListeEffet *listeEffet) {
+    if (!listeEffet) return;
+    freeListeEffetContent(listeEffet);
+    free(listeEffet);
+}
 
 void freeListeEtat(ListeEtat *listeEtat) {
     if (!listeEtat) return;

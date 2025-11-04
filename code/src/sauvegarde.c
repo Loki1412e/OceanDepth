@@ -6,7 +6,7 @@ void freeSauvegardes(ListeSauvegardes *saves);
 
 ListeSauvegardes *preLoadListSaves(char *dir);
 Sauvegarde *loadSave(char *save_name, short preLoad);
-int save(Sauvegarde *save);
+int saveGame(Sauvegarde *save);
 int setNewSaveName(Sauvegarde *save, char *save_name);
 
 int saveInfo(Sauvegarde *save, SaveTmpFile *tmpSave);
@@ -224,6 +224,9 @@ Plongeur *loadDiver(FILE *file) {
     diver->liste_competences.competences = NULL;
     diver->liste_consommables = NULL;
     diver->liste_bibelots = NULL;
+    diver->arme_equipee = NULL;
+    diver->arsenal = NULL;
+    diver->effets_immunises = NULL;
 
     // Lire nom
     size_t nom_len = 0;
@@ -509,6 +512,36 @@ Plongeur *loadDiver(FILE *file) {
         diver->arme_equipee = NULL;
     }
 
+    // Lire effets_immunises
+    diver->effets_immunises = calloc(1, sizeof(ListeEffet));
+    if (!diver->effets_immunises) {
+        fprintf(stderr, "loadDiver(): calloc diver->effets_immunises\n");
+        freeDiverContent(diver);
+        return NULL;
+    }
+    // Lire longueur
+    if (fread(&diver->effets_immunises->longueur, sizeof(size_t), 1, file) != 1) {
+        fprintf(stderr, "loadDiver(): fread diver->effets_immunises->longueur\n");
+        freeDiverContent(diver);
+        return NULL;
+    }
+    // Lire tab si longueur > 0
+    if (diver->effets_immunises->longueur > 0) {
+        diver->effets_immunises->effets = calloc(diver->effets_immunises->longueur, sizeof(Effet));
+        if (!diver->effets_immunises->effets) {
+            fprintf(stderr, "loadDiver(): calloc diver->effets_immunises->effets\n");
+            freeDiverContent(diver);
+            return NULL;
+        }
+        for (size_t i = 0; i < diver->effets_immunises->longueur; i++) {
+            if (fread(&diver->effets_immunises->effets[i], sizeof(Effet), 1, file) != 1) {
+                fprintf(stderr, "loadDiver(): fread diver->effets_immunises->effets[%zu]\n", i);
+                freeDiverContent(diver);
+                return NULL;
+            }
+        }
+    }
+
     return diver;
 }
 
@@ -718,7 +751,7 @@ ListeObjet *loadListeObjet(FILE *file) {
 
 /*================ SAVE ================*/
 
-int save(Sauvegarde *save) {
+int saveGame(Sauvegarde *save) {
     if (!save) {
         fprintf(stderr, "save : Paramètre invalide\n");
         return EXIT_FAILURE;
@@ -780,13 +813,13 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
 
 /*
     typedef enum {
-        AUCUN_Effets,
+        AUCUN_Effet,
         // Suite ...
-        LENGTH_Effets
-    } Effets;
+        LENGTH_Effet
+    } Effet;
 
     typedef struct {
-        Effets effet;
+        Effet effet;
         int estPermanent;
         int duree_zone;
         int duree_combat;
@@ -804,7 +837,7 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
         int cooldown_restant;
         int multiplicateur_degats;
         int chance_effet;
-        Effets effet;
+        Effet effet;
         int duree_effet;
         int sur_soi;
     } Competence;
@@ -855,9 +888,6 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
     // On garde la longueur des listes mais pas les pointeurs
     diver_copy.liste_etats.longueur = diver->liste_etats.etats ? diver->liste_etats.longueur : 0;
     diver_copy.liste_competences.longueur = diver->liste_competences.competences ? diver->liste_competences.longueur : 0;
-
-    diver_copy.arme_equipee = NULL;
-    diver_copy.arsenal = NULL;
 
     // Bloc sans pointeurs (safe, no uninitialised bytes)
     if (addBlock(tmpSave, &diver_copy, sizeof(Plongeur)) != EXIT_SUCCESS)
@@ -1019,6 +1049,17 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
             fprintf(stderr, "saveDiver : erreur rééquipement arme\n");
             return EXIT_FAILURE;
         }
+    }
+
+    // taille effets_immunises
+    size_t effets_len = diver->effets_immunises ? diver->effets_immunises->longueur : 0;
+    if (addBlock(tmpSave, &effets_len, sizeof(size_t)) != EXIT_SUCCESS)
+        return EXIT_FAILURE;
+    // tab effets_immunises
+    for (size_t i = 0; i < effets_len; i++) {
+        Effet effet = diver->effets_immunises->effets[i];
+        if (addBlock(tmpSave, &effet, sizeof(Effet)) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
     }
 
     return EXIT_SUCCESS;

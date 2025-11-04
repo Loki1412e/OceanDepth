@@ -359,38 +359,35 @@ int utiliserCompetence(Competence *comp, void *lanceur_ptr, EntiteType lanceur_t
 
     // 1. Vérifier le Cooldown
     if (comp->cooldown_restant > 0) {
-        printf("Compétence '%s' est en cours de rechargement (%d tours restants).\n", comp->nom, comp->cooldown_restant);
+        printf(">> Compétence '%s' est en cours de rechargement (%d tours restants).\n", comp->nom, comp->cooldown_restant);
         return -1;
     }
 
     // 2. Vérifier et appliquer les coûts (uniquement pour le joueur pour l'instant)
     if (lanceur_plongeur) {
         if (lanceur_plongeur->oxygene < comp->cout_oxygene) {
-            printf("Pas assez d'oxygène pour lancer '%s'.\n", comp->nom);
+            printf(">> Pas assez d'oxygène pour lancer '%s'.\n", comp->nom);
             return -1;
         }
         lanceur_plongeur->oxygene -= comp->cout_oxygene;
         if (lanceur_plongeur->oxygene < 0) lanceur_plongeur->oxygene = 0;
 
         if (lanceur_plongeur->pv <= comp->cout_pv) {
-            printf("Pas assez de PV pour lancer '%s'.\n", comp->nom);
+            printf(">> Pas assez de PV pour lancer '%s'.\n", comp->nom);
             return -1;
         }
         lanceur_plongeur->pv -= comp->cout_pv;
-
-        // Augmenter la fatigue du joueur
-        augmenterFatigue(lanceur_plongeur, 1);
     }
     else if (lanceur_creature) {
 
         if (lanceur_creature->pv <= comp->cout_pv) {
-            printf("Pas assez de PV pour lancer '%s'.\n", comp->nom);
+            printf(">> Pas assez de PV pour lancer '%s'.\n", comp->nom);
             return -1;
         }
         lanceur_creature->pv -= comp->cout_pv;
     }
 
-    printf("\n>>> [%s] lance la compétence '%s' ! <<<\n", lanceur_plongeur ? lanceur_plongeur->nom : lanceur_creature->nom, comp->nom);
+    printf("\n>>> [%s] lance la compétence '%s' sur [%s] ! <<<\n", lanceur_plongeur ? lanceur_plongeur->nom : lanceur_creature->nom, comp->nom, cible_plongeur ? cible_plongeur->nom : cible_creature->nom);
 
     // 3. Exécuter les actions
     if (comp->ciblage != SOI_MEME && ((lanceur_plongeur && cible_plongeur) || (lanceur_creature && cible_creature))) {
