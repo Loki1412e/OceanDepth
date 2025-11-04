@@ -493,23 +493,21 @@ Plongeur *loadDiver(FILE *file) {
     
     // Lire arme_equipee
     diver->arme_equipee = NULL;
-    size_t index_arme_equipee;
-    if (fread(&index_arme_equipee, sizeof(size_t), 1, file) != 1) {
-        fprintf(stderr, "loadDiver fread index_arme_equipee\n");
+    long index_arme_equipee;
+    if (fread(&index_arme_equipee, sizeof(long), 1, file) != 1) {
+        fprintf(stderr, "loadDiver(): fread index_arme_equipee\n");
         freeDiverContent(diver);
         return NULL;
     }
-    short arme_found = false;
     for (size_t i = 0; i < diver->arsenal->longueur; i++) {
         // On a trouvé l'arme équipée
         if (diver->arsenal->armes[i]->id == index_arme_equipee) {
-            diver->arme_equipee = diver->arsenal->armes[i];
-            arme_found = true;
-            break;
+            if (equiperArme(diver, index_arme_equipee) == EXIT_FAILURE) {
+                fprintf(stderr, "loadDiver(): erreur rééquipement arme\n");
+                freeDiverContent(diver);
+                return NULL;
+            }
         }
-    }
-    if (!arme_found) {
-        diver->arme_equipee = NULL;
     }
 
     // Lire effets_immunises
@@ -1038,18 +1036,10 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
     }
 
     // Arme en equipement
-    size_t invalid_index = (size_t)(-1);
-    size_t index_arme_equipee = diver->arme_equipee ? diver->arme_equipee->id : invalid_index;
-    if (addBlock(tmpSave, &index_arme_equipee, sizeof(size_t)) != EXIT_SUCCESS)
+    long invalid_index = -1;
+    long index_arme_equipee = diver->arme_equipee ? diver->arme_equipee->id : invalid_index;
+    if (addBlock(tmpSave, &index_arme_equipee, sizeof(long)) != EXIT_SUCCESS)
         return EXIT_FAILURE;
-
-    // Si arme equipee valide, on la rééquipe
-    if (index_arme_equipee < diver->arsenal->longueur) {
-        if (equiperArme(diver, index_arme_equipee) == EXIT_FAILURE) {
-            fprintf(stderr, "saveDiver : erreur rééquipement arme\n");
-            return EXIT_FAILURE;
-        }
-    }
 
     // taille effets_immunises
     size_t effets_len = diver->effets_immunises ? diver->effets_immunises->longueur : 0;

@@ -34,7 +34,7 @@ int runGame(Sauvegarde *actualSave) {
         return EXIT_FAILURE;
     }
 
-    bestiary = initEmptyBestiary();
+    bestiary = calloc(1, sizeof(Bestiaire));
     if (!bestiary) {
         fprintf(stderr, "runGame(): Erreur lors de la création du bestiaire.\n");
         freeBestiary(modalBestiary);

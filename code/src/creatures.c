@@ -2,7 +2,6 @@
 
 
 Bestiaire *initModalBestiary(ListeCompetence *modalCreaturesSkills);
-Bestiaire *initEmptyBestiary();
 int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary);
 int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, unsigned idConf);
 void freeBestiary(Bestiaire *bestiary);
@@ -11,7 +10,8 @@ void freeCreatures(CreatureMarine **creatures, size_t length);
 void freeCreature(CreatureMarine *creature);
 
 void sortCreaturesBySpeed(CreatureMarine **creatures, size_t nb_creatures);
-int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreaturesSkills, char *path);
+int setBestiaryCreaturesFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreaturesSkills, char *path);
+int setBestiaryGroupsFromConf(Bestiaire *modalBestiary, char *path);
 CreatureMarine *duplicateCreature(CreatureMarine *model);
 
 
@@ -132,16 +132,6 @@ CreatureMarine *initEmptyCreature() {
 }
 
 
-Bestiaire *initEmptyBestiary() {
-    Bestiaire *bestiary = calloc(1, sizeof(Bestiaire));
-    if (bestiary == NULL) {
-        fprintf(stderr, "Erreur: initEmptyBestiary(): Allocation mémoire bestiary\n");
-        return NULL;
-    }
-    return bestiary;
-}
-
-
 Bestiaire *initModalBestiary(ListeCompetence *modalCreaturesSkills) {
     if (!modalCreaturesSkills) {
         fprintf(stderr, "Erreur: initModalBestiary(): *modalCreaturesSkills == NULL\n");
@@ -150,7 +140,13 @@ Bestiaire *initModalBestiary(ListeCompetence *modalCreaturesSkills) {
 
     short res;
     
-    size_t count_all_unique_model = confCountAllUniqueObjet("config/bestiaire/creatures.conf", &res);
+    size_t count_all_unique_model_creatures = confCountAllUniqueObjet("config/bestiaire/creatures.conf", &res);
+    if (res == EXIT_FAILURE) {
+        fprintf(stderr, "Erreur: initModalBestiary(): confCountAllUniqueObjet()\n");
+        return NULL;
+    }
+
+    size_t count_all_unique_model_groups = confCountAllUniqueObjet("config/bestiaire/groupes.conf", &res);
     if (res == EXIT_FAILURE) {
         fprintf(stderr, "Erreur: initModalBestiary(): confCountAllUniqueObjet()\n");
         return NULL;
@@ -158,22 +154,22 @@ Bestiaire *initModalBestiary(ListeCompetence *modalCreaturesSkills) {
 
     // Allocation mémoire -> calloc pour tout init 0 ou NULL
 
-    Bestiaire *modalBestiary = initEmptyBestiary();
+    Bestiaire *modalBestiary = calloc(1, sizeof(Bestiaire));
     if (modalBestiary == NULL) {
         fprintf(stderr, "Erreur: initModalBestiary(): Allocation mémoire modalBestiary\n");
         return NULL;
     }
-    
-    modalBestiary->longueur_creatures = count_all_unique_model;
-    modalBestiary->creatures = calloc(count_all_unique_model, sizeof(CreatureMarine*));
+
+    modalBestiary->longueur_creatures = count_all_unique_model_creatures;
+    modalBestiary->creatures = calloc(count_all_unique_model_creatures, sizeof(CreatureMarine*));
     if (!modalBestiary->creatures) {
         fprintf(stderr, "Erreur: initModalBestiary(): Allocation mémoire modalBestiary->creatures\n");
         modalBestiary->longueur_creatures = 0;
         freeBestiary(modalBestiary);
         return NULL;
     }
-    
-    for (size_t i = 0; i < count_all_unique_model; i++) {
+
+    for (size_t i = 0; i < count_all_unique_model_creatures; i++) {
         modalBestiary->creatures[i] = initEmptyCreature();
         if (modalBestiary->creatures[i] == NULL) {
             fprintf(stderr, "Erreur: initModalBestiary(): Allocation mémoire modalBestiary->creatures\n");
@@ -183,19 +179,49 @@ Bestiaire *initModalBestiary(ListeCompetence *modalCreaturesSkills) {
         }
     }
 
-    // Initialisation du Bestiaire Model
-
-    if (setBestiaryFromConf(modalBestiary, modalCreaturesSkills, "config/bestiaire/creatures.conf") == EXIT_FAILURE) {
-        fprintf(stderr, "Erreur: initModalBestiary(): setBestiaryFromConf()\n");
+    modalBestiary->groupes = calloc(1, sizeof(GroupeCreatureMarine*));
+    if (!modalBestiary->groupes) {
+        fprintf(stderr, "Erreur: initModalBestiary(): Allocation mémoire modalBestiary->groupes\n");
+        freeBestiary(modalBestiary);
         return NULL;
     }
 
-    for (size_t i = 0; i < count_all_unique_model; i++) {
-        // Init des creatures
-        // modalBestiary->creatures[i]->id = 0; -> deja à 0 avec calloc
+    modalBestiary->longueur_groupes = count_all_unique_model_groups;
+    modalBestiary->groupes = calloc(count_all_unique_model_groups, sizeof(GroupeCreatureMarine*));
+    if (!modalBestiary->groupes) {
+        fprintf(stderr, "Erreur: initModalBestiary(): Allocation mémoire modalBestiary->groupes\n");
+        freeBestiary(modalBestiary);
+        return NULL;
+    }
+
+    for (size_t i = 0; i < count_all_unique_model_groups; i++) {
+        modalBestiary->groupes[i] = calloc(1, sizeof(GroupeCreatureMarine));
+        if (modalBestiary->groupes[i] == NULL) {
+            fprintf(stderr, "Erreur: initModalBestiary(): Allocation mémoire modalBestiary->groupes\n");
+            modalBestiary->longueur_groupes = i;
+            freeBestiary(modalBestiary);
+            return NULL;
+        }
+    }
+
+    // Initialisation du Bestiaire Model
+
+    // Init des creatures
+    if (setBestiaryCreaturesFromConf(modalBestiary, modalCreaturesSkills, "config/bestiaire/creatures.conf") == EXIT_FAILURE) {
+        fprintf(stderr, "Erreur: initModalBestiary(): setBestiaryCreaturesFromConf()\n");
+        return NULL;
+    }
+    // modalBestiary->creatures[i]->id = 0; -> deja à 0 avec calloc
+    for (size_t i = 0; i < count_all_unique_model_creatures; i++) {
         modalBestiary->creatures[i]->pv = modalBestiary->creatures[i]->pv_max;
     }
-    
+
+    // Init des groupes
+    if (setBestiaryGroupsFromConf(modalBestiary, "config/bestiaire/groupes.conf") == EXIT_FAILURE) {
+        fprintf(stderr, "Erreur: initModalBestiary(): setBestiaryGroupsFromConf()\n");
+        return NULL;
+    }
+
     return modalBestiary;
 }
 
@@ -216,15 +242,15 @@ void sortCreaturesBySpeed(CreatureMarine **creatures, size_t nb_creatures) {
 }
 
 
-int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreaturesSkills, char *path) {
+int setBestiaryCreaturesFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreaturesSkills, char *path) {
     if (!modalBestiary || !modalBestiary->creatures || modalBestiary->longueur_creatures == 0 || !path) {
-        fprintf(stderr, "Erreur: setBestiaryFromConf(): Parametre(s) mal initialisé(s)\n");
+        fprintf(stderr, "Erreur: setBestiaryCreaturesFromConf(): Parametre(s) mal initialisé(s)\n");
         return EXIT_FAILURE;
     }
 
     FILE *f = fopen(path, "r");
     if (f == NULL) {
-        fprintf(stderr, "Erreur: setBestiaryFromConf(): Impossible d'ouvrir le fichier de configuration \"%s\"\n", path);
+        fprintf(stderr, "Erreur: setBestiaryCreaturesFromConf(): Impossible d'ouvrir le fichier de configuration \"%s\"\n", path);
         return EXIT_FAILURE;
     }
 
@@ -243,12 +269,12 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreature
 
             // Si dépassement alors on arrete de load mais on garde la conf actuelle
             if (index >= modalBestiary->longueur_creatures) {
-                fprintf(stderr, "Warning: setBestiaryFromConf(): index %zu hors des limites de creatures\n", index);
+                fprintf(stderr, "Warning: setBestiaryCreaturesFromConf(): index %zu hors des limites de creatures\n", index);
                 break;
             }
 
             if (!modalBestiary->creatures[index]) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf(): créature à l'index [%zu] non initialisée\n", index);
+                fprintf(stderr, "Erreur: setBestiaryCreaturesFromConf(): créature à l'index [%zu] non initialisée\n", index);
                 freeBestiary(modalBestiary);
                 fclose(f);
                 return EXIT_FAILURE;
@@ -258,13 +284,13 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreature
             modalBestiary->creatures[index]->id = index;
         }
          
-        if (strncmp(line, "nom=", 4) == 0) {
+        else if (strncmp(line, "nom=", 4) == 0) {
             line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
             if (line[4] == '\0') continue; // ligne vide
 
             modalBestiary->creatures[index]->nom = my_strdup(line + 4);
             if (!modalBestiary->creatures[index]->nom) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strdup() -> \"nom=\"\n");
+                fprintf(stderr, "Erreur: setBestiaryCreaturesFromConf(): my_strdup() -> \"nom=\"\n");
                 freeBestiary(modalBestiary);
                 fclose(f);
                 return EXIT_FAILURE;
@@ -277,7 +303,7 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreature
 
             modalBestiary->creatures[index]->pv_min = my_strToInt(line + 7, &res);
             if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strToInt() -> \"pv_min=\"\n");
+                fprintf(stderr, "Erreur: setBestiaryCreaturesFromConf(): my_strToInt() -> \"pv_min=\"\n");
                 freeBestiary(modalBestiary);
                 fclose(f);
                 return EXIT_FAILURE;
@@ -290,7 +316,7 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreature
 
             modalBestiary->creatures[index]->pv_max = my_strToInt(line + 7, &res);
             if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strToInt() -> \"pv_max=\"\n");
+                fprintf(stderr, "Erreur: setBestiaryCreaturesFromConf(): my_strToInt() -> \"pv_max=\"\n");
                 freeBestiary(modalBestiary);
                 fclose(f);
                 return EXIT_FAILURE;
@@ -303,7 +329,7 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreature
 
             modalBestiary->creatures[index]->attaque_min = my_strToInt(line + 12, &res);
             if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strToInt() -> \"attaque_min=\"\n");
+                fprintf(stderr, "Erreur: setBestiaryCreaturesFromConf(): my_strToInt() -> \"attaque_min=\"\n");
                 freeBestiary(modalBestiary);
                 fclose(f);
                 return EXIT_FAILURE;
@@ -316,7 +342,7 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreature
 
             modalBestiary->creatures[index]->attaque_max = my_strToInt(line + 12, &res);
             if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strToInt() -> \"attaque_max=\"\n");
+                fprintf(stderr, "Erreur: setBestiaryCreaturesFromConf(): my_strToInt() -> \"attaque_max=\"\n");
                 freeBestiary(modalBestiary);
                 fclose(f);
                 return EXIT_FAILURE;
@@ -329,7 +355,7 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreature
 
             modalBestiary->creatures[index]->defense = my_strToInt(line + 8, &res);
             if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strToInt() -> \"defense=\"\n");
+                fprintf(stderr, "Erreur: setBestiaryCreaturesFromConf(): my_strToInt() -> \"defense=\"\n");
                 freeBestiary(modalBestiary);
                 fclose(f);
                 return EXIT_FAILURE;
@@ -342,7 +368,7 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreature
 
             modalBestiary->creatures[index]->vitesse = my_strToInt(line + 8, &res);
             if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strToInt() -> \"vitesse=\"\n");
+                fprintf(stderr, "Erreur: setBestiaryCreaturesFromConf(): my_strToInt() -> \"vitesse=\"\n");
                 freeBestiary(modalBestiary);
                 fclose(f);
                 return EXIT_FAILURE;
@@ -355,17 +381,17 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreature
 
             int rarete = my_strToInt(line + 7, &res);
             if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf(): my_strToInt() -> \"rarete=\"\n");
+                fprintf(stderr, "Erreur: setBestiaryCreaturesFromConf(): my_strToInt() -> \"rarete=\"\n");
                 freeBestiary(modalBestiary);
                 fclose(f);
                 return EXIT_FAILURE;
             }
             if (rarete >= LENGTH_Rarete) {
-                fprintf(stderr, "Warning: setBestiaryFromConf(): rarete >= LENGTH_Rarete --> init à max_rarete (%d)\n", LENGTH_Rarete - 1);
+                fprintf(stderr, "Warning: setBestiaryCreaturesFromConf(): rarete >= LENGTH_Rarete --> init à max_rarete (%d)\n", LENGTH_Rarete - 1);
                 rarete = LENGTH_Rarete - 1;
             }
             else if (rarete < 0) {
-                fprintf(stderr, "Warning: setBestiaryFromConf(): rarete < 0 --> init à DESACTIVE (0)\n");
+                fprintf(stderr, "Warning: setBestiaryCreaturesFromConf(): rarete < 0 --> init à DESACTIVE (0)\n");
                 rarete = 0;
             }
 
@@ -382,7 +408,7 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreature
 
             arrayLong = parseLongList(line + 12, &len);
             if (!arrayLong) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf() -> arrayLong = parseLongList() -> idConf=%zu / \"%s\"\n", modalBestiary->creatures[index]->id, "competences=");
+                fprintf(stderr, "Erreur: setBestiaryCreaturesFromConf() -> arrayLong = parseLongList() -> idConf=%ld / \"%s\"\n", modalBestiary->creatures[index]->id, "competences=");
                 freeBestiary(modalBestiary);
                 fclose(f);
                 return EXIT_FAILURE;
@@ -392,7 +418,7 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreature
             res = false;
             for (size_t i = 0; i < len; i++) {
                 if (arrayLong[i] < 0 || arrayLong[i] >= (long) modalCreaturesSkills->longueur) {
-                    fprintf(stderr, "Erreur: setBestiaryFromConf() -> competences -> l'id [%ld] n'existe pas dans modalCreaturesSkills\n", arrayLong[i]);
+                    fprintf(stderr, "Erreur: setBestiaryCreaturesFromConf() -> competences -> l'id [%ld] n'existe pas dans modalCreaturesSkills\n", arrayLong[i]);
                     res = true;
                 }
             }
@@ -406,7 +432,7 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreature
             // Enleve les doublons de la liste (et la trie)
             len = removeDuplicateInLongList(&arrayLong, len, &res);
             if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf(): len = removeDuplicateInLongList()\n");
+                fprintf(stderr, "Erreur: setBestiaryCreaturesFromConf(): len = removeDuplicateInLongList()\n");
                 free(arrayLong);
                 freeBestiary(modalBestiary);
                 fclose(f);
@@ -420,7 +446,7 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreature
             
             modalBestiary->creatures[index]->liste_competences.competences = calloc(len, sizeof(Competence));
             if (!modalBestiary->creatures[index]->liste_competences.competences) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf(): Allocation mémoire: calloc(len, sizeof(Competence))\n");
+                fprintf(stderr, "Erreur: setBestiaryCreaturesFromConf(): Allocation mémoire: calloc(len, sizeof(Competence))\n");
                 free(arrayLong);
                 freeBestiary(modalBestiary);
                 fclose(f);
@@ -433,7 +459,7 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreature
                 modalBestiary->creatures[index]->liste_competences.competences[i] = duplicateCompetence(&modalCreaturesSkills->competences[arrayLong[i]], &res);
                 if (res == EXIT_FAILURE) {
                     modalBestiary->creatures[index]->liste_competences.longueur = i;
-                    fprintf(stderr, "Erreur: setBestiaryFromConf(): duplicateCompetence()\n");
+                    fprintf(stderr, "Erreur: setBestiaryCreaturesFromConf(): duplicateCompetence()\n");
                     free(arrayLong);
                     freeBestiary(modalBestiary);
                     fclose(f);
@@ -453,7 +479,7 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreature
             }
             modalBestiary->creatures[index]->effets_immunises = initListeEffetFromStringList(line + 17);
             if (!modalBestiary->creatures[index]->effets_immunises) {
-                fprintf(stderr, "Erreur: setBestiaryFromConf(): initListeEffetFromStringList() -> \"effets_immunises=\"\n");
+                fprintf(stderr, "Erreur: setBestiaryCreaturesFromConf(): initListeEffetFromStringList() -> \"effets_immunises=\"\n");
                 freeBestiary(modalBestiary);
                 fclose(f);
                 return EXIT_FAILURE;
@@ -462,10 +488,105 @@ int setBestiaryFromConf(Bestiaire *modalBestiary, ListeCompetence *modalCreature
     }
 
     if (modalBestiary->longueur_creatures < length) {
-        fprintf(stderr, "Erreur: setBestiaryFromConf(): longueur_creatures (%zu) < length (%zu)\n", modalBestiary->longueur_creatures, length);
+        fprintf(stderr, "Erreur: setBestiaryCreaturesFromConf(): longueur_creatures (%zu) < length (%zu)\n", modalBestiary->longueur_creatures, length);
         freeBestiary(modalBestiary);
         fclose(f);
         return EXIT_FAILURE;
+    }
+
+    fclose(f);
+    return EXIT_SUCCESS;
+}
+
+int setBestiaryGroupsFromConf(Bestiaire *modalBestiary, char *path) {
+    if (!modalBestiary || !modalBestiary->groupes || modalBestiary->longueur_groupes == 0 || !path) {
+        fprintf(stderr, "Erreur: setBestiaryGroupsFromConf(): Parametre(s) mal initialisé(s)\n");
+        return EXIT_FAILURE;
+    }
+
+    FILE *f = fopen(path, "r");
+    if (f == NULL) {
+        fprintf(stderr, "Erreur: setBestiaryGroupsFromConf(): Impossible d'ouvrir le fichier de configuration \"%s\"\n", path);
+        return EXIT_FAILURE;
+    }
+
+    char line[512];
+    size_t length = 0, index = 0;
+    short res;
+
+    long *arrayLong = NULL;
+    size_t len = 0;
+
+    while (fgets(line, sizeof(line), f)) {
+
+        if (strncmp(line, "[Objet]", 7) == 0) {
+            length++;
+            index = length - 1;
+
+            // Si dépassement alors on arrete de load mais on garde la conf actuelle
+            if (index >= modalBestiary->longueur_creatures) {
+                fprintf(stderr, "Warning: setBestiaryGroupsFromConf(): index %zu hors des limites de creatures\n", index);
+                break;
+            }
+
+            if (!modalBestiary->groupes[index]) {
+                fprintf(stderr, "Erreur: setBestiaryGroupsFromConf(): groupe à l'index [%zu] non initialisé\n", index);
+                freeBestiary(modalBestiary);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+
+            // Init
+            modalBestiary->groupes[index]->id = index;
+        }
+        
+        else if (strncmp(line, "competences=", 12) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[12] == '\0') continue; // ligne vide
+
+            modalBestiary->groupes[index]->longueur = 0;
+            len = 0;
+
+            arrayLong = parseLongList(line + 12, &len);
+            if (!arrayLong) {
+                fprintf(stderr, "Erreur: setBestiaryGroupsFromConf() -> arrayLong = parseLongList() -> idConf=%ld / \"%s\"\n", modalBestiary->creatures[index]->id, "competences=");
+                freeBestiary(modalBestiary);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+
+            // On vérifie si l'id de la compétence existe
+            res = false;
+            for (size_t i = 0; i < len; i++) {
+                if (arrayLong[i] < 0 || arrayLong[i] >= (long) modalBestiary->longueur_creatures || (long) modalBestiary->longueur_creatures < 0) {
+                    fprintf(stderr, "Erreur: setBestiaryGroupsFromConf() -> competences -> l'id [%ld] n'existe pas dans modalBestiary (len=%ld)\n", arrayLong[i], (long) modalBestiary->longueur_creatures);
+                    res = true;
+                }
+            }
+            if (res) {
+                free(arrayLong);
+                freeBestiary(modalBestiary);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+
+            // Init
+            modalBestiary->groupes[index]->longueur = len;
+            modalBestiary->groupes[index]->id_creatures = arrayLong;
+        }
+         
+        else if (strncmp(line, "dangerosite=", 12) == 0) {
+            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
+            if (line[12] == '\0') continue; // ligne vide
+
+            modalBestiary->groupes[index]->dangerosite = my_strToInt(line + 12, &res);
+            if (res != EXIT_SUCCESS) {
+                fprintf(stderr, "Erreur: setBestiaryGroupsFromConf(): my_strToInt() -> \"dangerosite=\"\n");
+                freeBestiary(modalBestiary);
+                fclose(f);
+                return EXIT_FAILURE;
+            }
+        }
     }
 
     fclose(f);
@@ -565,11 +686,30 @@ void freeCreatures(CreatureMarine **creatures, size_t length) {
     creatures = NULL;
 }
 
+void freeGroups(GroupeCreatureMarine **groups, size_t length) {
+    if (!groups) return;
+    for (size_t i = 0; i < length; i++) {
+        if (groups[i]) {
+            if (groups[i]->id_creatures) {
+                free(groups[i]->id_creatures);
+                groups[i]->id_creatures = NULL;
+            }
+            free(groups[i]);
+            groups[i] = NULL;
+        }
+    }
+    free(groups);
+    groups = NULL;
+}
+
 void freeBestiaryContent(Bestiaire *bestiary) {
     if (!bestiary) return;
     freeCreatures(bestiary->creatures, bestiary->longueur_creatures);
     bestiary->creatures = NULL;
     bestiary->longueur_creatures = 0;
+    freeGroups(bestiary->groupes, bestiary->longueur_groupes);
+    bestiary->groupes = NULL;
+    bestiary->longueur_groupes = 0;
 }
 
 void freeBestiary(Bestiaire *bestiary) {

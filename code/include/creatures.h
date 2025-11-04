@@ -7,7 +7,6 @@
     #include "competences.h"
     
     Bestiaire *initModalBestiary(ListeCompetence *modalCreaturesSkills);
-    Bestiaire *initEmptyBestiary();
     int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary);
     int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, unsigned idConf);
     int setDeathStateCreature(CreatureMarine *creature);

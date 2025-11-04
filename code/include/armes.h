@@ -8,8 +8,8 @@
 
 Arsenal *chargerArmesDepuisFichier(char  *filename);
 void afficherArmes(Arsenal *arsenal);
-int ajouterArme(Arsenal *modal, Arsenal *arsenal, size_t id_arme);
-int equiperArme(Plongeur *joueur, size_t id_arme);
+int ajouterArme(Arsenal *modal, Arsenal *arsenal, long id_arme);
+int equiperArme(Plongeur *joueur, long id_arme);
 int appliquerActionsArme(Plongeur *joueur, void *cible, EntiteType cible_type);
 
 void freeArme(Arme *arme);

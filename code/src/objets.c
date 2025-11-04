@@ -128,12 +128,12 @@ Objet *duplicateObjet(Objet *c) {
     return new_c;
 }
 
-int ajouterObjet(ListeObjet *modal, ListeObjet *list, size_t id_objet) {
+int ajouterObjet(ListeObjet *modal, ListeObjet *list, long id_objet) {
     if (!list || !modal) {
         fprintf(stderr, "Erreur: ajouterObjet(): arguments invalides\n");
         return EXIT_FAILURE;
     }
-    if (id_objet >= modal->longueur) {
+    if ((size_t) id_objet >= modal->longueur) {
         fprintf(stderr, "Erreur: ajouterObjet(): id_objet invalide\n");
         return EXIT_FAILURE;
     }
@@ -166,7 +166,7 @@ int ajouterObjet(ListeObjet *modal, ListeObjet *list, size_t id_objet) {
     return EXIT_SUCCESS;
 }
 
-int supprimerObjet(ListeObjet *list, size_t id) {
+int supprimerObjet(ListeObjet *list, long id) {
     if (!list) {
         fprintf(stderr, "Erreur: supprimerObjet(): arguments invalides\n");
         return EXIT_FAILURE;
