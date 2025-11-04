@@ -116,11 +116,11 @@ int botAttaque(void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, Enti
                 fprintf(stderr, "Erreur: botAttaque(): GROUPE_ALLIE mais groupe_allie est NULL ou vide\n");
                 return EXIT_FAILURE;
             }
-            for (size_t i = 0; i < len_groupe; i++) {
-                if (lanceur_ptr != groupe_allie[i] && utiliserCompetence(comp, lanceur_ptr, lanceur_type, groupe_allie[i], groupe_allie_type[i]) == EXIT_FAILURE) {
-                    fprintf(stderr, "Erreur: botAttaque(): utiliserCompetence() sur GROUPE_ALLIE -> allié [%zu]\n", i);
-                    return EXIT_FAILURE;
-                }
+            // Pour le moment: Peut appliquer l'effet a lui mm
+            int choice = random_int(0, len_groupe - 1);
+            if (utiliserCompetence(comp, lanceur_ptr, lanceur_type, groupe_allie[choice], groupe_allie_type[choice]) == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: botAttaque(): utiliserCompetence() sur GROUPE_ALLIE -> allié [%d]\n", choice);
+                return EXIT_FAILURE;
             }
             break;
         }
