@@ -117,7 +117,7 @@ void afficherArmes(Arsenal *arsenal) {
     printf("\n=== Arsenal disponible ===\n");
     for (size_t i = 0; i < arsenal->longueur; i++) {
         Arme *a = arsenal->armes[i];
-        printf("[%zu] %s (id=%zu) (ATK %d-%d | Coût O2: %d | DEF+%d) (Rareté: %d) / desc: '%s'\n",
+        printf("[%zu] %s (id=%ld) (ATK %d-%d | Coût O2: %d | DEF+%d) (Rareté: %d) / desc: '%s'\n",
                i, a->nom, a->id, a->attaque_min, a->attaque_max, a->cout_oxygene,
                a->bonus_defense, a->rarete, a->description);
         printListeAction(a->listeAction, "\t");
@@ -171,14 +171,14 @@ Arme *duplicateArme(Arme *a) {
 }
 
 
-int ajouterArme(Arsenal *modal, Arsenal *arsenal, size_t id_arme) {
-    if (!modal || !arsenal || id_arme >= modal->longueur) {
+int ajouterArme(Arsenal *modal, Arsenal *arsenal, long id_arme) {
+    if (!modal || !arsenal || (size_t) id_arme >= modal->longueur) {
         fprintf(stderr, "Erreur: ajouterArme(): paramètres invalides\n");
         return EXIT_FAILURE;
     }
 
-    if (id_arme > modal->longueur) {
-        fprintf(stderr, "Erreur: ajouterArme(): id_arme (%zu) hors limites (%zu)\n", id_arme, modal->longueur);
+    if ((size_t) id_arme > modal->longueur) {
+        fprintf(stderr, "Erreur: ajouterArme(): id_arme (%ld) hors limites (%zu)\n", id_arme, modal->longueur);
         return EXIT_FAILURE;
     }
 
@@ -206,8 +206,8 @@ int ajouterArme(Arsenal *modal, Arsenal *arsenal, size_t id_arme) {
     return EXIT_SUCCESS;
 }
 
-int equiperArme(Plongeur *joueur, size_t id_arme) {
-    if (!joueur || joueur->arsenal->longueur == 0 || id_arme >= joueur->arsenal->longueur) {
+int equiperArme(Plongeur *joueur, long id_arme) {
+    if (!joueur || joueur->arsenal->longueur == 0 || (size_t) id_arme >= joueur->arsenal->longueur) {
         fprintf(stderr, "Erreur: equiperArme(): paramètres invalides\n");
         return EXIT_FAILURE;
     }

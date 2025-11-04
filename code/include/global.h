@@ -141,7 +141,7 @@
 
 
     typedef struct {
-        size_t id;
+        long id;
         char *nom;
         char *description;
         Rarete rarete;
@@ -156,7 +156,7 @@
 
 
     typedef struct Arme {
-        size_t id;
+        long id;
         char *nom;
         char *description;
         int attaque_min;
@@ -174,7 +174,7 @@
 
     
     typedef struct {
-        size_t id;
+        long id;
         char *nom;
         char *description;
         int cout_oxygene;
@@ -189,10 +189,18 @@
         Competence *competences;
         size_t longueur;
     } ListeCompetence;
+
+    
+    typedef struct {
+        long id;
+        long *id_creatures;
+        size_t longueur;
+        int dangerosite;
+    } GroupeCreatureMarine;
     
 
     typedef struct {
-        size_t id;
+        long id;
         char *nom;
         int pv_min;
         int pv_max;
@@ -210,6 +218,8 @@
     typedef struct {
         CreatureMarine **creatures;
         size_t longueur_creatures;
+        GroupeCreatureMarine **groupes;
+        size_t longueur_groupes;
     } Bestiaire;
 
     typedef struct {

@@ -22,8 +22,6 @@
     
     Competence *choisirRandomCompetence(Competence *competences, size_t longueur);
     int decrementerCooldownsCompetences(ListeCompetence *liste_competences);
-
-    // int addSkillInList(Bestiaire *modalBestiary, Bestiaire *bestiary, char *nameigned depth_level);
     
     int utiliserCompetence(Competence *comp, void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, EntiteType cible_type);
 
