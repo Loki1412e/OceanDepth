@@ -245,8 +245,9 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
             );
 
             ListeEtat *etats_lanceur = lanceur_plongeur ? &lanceur_plongeur->liste_etats : &lanceur_creature->liste_etats;
+            ListeEtat *etats_cible = cible_plongeur ? &cible_plongeur->liste_etats : &cible_creature->liste_etats;
             degats = calculerDegatsInfligesEtatsLanceur(etats_lanceur, degats);
-            degats = degats > 0 ? calculerDegatsInfligesEtatsCible(&cible_plongeur ? &cible_plongeur->liste_etats : &cible_creature->liste_etats, degats) : 0;
+            degats = degats > 0 ? calculerDegatsInfligesEtatsCible(etats_cible, degats) : 0;
 
             int *pv_cible = cible_plongeur ? &cible_plongeur->pv : &cible_creature->pv;
             *pv_cible -= degats;
