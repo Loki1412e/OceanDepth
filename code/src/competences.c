@@ -388,14 +388,12 @@ int utiliserCompetence(Competence *comp, void *lanceur_ptr, EntiteType lanceur_t
         lanceur_creature->pv -= comp->cout_pv;
     }
 
-    printf("\n>>> [%s] lance la compétence '%s' sur [%s] ! <<<\n", lanceur_plongeur ? lanceur_plongeur->nom : lanceur_creature->nom, comp->nom, cible_plongeur ? cible_plongeur->nom : cible_creature->nom);
+    if (lanceur_ptr == cible_ptr)
+        printf("\n>>> [%s] lance la compétence '%s' sur lui-même ! <<<\n", lanceur_plongeur ? lanceur_plongeur->nom : lanceur_creature->nom, comp->nom);
+    else
+        printf("\n>>> [%s] lance la compétence '%s' sur [%s] ! <<<\n", lanceur_plongeur ? lanceur_plongeur->nom : lanceur_creature->nom, comp->nom, cible_plongeur ? cible_plongeur->nom : cible_creature->nom);
 
     // 3. Exécuter les actions
-    if (comp->ciblage != SOI_MEME && ((lanceur_plongeur && cible_plongeur) || (lanceur_creature && cible_creature))) {
-        printf("Erreur: utiliserCompetence(): le lanceur et la cible sont tous les deux des plongeurs pour une compétence non auto-ciblée.\n");
-        return EXIT_FAILURE;
-    }
-
     for (size_t i = 0; i < comp->listeAction.longueur; i++) {
         res = executerAction(
             &comp->listeAction.actions[i],
