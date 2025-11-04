@@ -663,11 +663,6 @@ int setBestiaryGroupsFromConf(Bestiaire *modalBestiary, char *path) {
                 return EXIT_FAILURE;
             }
 
-            for (size_t i = 0; i < len; i++) {
-                printf("%ld ", arrayLong[i]);
-            }
-            printf("\n");
-
             // On vérifie si l'id de la compétence existe
             res = false;
             for (size_t i = 0; i < len; i++) {
