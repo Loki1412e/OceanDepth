@@ -79,9 +79,33 @@ int runGame(Sauvegarde *actualSave) {
     while (runProgram) {
         
         // Génération aléatoire de créatures via groupe / niveau de dangerosité
-        Bestiaire *bestiary = initRandomBestiaryFromDangerosityGroupLevel(modalBestiary, 2);
+        // Bestiaire *bestiary = initRandomBestiaryFromDangerosityGroupLevel(modalBestiary, 1);
+        // if (!bestiary) {
+        //     fprintf(stderr, "Erreur: runGame(): initRandomBestiaryFromDangerosityGroupLevel()\n");
+        //     runProgram = false;
+        //     continue;
+        // }
+        Bestiaire *bestiary = calloc(1, sizeof(Bestiaire));
         if (!bestiary) {
-            fprintf(stderr, "Erreur: runGame(): initRandomBestiaryFromDangerosityGroupLevel()\n");
+            fprintf(stderr, "Erreur: runGame(): Allocation mémoire bestiary\n");
+            runProgram = false;
+            continue;
+        }
+        if (addCreatureInBestiary(modalBestiary, bestiary, 0)) {
+            fprintf(stderr, "Erreur: runGame(): addCreatureInBestiary()\n");
+            freeBestiary(bestiary);
+            runProgram = false;
+            continue;
+        }
+        if (addCreatureInBestiary(modalBestiary, bestiary, 0)) {
+            fprintf(stderr, "Erreur: runGame(): addCreatureInBestiary()\n");
+            freeBestiary(bestiary);
+            runProgram = false;
+            continue;
+        }
+        if (addCreatureInBestiary(modalBestiary, bestiary, 7)) {
+            fprintf(stderr, "Erreur: runGame(): addCreatureInBestiary()\n");
+            freeBestiary(bestiary);
             runProgram = false;
             continue;
         }
