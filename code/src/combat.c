@@ -1,23 +1,5 @@
 #include "../include/combat.h"
 
-// Boucle Combat
-int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures);
-
-// Utils
-void updateFatigue(Plongeur *joueur, int gain);
-int diminuerFatigue(Plongeur *joueur, int perte);
-int calculerAttaquesMaxAvecFatigue(int fatigue_max, int fatigue);
-int calculerDegats(int attaque_min, int attaque_max, int defense);
-int appliquerConsommationOxygeneProfondeur(Plongeur *joueur);
-// Actions
-void joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature);
-int botAttaque(void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, EntiteType cible_type);
-// Affichage
-int afficherEtatOxygene(Plongeur *joueur);
-void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures);
-void afficherActionsDisponibles(Plongeur *joueur, int actions_restantes, int actions_max);
-
-
 /*====== Utils ======*/
 
 void updateFatigue(Plongeur *joueur, int gain) {
@@ -274,7 +256,7 @@ int appliquerTourCreature(CreatureMarine *creature, size_t index, Plongeur *joue
 
 // creatures deja sort by speed (voir creature.c -> generateCreatureInBestiary)
 // Return `-1` si le joueur a choisi de quitter et sauvegarder
-int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
+int combat(Sauvegarde *actualSave, Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
     
     int choix;
     size_t cible;
@@ -294,7 +276,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     fprintf(stderr, "Erreur: combat() // Monstres autant ou plus rapides: appliquerTourCreature()\n");
                     return EXIT_FAILURE;
                 }
-                pressEnterToContinue();
+                if (pressToContinueOrSave(actualSave) == -1) return -1;
                 if (joueur->pv <= 0) break;
                 if (res == -1) continue;
 
@@ -308,7 +290,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                 }
                 if (res == -1) {
                     printf(">> Un état de [%s #%zu] a expiré après son tour.\n", creatures[i]->nom, i+1);
-                    pressEnterToContinue();
+                    if (pressToContinueOrSave(actualSave) == -1) return -1;
                 }
                 else clearConsole();
             }
@@ -339,18 +321,18 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         if (pv_before_player != joueur->pv) {
             printf("Vous subissez %d dégâts d'effets de statut (PV: %d -> %d)\n", pv_before_player - joueur->pv, pv_before_player, joueur->pv);
         }
-        pressEnterToContinue();
+        if (pressToContinueOrSave(actualSave) == -1) return -1;
 
         afficherInterface(joueur, creatures, nb_creatures);
 
         if (actions_restantes == 0) {
             printf("\n>> Vous êtes trop fatigué pour attaquer ce tour-ci.\n");
-            pressEnterToContinue();
+            if (pressToContinueOrSave(actualSave) == -1) return -1;
         }
         else if (!peutAgir(&joueur->liste_etats)) {
             printf(">> Vous n'avez pas pu agir ce tour-ci.\n");
             actions_restantes = 0;
-            pressEnterToContinue();
+            if (pressToContinueOrSave(actualSave) == -1) return -1;
         }
         else afficherActionsDisponibles(joueur, actions_restantes, actions_max);
 
@@ -360,7 +342,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
             if (!peutAgir(&joueur->liste_etats)) {
                 printf("\n>> Vous n'avez pas pu agir ce tour-ci.\n");
-                pressEnterToContinue();
+                if (pressToContinueOrSave(actualSave) == -1) return -1;
                 break;
             }
             
@@ -384,7 +366,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     cout_actions = 1;
                     if (actions_restantes < cout_actions) {
                         printf("\n>> Vous n'avez pas assez d'actions restantes pour attaquer.\n");
-                        pressEnterToContinue();
+                        if (pressToContinueOrSave(actualSave) == -1) return -1;
                         afficherInterface(joueur, creatures, nb_creatures);
                         afficherActionsDisponibles(joueur, actions_restantes, actions_max);
                         continue;
@@ -412,7 +394,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                                 printf("\n>> Action annulée.\n");
                             else
                                 printf("\n>> Choix invalide (Action annulée).\n");
-                            pressEnterToContinue();
+                            if (pressToContinueOrSave(actualSave) == -1) return -1;
                             afficherInterface(joueur, creatures, nb_creatures);
                             afficherActionsDisponibles(joueur, actions_restantes, actions_max);
                             continue; // Ne termine pas le tour, redemande une action
@@ -426,7 +408,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     joueurAttaqueCreature(joueur, creatures[cible-1]);
                     actions_restantes -= cout_actions;
                     updateFatigue(joueur, cout_actions);
-                    pressEnterToContinue();
+                    if (pressToContinueOrSave(actualSave) == -1) return -1;
                     break;
 
 
@@ -435,7 +417,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     cout_actions = 1;
                     if (actions_restantes < cout_actions) {
                         printf("\n>> Vous n'avez pas assez d'actions restantes pour attaquer.\n");
-                        pressEnterToContinue();
+                        if (pressToContinueOrSave(actualSave) == -1) return -1;
                         afficherInterface(joueur, creatures, nb_creatures);
                         afficherActionsDisponibles(joueur, actions_restantes, actions_max);
                         continue;
@@ -463,7 +445,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                                 printf("\n>> Action annulée.\n");
                             else
                                 printf("\n>> Choix invalide (Action annulée).\n");
-                        pressEnterToContinue();
+                        if (pressToContinueOrSave(actualSave) == -1) return -1;
                         afficherInterface(joueur, creatures, nb_creatures);
                         afficherActionsDisponibles(joueur, actions_restantes, actions_max);
                         continue; // Ne termine pas le tour, redemande une action
@@ -472,7 +454,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     Competence *comp_choisie = &joueur->liste_competences.competences[choix_comp - 1];
                     if (!comp_choisie) {
                         printf("Erreur interne: compétence introuvable.\n");
-                        pressEnterToContinue();
+                        if (pressToContinueOrSave(actualSave) == -1) return -1;
                         afficherInterface(joueur, creatures, nb_creatures);
                         afficherActionsDisponibles(joueur, actions_restantes, actions_max);
                         continue;
@@ -506,7 +488,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                                     printf("\n>> Action annulée.\n");
                                 else
                                     printf("\n>> Choix invalide (Action annulée).\n");
-                                pressEnterToContinue();
+                                if (pressToContinueOrSave(actualSave) == -1) return -1;
                                 afficherInterface(joueur, creatures, nb_creatures);
                                 afficherActionsDisponibles(joueur, actions_restantes, actions_max);
                                 continue; // Ne termine pas le tour, redemande une action
@@ -519,7 +501,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                         cible_ptr = creatures[cible - 1];
                         if (!cible_ptr) {
                             printf(">> Erreur interne: cible introuvable.\n");
-                            pressEnterToContinue();
+                            if (pressToContinueOrSave(actualSave) == -1) return -1;
                             afficherInterface(joueur, creatures, nb_creatures);
                             afficherActionsDisponibles(joueur, actions_restantes, actions_max);
                             continue;
@@ -533,7 +515,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     
                     else {
                         printf(">> Erreur: Ciblage de compétence non géré dans l'interface.\n");
-                        pressEnterToContinue();
+                        if (pressToContinueOrSave(actualSave) == -1) return -1;
                         afficherInterface(joueur, creatures, nb_creatures);
                         afficherActionsDisponibles(joueur, actions_restantes, actions_max);
                         continue;
@@ -547,7 +529,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     }    
                     else if (res == -1) {
                         printf(">> Vous pouvez choisir une autre action.\n");
-                        pressEnterToContinue();
+                        if (pressToContinueOrSave(actualSave) == -1) return -1;
                         afficherInterface(joueur, creatures, nb_creatures);
                         afficherActionsDisponibles(joueur, actions_restantes, actions_max);
                         continue;
@@ -563,7 +545,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     
                     actions_restantes -= cout_actions;
                     updateFatigue(joueur, cout_actions);
-                    pressEnterToContinue();
+                    if (pressToContinueOrSave(actualSave) == -1) return -1;
                     break;
 
 
@@ -572,7 +554,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     cout_actions = 1;
                     if (actions_restantes < cout_actions) {
                         printf("\n>> Vous n'avez pas assez d'actions restantes pour attaquer.\n");
-                        pressEnterToContinue();
+                        if (pressToContinueOrSave(actualSave) == -1) return -1;
                         afficherInterface(joueur, creatures, nb_creatures);
                         afficherActionsDisponibles(joueur, actions_restantes, actions_max);
                         continue;
@@ -591,7 +573,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                                 printf("\n>> Action annulée.\n");
                             else
                                 printf("\n>> Choix invalide (Action annulée).\n");
-                        pressEnterToContinue();
+                        if (pressToContinueOrSave(actualSave) == -1) return -1;
                         afficherInterface(joueur, creatures, nb_creatures);
                         afficherActionsDisponibles(joueur, actions_restantes, actions_max);
                         continue; // Ne termine pas le tour, redemande une action
@@ -610,7 +592,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
                     actions_restantes -= cout_actions;
                     updateFatigue(joueur, cout_actions);
-                    pressEnterToContinue();
+                    if (pressToContinueOrSave(actualSave) == -1) return -1;
                     break;
 
                 // Changer d'arme
@@ -618,14 +600,14 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     cout_actions = 1;
                     if (actions_restantes < cout_actions) {
                         printf("\n>> Vous n'avez pas assez d'actions restantes pour changer d'arme.\n");
-                        pressEnterToContinue();
+                        if (pressToContinueOrSave(actualSave) == -1) return -1;
                         afficherInterface(joueur, creatures, nb_creatures);
                         afficherActionsDisponibles(joueur, actions_restantes, actions_max);
                         continue;
                     }
                     if (!joueur->arsenal || joueur->arsenal->longueur == 0) {
                         printf("\n>> Vous n'avez aucune arme dans votre arsenal.\n");
-                        pressEnterToContinue();
+                        if (pressToContinueOrSave(actualSave) == -1) return -1;
                         break;
                     }
                     printf("\nQuelle arme équiper ? (0 pour annuler) => [coût: %d action%s]\n", cout_actions, cout_actions > 1 ? "s" : "");
@@ -648,7 +630,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                                 printf("\n>> Action annulée.\n");
                             else
                                 printf("\n>> Choix invalide (Action annulée).\n");
-                        pressEnterToContinue();
+                        if (pressToContinueOrSave(actualSave) == -1) return -1;
                         afficherInterface(joueur, creatures, nb_creatures);
                         afficherActionsDisponibles(joueur, actions_restantes, actions_max);
                         continue; // Ne termine pas le tour, redemande une action
@@ -657,7 +639,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     if (choix_arme == 1) {
                         if (joueur->arme_equipee == NULL) {
                             printf(">> Vous n'avez déjà aucune arme équipée (Action annulée).\n");
-                            pressEnterToContinue();
+                            if (pressToContinueOrSave(actualSave) == -1) return -1;
                             afficherInterface(joueur, creatures, nb_creatures);
                             afficherActionsDisponibles(joueur, actions_restantes, actions_max);
                             continue; // Ne termine pas le tour, redemande une action
@@ -667,13 +649,13 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                         printf("\n→ Vous équipez vos poings.\n");
                         actions_restantes -= cout_actions;
                         // updateFatigue(joueur, cout_actions); // On considère que changer d'arme ne fatigue pas
-                        pressEnterToContinue();
+                        if (pressToContinueOrSave(actualSave) == -1) return -1;
                         break;
                     }
 
                     if (joueur->arme_equipee == joueur->arsenal->armes[choix_arme - 2]) {
                         printf(">> [%s] est déjà équipée (Action annulée).\n", joueur->arme_equipee->nom);
-                        pressEnterToContinue();
+                        if (pressToContinueOrSave(actualSave) == -1) return -1;
                         afficherInterface(joueur, creatures, nb_creatures);
                         afficherActionsDisponibles(joueur, actions_restantes, actions_max);
                         continue; // Ne termine pas le tour, redemande une action
@@ -681,7 +663,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
                     if (!joueur->arsenal->armes[choix_arme - 2]) {
                         printf(">> Erreur interne: arme introuvable.\n");
-                        pressEnterToContinue();
+                        if (pressToContinueOrSave(actualSave) == -1) return -1;
                         afficherInterface(joueur, creatures, nb_creatures);
                         afficherActionsDisponibles(joueur, actions_restantes, actions_max);
                         continue; // Ne termine pas le tour, redemande une action
@@ -689,7 +671,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
                     if (equiperArme(joueur, choix_arme - 2) == EXIT_FAILURE) {
                         printf(">> Erreur interne: combat(): equiperArme()\n");
-                        pressEnterToContinue();
+                        if (pressToContinueOrSave(actualSave) == -1) return -1;
                         afficherInterface(joueur, creatures, nb_creatures);
                         afficherActionsDisponibles(joueur, actions_restantes, actions_max);
                         continue; // Ne termine pas le tour, redemande une action
@@ -698,7 +680,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     printf("\n→ Vous équipez [%s].\n", joueur->arme_equipee->nom);
                     actions_restantes -= cout_actions;
                     // updateFatigue(joueur, cout_actions); // On considère que changer d'arme ne fatigue pas
-                    pressEnterToContinue();
+                    if (pressToContinueOrSave(actualSave) == -1) return -1;
                     break;
 
                 // Se reposer / Passer le tour
@@ -708,7 +690,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     printf("\n→ Vous vous reposez (fatigue -%d)\n", repos);
                     printf("→ Fin du tour.\n");
                     actions_restantes = 0;
-                    pressEnterToContinue();
+                    if (pressToContinueOrSave(actualSave) == -1) return -1;
                     break;
             }
 
@@ -724,7 +706,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
         decrementerCooldownsCompetences(&joueur->liste_competences);
         if (res == -1) {
             printf(">> Un de vos états a expiré après votre tour.\n");
-            pressEnterToContinue();
+            if (pressToContinueOrSave(actualSave) == -1) return -1;
         }
         else clearConsole();
 
@@ -738,7 +720,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                     fprintf(stderr, "Erreur: combat() // Monstres strictement moins rapides: appliquerTourCreature()\n");
                     return EXIT_FAILURE;
                 }
-                pressEnterToContinue();
+                if (pressToContinueOrSave(actualSave) == -1) return -1;
                 if (joueur->pv <= 0) break;
                 if (res == -1) continue;
 
@@ -752,7 +734,7 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
                 }
                 if (res == -1) {
                     printf(">> Un état de [%s #%zu] a expiré après son tour.\n", creatures[i]->nom, i+1);
-                    pressEnterToContinue();
+                    if (pressToContinueOrSave(actualSave) == -1) return -1;
                 }
                 else clearConsole();
             }
@@ -764,7 +746,14 @@ int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures) {
 
     if (joueur->pv <= 0)
         printf("\n☠️  Vous êtes mort... GAME OVER\n");
+    
+    if (pressToContinueOrSave(actualSave) == -1) return -1;
 
-    pressEnterToContinue();
+    // On sauvegarde tjs la partie après le combat
+    if (saveGame(actualSave) != EXIT_SUCCESS) {
+        fprintf(stderr, "Erreur: combat(): saveGame()\n");
+        return EXIT_FAILURE;
+    }
+
     return EXIT_SUCCESS;
 }

@@ -6,7 +6,7 @@ void freeSauvegardes(ListeSauvegardes *saves);
 
 ListeSauvegardes *preLoadListSaves(char *dir);
 Sauvegarde *loadSave(char *save_name, short preLoad);
-int save(Sauvegarde *save);
+int saveGame(Sauvegarde *save);
 int setNewSaveName(Sauvegarde *save, char *save_name);
 
 int saveInfo(Sauvegarde *save, SaveTmpFile *tmpSave);
@@ -751,7 +751,7 @@ ListeObjet *loadListeObjet(FILE *file) {
 
 /*================ SAVE ================*/
 
-int save(Sauvegarde *save) {
+int saveGame(Sauvegarde *save) {
     if (!save) {
         fprintf(stderr, "save : Paramètre invalide\n");
         return EXIT_FAILURE;

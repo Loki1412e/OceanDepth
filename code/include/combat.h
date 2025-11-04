@@ -7,7 +7,7 @@
     #include "creatures.h"
     #include "effets.h"
 
-    int combat(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures);
+    int combat(Sauvegarde *actualSave, Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures);
 
     // Utils
     void updateFatigue(Plongeur *joueur, int gain);

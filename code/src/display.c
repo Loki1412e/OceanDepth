@@ -97,6 +97,57 @@ void pressEnterToContinue() {
     clearConsole();
 }
 
+// Affiche pressEnterToContinue() si `save == NULL`
+// Return:
+// - `EXIT_SUCCESS` si continuer le jeu (sans savegarde)
+// - `EXIT_FAILURE` si erreur lors de la sauvegarde
+// - `-1` si sauvegarde effectuée et quitter le jeu
+// - `-2` si sauvegarde effectuée SANS quitter le jeu
+int pressToContinueOrSave(Sauvegarde *save) {
+    if (!save) {
+        pressEnterToContinue();
+        return EXIT_SUCCESS;
+    }
+    printf("\nAppuyez sur Entrée pour continuer (entrez [0] pour quitter/sauvegarder et [1] pour juste sauvegarder)... ");
+    
+    int res = EXIT_SUCCESS;
+    char c;
+    
+    while ((c = getchar()) != '\n') {
+        switch (c) {
+            
+            // Sauvegarder et quitter
+            case '0':
+                res = -1;
+                continue;
+                
+            // Sauvegarder seulement
+            case '1':
+                res = -2;
+                continue;
+            
+            default: continue;
+        }
+    }
+
+    if (res == EXIT_SUCCESS) {
+        clearConsole();
+        return EXIT_SUCCESS;
+    }
+
+    printf(">>> Sauvegarde en cours...\n");
+    if (saveGame(save) != EXIT_SUCCESS) {
+        fprintf(stderr, "Erreur: pressToContinueOrSave(): saveGame()\n");
+        printf("\n>>> Erreur lors de la sauvegarde.\n");
+        pressEnterToContinue();
+        return EXIT_FAILURE;
+    }
+    
+    printf(">>> Sauvegarde réussie.%s\n", (res == -1) ? " Au revoir !" : "");
+    pressEnterToContinue();
+    return res;
+}
+
 /*==================*/
 
 void printListeAction(ListeAction actions, char *prefix) {

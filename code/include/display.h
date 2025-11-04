@@ -5,12 +5,14 @@
     #include "conf.h"
     #include "effets.h"
     #include "competences.h"
+    #include "sauvegarde.h"
     
     // Temp
     size_t lireEntier();
     char *lireString();
     void clearConsole();
     void pressEnterToContinue();
+    int pressToContinueOrSave(Sauvegarde *save);
 
     void printCreature(CreatureMarine *creature);
     void printCreatures(CreatureMarine **creatures, size_t length);
