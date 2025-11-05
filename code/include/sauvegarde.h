@@ -5,6 +5,7 @@
     #include "joueur.h"
     #include "objets.h"
     #include "armes.h"
+    #include "zones.h"
 
     typedef struct {
         FILE *file;
@@ -26,6 +27,7 @@
 
     int saveInfo(Sauvegarde *save, SaveTmpFile *tmpSave);
     int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave);
+    int savePlayerProgress(PlayerProgress *p, SaveTmpFile *tmpSave);
     
     int saveListeActions(ListeAction *liste, SaveTmpFile *tmpSave);
     int saveListeObjet(ListeObjet *liste, SaveTmpFile *tmpSave);
