@@ -94,7 +94,7 @@ void build_tier(int tier, unsigned int seed, TierMap *m, int start_col){
             z.tier = tier;
             unsigned roll = trnd()%100;
             if(roll < (unsigned)wall_rate)      z.type = ZONE_BLOCKED;
-            else if(roll < (unsigned)(wall_rate+chest_rate)) z.type = ZONE_CHEST;
+            else if(roll < (unsigned)(wall_rate+chest_rate)) z.type = ZONE_TREASURE;
             else                                  z.type = ZONE_PATH;
             AT(m,r,c) = z;
         }
@@ -135,7 +135,10 @@ void build_tier(int tier, unsigned int seed, TierMap *m, int start_col){
     // 4) Spawn monsters with frequency increasing with the tier
     spawn_monsters(m, tier);
 
-    // 5) Masquer les cellules déjà nettoyées
+    // 5) Assurer que la cellule de départ est propre
+    AT(m,0, (start_col>=0 && start_col<LANES)? start_col:0).type = ZONE_PATH;
+
+    // 6) Masquer les cellules déjà nettoyées
     for(size_t i=0; i<m->cleared_count; i++){
         int rr = m->cleared_cells[i].row;
         int cc = m->cleared_cells[i].col;
@@ -163,25 +166,26 @@ void spawn_monsters(TierMap *m, int tier){
     }
 }
 
+char *get_zone_symbol(const Zone *z) {
+    switch(z->type){
+        case ZONE_BOSS:     return "👹";
+        case ZONE_BLOCKED:  return "🪨";
+        case ZONE_TREASURE: return "🪙";
+        case ZONE_MONSTER:  return "🐙";
+        default:            return "  ";
+    }
+}
+
 void draw_tier(const TierMap *m, int player_row, int player_col){
     clearConsole();
     printf("====== PALIER #%d ======\n\n", (player_row>=0? AT((TierMap*)m, player_row, player_col).tier : 0));
     for(int r=0;r<m->height;r++){
         for(int c=0;c<LANES;c++){
-            char *ch;
-            switch(AT(m,r,c).type){
-                case ZONE_BOSS:    ch="👹"; break;
-                case ZONE_BLOCKED: ch="🪨"; break;
-                case ZONE_CHEST:   ch="🪙"; break;
-                case ZONE_MONSTER: ch="🐙"; break;
-                default:           ch="  "; break;
-            }
-            if(r==player_row && c==player_col) ch="🤿";
-            printf("[ %s ]", ch);
+            printf("[ %s ]", (r==player_row && c==player_col) ? "🤿" : get_zone_symbol(&AT(m, r, c)));
         }
         printf("\n");
     }
-    printf("\nLégende : 🤿 Joueur | 👹 Boss | 🪨 Rocher | 🪙 Trésor | 🐙 Monstre | espace = libre\n\n");
+    printf("\nLégende : | 🤿 Joueur | 👹 Boss | 🪨 Rocher | 🪙 Trésor | 🐙 Monstre |\n\n");
     const Zone *z = &AT((TierMap*)m, player_row, player_col);
     printf("Biome : %s\tDanger : ", z->biome);
     int stars = 1 + (z->tier/2); if(stars>5) stars=5; for(int i=0;i<stars;i++) printf("*");
@@ -401,7 +405,7 @@ int startGame() {
         player.col = new_col;
 
         // --- 4. Gérer les conséquences (UNE SEULE FOIS) ---
-        if (target_zone->type == ZONE_CHEST) {
+        if (target_zone->type == ZONE_TREASURE) {
             printf("🪙 Trésor trouvé ! (loot plus tard)\n");
             target_zone->type = ZONE_PATH; // On vide la case
             mark_cell_as_cleared(&map, new_row, new_col); // On marque comme nettoyée
