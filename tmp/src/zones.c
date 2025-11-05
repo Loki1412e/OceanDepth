@@ -117,20 +117,20 @@ void draw_tier(const TierMap *m, int player_row, int player_col){
     printf("====== PALIER #%d ======\n\n", (player_row>=0? AT((TierMap*)m, player_row, player_col).tier : 0));
     for(int r=0;r<m->height;r++){
         for(int c=0;c<LANES;c++){
-            char ch;
+            char *ch;
             switch(AT(m,r,c).type){
-                case ZONE_BOSS:    ch='B'; break;
-                case ZONE_BLOCKED: ch='X'; break;
-                case ZONE_CHEST:   ch='C'; break;
-                case ZONE_MONSTER: ch='M'; break;
-                default:           ch=' '; break;
+                case ZONE_BOSS:    ch="👹"; break;
+                case ZONE_BLOCKED: ch="🪨"; break;
+                case ZONE_CHEST:   ch="🪙"; break;
+                case ZONE_MONSTER: ch="🐙"; break;
+                default:           ch="  "; break;
             }
-            if(r==player_row && c==player_col) ch='@';
-            printf("[ %c ]", ch);
+            if(r==player_row && c==player_col) ch="🤿";
+            printf("[ %s ]", ch);
         }
         printf("\n");
     }
-    printf("\nLégende : @ Joueur | B Boss | X Mur | C Coffre | M Monstre | espace = libre\n\n");
+    printf("\nLégende : 🤿 Joueur | 👹 Boss | 🪨 Rocher | 🪙 Trésor | 🐙 Monstre | espace = libre\n\n");
     const Zone *z = &AT((TierMap*)m, player_row, player_col);
     printf("Biome : %s\tDanger : ", z->biome);
     int stars = 1 + (z->tier/2); if(stars>5) stars=5; for(int i=0;i<stars;i++) printf("*");
@@ -177,7 +177,7 @@ int loadPlayerProgress(PlayerProgress* p){
 int startGame() {
     clearConsole();
     printf("=== Bienvenue dans Ocean Depth ! ===\n\n");
-    
+
     seed_state = getRandomSeed();
     PlayerProgress player = {0};
 
@@ -255,7 +255,7 @@ int startGame() {
         Zone* target_zone = &AT(&map, new_row, new_col);
 
         if (target_zone->type == ZONE_BLOCKED) {
-            printf("🚫 Chemin bloqué !\n"); 
+            printf("🪨 Chemin bloqué !\n"); 
             pressEnterToContinue();
             continue; // C'est un mur, on ne bouge pas
         }
@@ -268,17 +268,17 @@ int startGame() {
         // (target_zone pointe déjà vers la nouvelle case du joueur)
 
         if (target_zone->type == ZONE_CHEST) {
-            printf("🎁 Coffre trouvé ! (loot plus tard)\n");
+            printf("🪙 Trésor trouvé ! (loot plus tard)\n");
             target_zone->type = ZONE_PATH; // On vide la case
             pressEnterToContinue();
         } 
         else if (target_zone->type == ZONE_MONSTER) {
-            printf("👹 Monstre rencontré ! (combat à venir)\n");
+            printf("🐙 Monstre rencontré ! (combat à venir)\n");
             target_zone->type = ZONE_PATH; // On vide la case
             pressEnterToContinue();
         } 
         else if (target_zone->type == ZONE_BOSS) {
-            printf("✨ Boss atteint ! Passage au palier suivant... ✨\n");
+            printf("👹 Boss atteint ! Passage au palier suivant... ✨\n");
             pressEnterToContinue();
             // Génération du palier suivant
             player.tier++;
