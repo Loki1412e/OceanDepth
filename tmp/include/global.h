@@ -39,11 +39,18 @@
     } PlayerProgress;
 
     typedef struct {
+        int row;
+        int col;
+    } ClearedCell;
+
+    typedef struct {
         int height;        // nombre de rangées verticales (la longueur du palier)
         int boss_col;      // colonne du boss (0..LANES-1)
         unsigned int seed; // seed pour ce palier (utilisée par rnd local)
         unsigned int tier_rng_state; // état du RNG local pour ce palier
         Zone *cells;       // tableau height*LANES
+        ClearedCell *cleared_cells;  // tableau dynamique des cellules nettoyées
+        size_t cleared_count; // nombre de cellules nettoyées
     } TierMap;
 
 #endif
