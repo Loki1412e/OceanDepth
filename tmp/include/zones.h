@@ -3,6 +3,8 @@
 
     #include "global.h"
 
+    #define AT(m,r,c) ((m)->cells[(r)*(TIER_LANES) + (c)])
+
     int startGame();
     
     int loadPlayerProgress(PlayerProgress* p);

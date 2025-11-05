@@ -76,9 +76,9 @@ void build_tier(int tier, unsigned int seed, TierMap *m, PlayerProgress *p){
     tier_rng_state = seed; // RNG locale stable pour ce palier
     
     m->height = height;
-    m->boss_col = trnd_int(0, LANES-1);
+    m->boss_col = trnd_int(0, TIER_LANES-1);
     m->seed = seed;
-    m->cells = (Zone*)malloc(sizeof(Zone)*height*LANES);
+    m->cells = (Zone*)malloc(sizeof(Zone)*height*TIER_LANES);
     
     // Si c'est un nouveau palier, on réinitialise les cellules nettoyées
     if(is_new_tier && p->cleared_cells) {
@@ -97,8 +97,8 @@ void build_tier(int tier, unsigned int seed, TierMap *m, PlayerProgress *p){
 
     // 1) Remplissage aléatoire initial
     for(int r=0;r<height;r++){
-        for(int c=0;c<LANES;c++){
-            Zone z = generate_zone(tier*1000 + r*LANES + c);
+        for(int c=0;c<TIER_LANES;c++){
+            Zone z = generate_zone(tier*1000 + r*TIER_LANES + c);
             z.tier = tier;
             unsigned roll = trnd()%100;
             if(roll < (unsigned)wall_rate)      z.type = ZONE_BLOCKED;
@@ -109,7 +109,7 @@ void build_tier(int tier, unsigned int seed, TierMap *m, PlayerProgress *p){
     }
 
     // 2) Carve un chemin garanti...
-    int c = (p->start_col>=0 && p->start_col<LANES)? p->start_col : trnd_int(0, LANES-1);
+    int c = (p->start_col>=0 && p->start_col<TIER_LANES)? p->start_col : trnd_int(0, TIER_LANES-1);
     for(int r=0; r < height - 1; r++){
         AT(m,r,c).type = ZONE_PATH; // Ouvre la case actuelle
 
@@ -117,7 +117,7 @@ void build_tier(int tier, unsigned int seed, TierMap *m, PlayerProgress *p){
         int move = trnd_int(-1,1);
         int nc = c + move;
         if(nc<0) nc=0;
-        if(nc>=LANES) nc=LANES-1;
+        if(nc>=TIER_LANES) nc=TIER_LANES-1;
 
         // On ouvre aléatoirement un "pont" pour permettre le déplacement
         if(trnd_int(0,1) == 0){
@@ -141,13 +141,13 @@ void build_tier(int tier, unsigned int seed, TierMap *m, PlayerProgress *p){
     spawn_monsters(m, tier);
 
     // 4) Assurer que la cellule de départ est propre
-    AT(m,0, (p->start_col>=0 && p->start_col<LANES)? p->start_col:0).type = ZONE_PATH;
+    AT(m,0, (p->start_col>=0 && p->start_col<TIER_LANES)? p->start_col:0).type = ZONE_PATH;
 
     // 5) Masquer les cellules déjà nettoyées
     for(size_t i=0; i<p->cleared_count; i++){
         int rr = p->cleared_cells[i].row;
         int cc = p->cleared_cells[i].col;
-        if(rr >=0 && rr < m->height && cc >=0 && cc < LANES){
+        if(rr >=0 && rr < m->height && cc >=0 && cc < TIER_LANES){
             AT(m, rr, cc).type = ZONE_PATH;
         }
     }
@@ -159,7 +159,7 @@ void spawn_monsters(TierMap *m, int tier){
     if(monster_rate > 40) monster_rate = 40;
 
     for(int r=0; r<m->height; r++){
-        for(int c=0; c<LANES; c++){
+        for(int c=0; c<TIER_LANES; c++){
             Zone *z = &AT(m, r, c);
             if(z->type == ZONE_PATH){
                 unsigned roll = trnd()%100;
@@ -185,7 +185,7 @@ void draw_tier(const TierMap *m, int player_row, int player_col){
     clearConsole();
     printf("====== PALIER #%d ======\n\n", (player_row>=0? AT((TierMap*)m, player_row, player_col).tier : 0));
     for(int r=0;r<m->height;r++){
-        for(int c=0;c<LANES;c++){
+        for(int c=0;c<TIER_LANES;c++){
             printf("[ %s ]", (r==player_row && c==player_col) ? "🤿" : get_zone_symbol(&AT(m, r, c)));
         }
         printf("\n");
@@ -324,7 +324,7 @@ int startGame() {
         }
 
         if (player.tier <= 0 ||
-            player.col < 0 || player.col >= LANES ||
+            player.col < 0 || player.col >= TIER_LANES ||
             player.row < 0 ||
             player.tier_seed == 0
         ) {
@@ -339,7 +339,7 @@ int startGame() {
         pressEnterToContinue();
     }else{
         printf("Nouvelle aventure ! ✅\n");
-        player.tier = 1; player.start_col = LANES/2; player.row = 0; player.col = LANES/2; player.tier_seed = getRandomSeed();
+        player.tier = 1; player.start_col = TIER_LANES/2; player.row = 0; player.col = TIER_LANES/2; player.tier_seed = getRandomSeed();
         pressEnterToContinue();
     }
 
@@ -389,7 +389,7 @@ int startGame() {
         // --- 2. Vérifier la validité de la CIBLE ---
 
         // Vérification des limites de la carte
-        if (new_row < 0 || new_row >= map.height || new_col < 0 || new_col >= LANES) {
+        if (new_row < 0 || new_row >= map.height || new_col < 0 || new_col >= TIER_LANES) {
             continue; // Mouvement hors-limites, on ignore
         }
 
