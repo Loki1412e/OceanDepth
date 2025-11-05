@@ -6,21 +6,19 @@
     #define TIER_LANES 5
 
     #define AT(m,r,c) ((m)->cells[(r)*(TIER_LANES) + (c)])
-
-    int startGame();
     
-    int loadPlayerProgress(PlayerProgress* p);
-    int savePlayerProgress(PlayerProgress* p);
-
-    Zone generate_zone(int index);
-    void show_zone(const Zone* z);
     void free_tier(TierMap *m);
     void free_player_progress(PlayerProgress *p);
+
+    TierMap *initTier(Sauvegarde *save);
+
+    TierMap *build_tier(int tier, unsigned seed, PlayerProgress *p, short isNewTier);
+    Zone generate_zone(int index);
+    int spawn_monsters(TierMap *m, int tier);
     int mark_cell_as_cleared(PlayerProgress *p, int r, int c);
-    void build_tier(int tier, unsigned int seed, TierMap *m, PlayerProgress *p);
-    void draw_tier(const TierMap *m, int player_row, int player_col);
-    void spawn_monsters(TierMap *m, int tier);
 
     char *get_zone_symbol(const Zone *z);
+    void draw_tier(const TierMap *m, int player_row, int player_col);
+    void show_zone(const Zone* z);
 
 #endif
