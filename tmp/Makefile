@@ -6,7 +6,7 @@ SRCDIR = src
 OUTDIR = output
 SOURCES = $(wildcard ./$(SRCDIR)/*.c)
 
-.PHONY: all clean run debug
+.PHONY: all clean run debug valgrind
 
 all: $(OUTDIR)/$(TARGET)
 
@@ -22,3 +22,6 @@ clean:
 
 debug: CFLAGS += -g
 debug: $(OUTDIR)/$(TARGET)
+
+valgrind: debug
+	cd $(OUTDIR) && valgrind -v --leak-check=full --track-origins=yes ./$(TARGET) && cd ..
