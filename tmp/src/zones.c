@@ -175,22 +175,37 @@ int loadPlayerProgress(PlayerProgress* p){
 
 // ---------------- MAIN LOOP ----------------
 int startGame() {
+    clearConsole();
+    printf("=== Bienvenue dans Ocean Depth ! ===\n\n");
+    
     seed_state = getRandomSeed();
     PlayerProgress player = {0};
 
     printf("Charger la sauvegarde ? (o/n) : ");
     char c;
     if(scanf(" %c", &c) != 1) c = 'n';
+    // Vider le buffer
+    while (getchar() != '\n');
+    // Si minuscule -> majuscule
+    if(c >= 'a' && c <= 'z') c -= 32;
 
-    if(c=='o' && loadPlayerProgress(&player)){
+    if((c=='O' || c=='Y') && loadPlayerProgress(&player)){
+        if (player.tier <= 0 ||
+            player.col < 0 || player.col >= LANES ||
+            player.row < 0 ||
+            player.tier_seed == 0
+        ) {
+            // Données corrompues, réinitialiser
+            fprintf(stderr, "Erreur: Données de sauvegarde corrompues.\n");
+            pressEnterToContinue();
+            return EXIT_FAILURE;
+        }
         printf("Progression chargée ✅\n");
-        if(player.tier<=0) player.tier=1;
-        if(player.col<0 || player.col>=LANES) player.col=LANES/2;
-        if(player.row<0) player.row=0;
-        if(player.tier_seed==0) player.tier_seed = seed_state;
+        pressEnterToContinue();
     }else{
         printf("Nouvelle aventure ! ✅\n");
         player.tier = 1; player.row = 0; player.col = LANES/2; player.tier_seed = seed_state;
+        pressEnterToContinue();
     }
 
     TierMap map = {0};
@@ -202,65 +217,78 @@ int startGame() {
         printf("Z : Monter  | S : Descendre | X : Quitter ❌\n");
         printf("Q : Gauche  | D : Droite    | W : Sauvegarder 💾\n> ");
         if(scanf(" %c", &c) != 1) continue;
+        // Vider le buffer
+        while (getchar() != '\n');
+        // Si minuscule -> majuscule
+        if(c >= 'a' && c <= 'z') c -= 32;
 
-        if(c=='X' || c=='x'){
+        // --- Actions qui ne sont PAS des mouvements ---
+        if(c=='X'){
             printf("A bientôt 👋\n");
             break;
-        } else if(c=='W' || c=='w'){
-            savePlayerProgress(&player); printf("✅ Progression sauvegardée !\n"); getchar(); getchar();
-        }else if(c=='Q' || c=='q'){
-            if(player.col>0 && AT(&map, player.row, player.col-1).type != ZONE_BLOCKED){
-                player.col--;
-                if(AT(&map, player.row, player.col).type == ZONE_CHEST){
-                    printf("🎁 Coffre trouvé ! (loot plus tard)\n"); AT(&map, player.row, player.col).type = ZONE_PATH; getchar(); getchar();
-                }
-                if(AT(&map, player.row, player.col).type == ZONE_MONSTER){
-                    printf("👹 Monstre rencontré ! (combat à venir)\n"); AT(&map, player.row, player.col).type = ZONE_PATH; getchar(); getchar();
-                }
-            }
-        } else if(c=='D' || c=='d'){
-            if(player.col<LANES-1 && AT(&map, player.row, player.col+1).type != ZONE_BLOCKED){
-                player.col++;
-                if(AT(&map, player.row, player.col).type == ZONE_CHEST){
-                    printf("🎁 Coffre trouvé ! (loot plus tard)\n"); AT(&map, player.row, player.col).type = ZONE_PATH; getchar(); getchar();
-                }
-                if(AT(&map, player.row, player.col).type == ZONE_MONSTER){
-                    printf("👹 Monstre rencontré ! (combat à venir)\n"); AT(&map, player.row, player.col).type = ZONE_PATH; getchar(); getchar();
-                }
-            }
-        } else if(c=='Z' || c=='z'){
-            if(player.row>0 && AT(&map, player.row-1, player.col).type != ZONE_BLOCKED){
-                player.row--;
-                if(AT(&map, player.row, player.col).type == ZONE_CHEST){
-                    printf("🎁 Coffre trouvé ! (loot plus tard)\n"); AT(&map, player.row, player.col).type = ZONE_PATH; getchar(); getchar();
-                }
-                if(AT(&map, player.row, player.col).type == ZONE_MONSTER){
-                    printf("👹 Monstre rencontré ! (combat à venir)\n"); AT(&map, player.row, player.col).type = ZONE_PATH; getchar(); getchar();
-                }
-            }
-        } else if(c=='S' || c=='s'){
-            if(player.row < map.height-1){
-                if(AT(&map, player.row+1, player.col).type == ZONE_BLOCKED){
-                    printf("🚫 Chemin bloqué !\n"); getchar(); getchar();
-                } else {
-                    player.row++;
-                    if(AT(&map, player.row, player.col).type == ZONE_CHEST){
-                        printf("🎁 Coffre trouvé ! (loot plus tard)\n"); AT(&map, player.row, player.col).type = ZONE_PATH; getchar(); getchar();
-                    }
-                    if(AT(&map, player.row, player.col).type == ZONE_MONSTER){
-                        printf("👹 Monstre rencontré ! (combat à venir)\n"); AT(&map, player.row, player.col).type = ZONE_PATH; getchar(); getchar();
-                    }
-                    if(AT(&map, player.row, player.col).type == ZONE_BOSS){
-                        // Génération du palier suivant avec difficulté accrue et apparition aléatoire de monstres
-                        player.tier++;
-                        player.row = 0;
-                        player.tier_seed = getRandomSeed() ^ (unsigned)(player.tier*2654435761u);
-                        free_tier(&map);
-                        build_tier(player.tier, player.tier_seed, &map, player.col);
-                    }
-                }
-            }
+        } 
+        if(c=='W'){
+            savePlayerProgress(&player); 
+            printf("✅ Progression sauvegardée !\n"); 
+            pressEnterToContinue();
+            continue; // On ne bouge pas, on re-dessine
         }
+
+        // --- 1. Déterminer la position CIBLE ---
+        int new_row = player.row;
+        int new_col = player.col;
+
+        if     (c=='Q') new_col--;
+        else if(c=='D') new_col++;
+        else if(c=='Z') new_row--;
+        else if(c=='S') new_row++;
+        else continue; // Touche inconnue, on ignore
+
+        // --- 2. Vérifier la validité de la CIBLE ---
+
+        // Vérification des limites de la carte
+        if (new_row < 0 || new_row >= map.height || new_col < 0 || new_col >= LANES) {
+            continue; // Mouvement hors-limites, on ignore
+        }
+
+        // Vérification de la case cible (mur)
+        Zone* target_zone = &AT(&map, new_row, new_col);
+
+        if (target_zone->type == ZONE_BLOCKED) {
+            printf("🚫 Chemin bloqué !\n"); 
+            pressEnterToContinue();
+            continue; // C'est un mur, on ne bouge pas
+        }
+
+        // --- 3. Mouvement VALIDE : Mettre à jour le joueur ---
+        player.row = new_row;
+        player.col = new_col;
+
+        // --- 4. Gérer les conséquences (UNE SEULE FOIS) ---
+        // (target_zone pointe déjà vers la nouvelle case du joueur)
+
+        if (target_zone->type == ZONE_CHEST) {
+            printf("🎁 Coffre trouvé ! (loot plus tard)\n");
+            target_zone->type = ZONE_PATH; // On vide la case
+            pressEnterToContinue();
+        } 
+        else if (target_zone->type == ZONE_MONSTER) {
+            printf("👹 Monstre rencontré ! (combat à venir)\n");
+            target_zone->type = ZONE_PATH; // On vide la case
+            pressEnterToContinue();
+        } 
+        else if (target_zone->type == ZONE_BOSS) {
+            printf("✨ Boss atteint ! Passage au palier suivant... ✨\n");
+            pressEnterToContinue();
+            // Génération du palier suivant
+            player.tier++;
+            player.row = 0; // On repart d'en haut
+            // On utilise la colonne d'arrivée comme colonne de départ du palier suivant
+            player.tier_seed = getRandomSeed() ^ (unsigned)(player.tier*2654435761u);
+            free_tier(&map);
+            build_tier(player.tier, player.tier_seed, &map, player.col);
+        }
+        // Si c'est ZONE_PATH, on ne fait rien et la boucle continue
     }
 
     free_tier(&map);
