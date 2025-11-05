@@ -7,9 +7,7 @@ int runGame(Sauvegarde *actualSave) {
 
     /*===== Init var ====*/
 
-    int runProgram = true;
-
-    Plongeur *diver = actualSave->diver;
+    Plongeur *player = actualSave->diver;
     Bestiaire *modalBestiary = NULL;
     ListeCompetence modalCreaturesSkills = {0};
     ListeObjet *modalConsumablesList = NULL;
@@ -65,25 +63,24 @@ int runGame(Sauvegarde *actualSave) {
     pressEnterToContinue();
     
     // On ajoute des armes de base au joueur (si pas déjà présentes)
-    ajouterArme(modalArsenal, diver->arsenal, 0);
-    ajouterArme(modalArsenal, diver->arsenal, 2);
+    ajouterArme(modalArsenal, player->arsenal, 0);
+    ajouterArme(modalArsenal, player->arsenal, 2);
 
     /*============================*/
     /*===== Boucle principale ====*/
     /*============================*/
 
     printSave(actualSave);
-    printf("[%s] entre dans les profondeurs maritimes.\n\n", diver->nom);
+    printf("[%s] entre dans les profondeurs maritimes.\n\n", player->nom);
     pressEnterToContinue();
 
-    while (runProgram) {
+    while (true) {
         
         // Génération aléatoire de créatures via groupe / niveau de dangerosité = 1
         Bestiaire *bestiary = initRandomBestiaryFromDangerosityGroupLevel(modalBestiary, 1);
         if (!bestiary) {
             fprintf(stderr, "Erreur: runGame(): initRandomBestiaryFromDangerosityGroupLevel()\n");
-            runProgram = false;
-            continue;
+            break;
         }
 
         printf("Des créatures marines apparaissent !\n");
@@ -92,8 +89,8 @@ int runGame(Sauvegarde *actualSave) {
 
         // Test ajout effets
         printf("\nAjout d'effets pour les tests:\n");
-        ajouterEffet(&diver->liste_etats, diver->effets_immunises, POISON, 3, 0, 0);
-        ajouterEffet(&diver->liste_etats, diver->effets_immunises, SAIGNEMENT, 3, 0, 0);
+        ajouterEffet(&player->liste_etats, player->effets_immunises, POISON, 3, 0, 0);
+        ajouterEffet(&player->liste_etats, player->effets_immunises, SAIGNEMENT, 3, 0, 0);
         ajouterEffet(&bestiary->creatures[0]->liste_etats, bestiary->creatures[0]->effets_immunises, PARALYSIE, 5, 0, 0);
         ajouterEffet(&bestiary->creatures[1]->liste_etats, bestiary->creatures[1]->effets_immunises, SAIGNEMENT, 5, 0, 0);
         if (pressToContinueOrSave(actualSave) == -1) {
@@ -102,28 +99,28 @@ int runGame(Sauvegarde *actualSave) {
         }
 
         // Test ajout objets (consommables)
-        ajouterObjet(modalConsumablesList, diver->liste_consommables, 3);
-        ajouterObjet(modalConsumablesList, diver->liste_consommables, 1);
+        ajouterObjet(modalConsumablesList, player->liste_consommables, 3);
+        ajouterObjet(modalConsumablesList, player->liste_consommables, 1);
         printf("\nConsommables ajoutés");
-        printObjectsList(diver->liste_consommables);
+        printObjectsList(player->liste_consommables);
         if (pressToContinueOrSave(actualSave) == -1) {
             freeBestiary(bestiary);
             break;
         }
 
         // Test ajout bibelots
-        ajouterBibelot(modalOrnamentsList, diver, 2);
-        ajouterBibelot(modalOrnamentsList, diver, 5);
-        ajouterBibelot(modalOrnamentsList, diver, 7);
+        ajouterBibelot(modalOrnamentsList, player, 2);
+        ajouterBibelot(modalOrnamentsList, player, 5);
+        ajouterBibelot(modalOrnamentsList, player, 7);
         printf("\nBibelots ajoutés");
-        printObjectsList(diver->liste_bibelots);
+        printObjectsList(player->liste_bibelots);
         if (pressToContinueOrSave(actualSave) == -1) {
             freeBestiary(bestiary);
             break;
         }
 
         // Lancer le combat
-        res = combat(actualSave, diver, bestiary->creatures, bestiary->longueur_creatures);
+        res = combat(actualSave, player, bestiary->creatures, bestiary->longueur_creatures);
         freeBestiary(bestiary); // On libère le bestiaire après le combat
         if (res == EXIT_FAILURE) {
             fprintf(stderr, "Erreur: runGame(): res = combat()\n");
@@ -134,14 +131,14 @@ int runGame(Sauvegarde *actualSave) {
             break;
         }
 
-        runProgram = false;
+        break; // Pour l'instant on sort après un tour de boucle
     }
 
     // Test suppression bibelots
-    supprimerBibelot(diver, 3);
-    supprimerBibelot(diver, 7);
+    supprimerBibelot(player, 3);
+    supprimerBibelot(player, 7);
     printf("\nBibelots après suppression du premier:\n");
-    printObjectsList(diver->liste_bibelots);
+    printObjectsList(player->liste_bibelots);
     pressEnterToContinue();
 
     /*===== free && return ====*/
