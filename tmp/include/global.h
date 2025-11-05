@@ -19,7 +19,7 @@
     typedef enum {
         ZONE_PATH,
         ZONE_BLOCKED,
-        ZONE_CHEST,
+        ZONE_TREASURE,
         ZONE_BOSS,
         ZONE_MONSTER
     } ZoneType;
