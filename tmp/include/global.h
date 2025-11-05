@@ -9,6 +9,7 @@
 
     /////////////////////
     void clearConsole();
+    void pressEnterToContinue();
     /////////////////////
     
     #define LANES 5

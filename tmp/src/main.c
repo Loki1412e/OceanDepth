@@ -10,6 +10,12 @@ void clearConsole() {
     #endif
 }
 
+void pressEnterToContinue() {
+    printf("\nAppuyez sur Entrée pour continuer...");
+    while (getchar() != '\n');
+    clearConsole();
+}
+
 int main() {
     if (startGame() == EXIT_FAILURE) {
         fprintf(stderr, "Erreur lors du démarrage du jeu.\n");
