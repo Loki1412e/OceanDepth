@@ -12,9 +12,7 @@
     void pressEnterToContinue();
     /////////////////////
     
-    #define LANES 5
-
-    #define AT(m,r,c) ((m)->cells[(r)*(LANES) + (c)])
+    #define TIER_LANES 5
 
     typedef enum {
         ZONE_PATH,
@@ -39,18 +37,18 @@
     typedef struct {
         int tier;        // palier actuel (1..+)
         int row;         // position verticale du joueur (0 .. height-1)
-        int col;         // 0..LANES-1 (chemin)
+        int col;         // 0..TIER_LANES-1 (chemin)
         unsigned int tier_seed; // seed pour régénérer le palier de façon stable
-        int start_col; // colonne de départ du joueur (0..LANES-1)
+        int start_col; // colonne de départ du joueur (0..TIER_LANES-1)
         ClearedCell *cleared_cells;  // tableau dynamique des cellules nettoyées
         size_t cleared_count; // nombre de cellules nettoyées
     } PlayerProgress;
 
     typedef struct {
         int height;        // nombre de rangées verticales (la longueur du palier)
-        int boss_col;      // colonne du boss (0..LANES-1)
+        int boss_col;      // colonne du boss (0..TIER_LANES-1)
         unsigned int seed; // seed pour ce palier (utilisée par rnd local)
-        Zone *cells;       // tableau height*LANES
+        Zone *cells;       // tableau height*TIER_LANES
     } TierMap;
 
 #endif
