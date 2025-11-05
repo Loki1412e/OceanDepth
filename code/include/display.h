@@ -13,6 +13,7 @@
     void clearConsole();
     void pressEnterToContinue();
     int pressToContinueOrSave(Sauvegarde *save);
+    char getCharInputToUpper();
 
     void printCreature(CreatureMarine *creature);
     void printCreatures(CreatureMarine **creatures, size_t length);
