@@ -64,36 +64,38 @@ int mark_cell_as_cleared(PlayerProgress *p, int r, int c) {
     return EXIT_SUCCESS;
 }
 
-void build_tier(int tier, unsigned int seed, TierMap *m, PlayerProgress *p){
+// Génère un palier complet
+// Si isNewTier = `true`, réinitialise les cellules nettoyées
+TierMap *build_tier(int tier, unsigned seed, PlayerProgress *p, short isNewTier) {
     // Longueur qui s'allonge avec la difficulté (mini 6)
     int base = 6;
     int height = base + tier + tier/2; // s'allonge progressivement
     if(height < 6) height = 6;
 
-    // Vérifier si c'est un nouveau palier (changement de seed)
-    int is_new_tier = (m->seed != seed && m->seed != 0);
-
     tier_rng_state = seed; // RNG locale stable pour ce palier
+
+    TierMap *m = (TierMap*)calloc(1, sizeof(TierMap));
+    if (!m) {
+        fprintf(stderr, "Erreur: build_tier(): m = calloc()\n");
+        return NULL;
+    }
     
     m->height = height;
     m->boss_col = trnd_int(0, TIER_LANES-1);
     m->seed = seed;
-    m->cells = (Zone*)malloc(sizeof(Zone)*height*TIER_LANES);
+    m->cells = (Zone*)calloc(height*TIER_LANES, sizeof(Zone));
     
     // Si c'est un nouveau palier, on réinitialise les cellules nettoyées
-    if(is_new_tier && p->cleared_cells) {
-        free(p->cleared_cells);
+    if(isNewTier || !p->cleared_cells) {
+        if (p->cleared_cells) free(p->cleared_cells);
         p->cleared_cells = NULL;
-        p->cleared_count = 0;
-    } else if(p->cleared_cells == NULL) {
-        // Premier appel ou nouvelle partie
         p->cleared_count = 0;
     }
     // Sinon, on garde les cleared_cells (cas du chargement de sauvegarde)
 
     // Taux qui scalent avec le palier
-    int wall_rate  = 15 + tier*5;  if(wall_rate>60) wall_rate=60;    // murs plus fréquents
-    int chest_rate = 20 - tier*2;  if(chest_rate<5) chest_rate=5;    // coffres plus rares
+    int blocked_rate  = 15 + tier*5;  if(blocked_rate>60) blocked_rate=60;    // bloqué plus fréquents
+    int treasure_rate = 20 - tier*2;  if(treasure_rate<5) treasure_rate=5;    // trésor plus rares
 
     // 1) Remplissage aléatoire initial
     for(int r=0;r<height;r++){
@@ -101,15 +103,22 @@ void build_tier(int tier, unsigned int seed, TierMap *m, PlayerProgress *p){
             Zone z = generate_zone(tier*1000 + r*TIER_LANES + c);
             z.tier = tier;
             unsigned roll = trnd()%100;
-            if(roll < (unsigned)wall_rate)      z.type = ZONE_BLOCKED;
-            else if(roll < (unsigned)(wall_rate+chest_rate)) z.type = ZONE_TREASURE;
-            else                                  z.type = ZONE_PATH;
+            
+            if(roll < (unsigned)blocked_rate)
+                z.type = ZONE_BLOCKED;
+
+            else if(roll < (unsigned)(blocked_rate+treasure_rate))
+                z.type = ZONE_TREASURE;
+
+            else
+                z.type = ZONE_PATH;
+
             AT(m,r,c) = z;
         }
     }
 
     // 2) Carve un chemin garanti...
-    int c = (p->start_col>=0 && p->start_col<TIER_LANES)? p->start_col : trnd_int(0, TIER_LANES-1);
+    int c = (p->start_col>=0 && p->start_col<TIER_LANES) ? p->start_col : trnd_int(0, TIER_LANES-1);
     for(int r=0; r < height - 1; r++){
         AT(m,r,c).type = ZONE_PATH; // Ouvre la case actuelle
 
@@ -138,7 +147,11 @@ void build_tier(int tier, unsigned int seed, TierMap *m, PlayerProgress *p){
     m->boss_col = c;
 
     // 3) Spawn monsters with frequency increasing with the tier
-    spawn_monsters(m, tier);
+    if (spawn_monsters(m, tier) != EXIT_SUCCESS) {
+        fprintf(stderr, "Erreur: build_tier(): spawn_monsters()\n");
+        free_tier(m);
+        return NULL;
+    }
 
     // 4) Assurer que la cellule de départ est propre
     AT(m,0, (p->start_col>=0 && p->start_col<TIER_LANES)? p->start_col:0).type = ZONE_PATH;
@@ -151,9 +164,16 @@ void build_tier(int tier, unsigned int seed, TierMap *m, PlayerProgress *p){
             AT(m, rr, cc).type = ZONE_PATH;
         }
     }
+
+    return m;
 }
 
-void spawn_monsters(TierMap *m, int tier){
+int spawn_monsters(TierMap *m, int tier){
+    if (!m) {
+        fprintf(stderr, "Erreur: spawn_monsters(): TierMap est NULL\n");
+        return EXIT_FAILURE;
+    }
+
     // Simule des cases contenant des monstres avec fréquence selon le palier
     int monster_rate = 5 + tier*5; // % de cases avec monstres, max 40%
     if(monster_rate > 40) monster_rate = 40;
@@ -169,6 +189,8 @@ void spawn_monsters(TierMap *m, int tier){
             }
         }
     }
+
+    return EXIT_SUCCESS;
 }
 
 char *get_zone_symbol(const Zone *z) {
@@ -217,223 +239,42 @@ void show_zone(const Zone* z){
         printf("⚠ Boss de Palier ❗\n");
 }
 
-// --------------- SAUVEGARDE ----------------
-int savePlayerProgress(PlayerProgress *p){
-    FILE* f = fopen("save/save.dat", "wb");
-    if(!f) {
-        fprintf(stderr, "Erreur: savePlayerProgress(): impossible d'ouvrir le fichier\n");
-        return EXIT_FAILURE;
-    }
-
-    // Écriture de PlayerProgress (pas de pointeurs)
-    if(fwrite(p, sizeof(PlayerProgress), 1, f) != 1) {
-        fprintf(stderr, "Erreur: savePlayerProgress(): échec écriture PlayerProgress\n");
-        fclose(f);
-        return EXIT_FAILURE;
-    }
-
-    // taille des cellules nettoyées
-    if(fwrite(&p->cleared_count, sizeof(size_t), 1, f) != 1) {
-        fprintf(stderr, "Erreur: savePlayerProgress(): échec écriture taille\n");
-        fclose(f);
-        return EXIT_FAILURE;
-    }
-    // tableau des cellules nettoyées
-    for (size_t i = 0; i < p->cleared_count; i++) {
-        ClearedCell cell = p->cleared_cells[i];
-        if(fwrite(&cell, sizeof(ClearedCell), 1, f) != 1) {
-            fprintf(stderr, "Erreur: savePlayerProgress(): échec écriture cellule %zu\n", i);
-            fclose(f);
-            return EXIT_FAILURE;
-        }
-    }
+// --------------- TIER INITIALIZATION FROM SAVE ----------------
+TierMap *initTier(Sauvegarde *save) {
+    PlayerProgress *player_progress = save->player_progress;
+    TierMap *map = NULL;
     
-    fclose(f);
-    return EXIT_SUCCESS;
-}
+    short isNewTier;
 
-int loadPlayerProgress(PlayerProgress *p){
-    FILE* f = fopen("save/save.dat", "rb");
-    if(!f) {
-        fprintf(stderr, "Erreur: loadPlayerProgress(): fichier de sauvegarde introuvable\n");
-        return EXIT_FAILURE;
-    }
-    
-    // Lecture de PlayerProgress
-    if(fread(p, sizeof(*p), 1, f) != 1) {
-        fprintf(stderr, "Erreur: loadPlayerProgress(): échec lecture PlayerProgress\n");
-        fclose(f);
-        return EXIT_FAILURE;
-    }
-
-    // Lecture de la taille des cellules nettoyées
-    if(fread(&p->cleared_count, sizeof(size_t), 1, f) != 1) {
-        fprintf(stderr, "Erreur: loadPlayerProgress(): échec lecture taille\n");
-        fclose(f);
-        return EXIT_FAILURE;
-    }
-    if (p->cleared_count == 0) {
-        p->cleared_cells = NULL;
-        fclose(f);
-        return EXIT_SUCCESS;
-    }
-    // Allocation du tableau des cellules nettoyées
-    p->cleared_cells = (ClearedCell*)calloc(p->cleared_count, sizeof(ClearedCell));
-    if(p->cleared_cells == NULL) {
-        fprintf(stderr, "Erreur: loadPlayerProgress(): échec allocation mémoire\n");
-        fclose(f);
-        return EXIT_FAILURE;
-    }
-    // Lecture des cellules nettoyées
-    for (size_t i = 0; i < p->cleared_count; i++) {
-        if(fread(&p->cleared_cells[i], sizeof(ClearedCell), 1, f) != 1) {
-            fprintf(stderr, "Erreur: loadPlayerProgress(): échec lecture cellule %zu\n", i);
-            free(p->cleared_cells);
-            p->cleared_cells = NULL;
-            fclose(f);
-            return EXIT_FAILURE;
-        }
-    }
-
-    fclose(f);
-    return EXIT_SUCCESS;
-}
-
-// ---------------- MAIN LOOP ----------------
-int startGame() {
-    clearConsole();
-    printf("=== Bienvenue dans Ocean Depth ! ===\n\n");
-
-    PlayerProgress player = {0};
-    TierMap map = {0};
-
-    char c;
-
-    printf("Charger la sauvegarde ? (o/n) : ");
-    if(scanf(" %c", &c) != 1) c = 'n';
-    // Vider le buffer
-    while (getchar() != '\n');
-    // Si minuscule -> majuscule
-    if(c >= 'a' && c <= 'z') c -= 32;
-
-    if((c=='O' || c=='Y')){
-        if (loadPlayerProgress(&player) != EXIT_SUCCESS) {
-            fprintf(stderr, "Erreur: Échec du chargement de la sauvegarde.\n");
-            pressEnterToContinue();
-            return EXIT_FAILURE;
-        }
-
-        if (player.tier <= 0 ||
-            player.col < 0 || player.col >= TIER_LANES ||
-            player.row < 0 ||
-            player.tier_seed == 0
+    if(player_progress->tier_seed != 0){
+        if (player_progress->tier <= 0 ||
+            player_progress->col < 0 ||
+            player_progress->col >= TIER_LANES ||
+            player_progress->row < 0
         ) {
             // Données corrompues, réinitialiser
             fprintf(stderr, "Erreur: Données de sauvegarde corrompues.\n");
             free_tier(&map);
-            free_player_progress(&player);
             pressEnterToContinue();
-            return EXIT_FAILURE;
+            return NULL;
         }
+        isNewTier = false;
         printf("Progression chargée ✅\n");
         pressEnterToContinue();
     }else{
         printf("Nouvelle aventure ! ✅\n");
-        player.tier = 1; player.start_col = TIER_LANES/2; player.row = 0; player.col = TIER_LANES/2; player.tier_seed = getRandomSeed();
+        isNewTier = true;
+        player_progress->tier = 1; player_progress->start_col = TIER_LANES/2; player_progress->row = 0; player_progress->col = TIER_LANES/2; player_progress->tier_seed = getRandomSeed();
         pressEnterToContinue();
     }
 
     // Construire le palier initial/reconstruit
-    build_tier(player.tier, player.tier_seed, &map, &player);
-
-    while(1){
-        draw_tier(&map, player.row, player.col);
-        printf("\nActions :\n");
-        printf("Z : Monter  | S : Descendre | X : Quitter ❌\n");
-        printf("Q : Gauche  | D : Droite    | W : Sauvegarder 💾\n> ");
-        if(scanf(" %c", &c) != 1) continue;
-        // Vider le buffer
-        while (getchar() != '\n');
-        // Si minuscule -> majuscule
-        if(c >= 'a' && c <= 'z') c -= 32;
-
-        // --- Actions qui ne sont PAS des mouvements ---
-        if(c=='X' || c=='W'){
-            if(savePlayerProgress(&player) == EXIT_SUCCESS) {
-                printf("\n✅ Progression sauvegardée !\n"); 
-            } else {
-                printf("\n❌ Échec de la sauvegarde !\n");
-            }
-            if (c=='X') {
-                free_tier(&map);
-                free_player_progress(&player);
-                printf("A bientôt 👋\n");
-                pressEnterToContinue();
-                break;
-            }
-            
-            pressEnterToContinue();
-            continue; // On ne bouge pas, on re-dessine
-        }
-
-        // --- 1. Déterminer la position CIBLE ---
-        int new_row = player.row;
-        int new_col = player.col;
-
-        if     (c=='Q') new_col--;
-        else if(c=='D') new_col++;
-        else if(c=='Z') new_row--;
-        else if(c=='S') new_row++;
-        else continue; // Touche inconnue, on ignore
-
-        // --- 2. Vérifier la validité de la CIBLE ---
-
-        // Vérification des limites de la carte
-        if (new_row < 0 || new_row >= map.height || new_col < 0 || new_col >= TIER_LANES) {
-            continue; // Mouvement hors-limites, on ignore
-        }
-
-        // Vérification de la case cible (bloqué)
-        Zone* target_zone = &AT(&map, new_row, new_col);
-        if (target_zone->type == ZONE_BLOCKED) {
-            printf("\n🪨 Chemin bloqué !\n"); 
-            pressEnterToContinue();
-            continue; // On ne bouge pas
-        }
-
-        // --- 3. Mouvement VALIDE : Mettre à jour le joueur ---
-        player.row = new_row;
-        player.col = new_col;
-
-        // --- 4. Gérer les conséquences (UNE SEULE FOIS) ---
-        if (target_zone->type == ZONE_TREASURE) {
-            printf("\n🪙 Trésor trouvé ! (loot plus tard)\n");
-            target_zone->type = ZONE_PATH; // On vide la case
-            mark_cell_as_cleared(&player, new_row, new_col); // On marque comme nettoyée
-            pressEnterToContinue();
-        } 
-        else if (target_zone->type == ZONE_MONSTER) {
-            printf("\n🐙 Monstre rencontré ! (combat à venir)\n");
-            target_zone->type = ZONE_PATH; // On vide la case
-            mark_cell_as_cleared(&player, new_row, new_col); // On marque comme nettoyée
-            pressEnterToContinue();
-        } 
-        else if (target_zone->type == ZONE_BOSS) {
-            printf("\n👹 Boss atteint ! Passage au palier suivant... ✨\n");
-            pressEnterToContinue();
-            // Génération du palier suivant
-            player.tier++;
-            player.row = 0; // On repart d'en haut
-            // On utilise la colonne d'arrivée comme colonne de départ du palier suivant
-            player.start_col = player.col;
-            player.tier_seed = getRandomSeed();
-            free_tier(&map);
-            build_tier(player.tier, player.tier_seed, &map, &player);
-        }
-        // Si c'est ZONE_PATH, on ne fait rien et la boucle continue
+    map = build_tier(player_progress->tier, player_progress->tier_seed, player_progress, isNewTier);
+    if (!map) {
+        fprintf(stderr, "Erreur: Échec de la construction du palier.\n");
+        pressEnterToContinue();
+        return NULL;
     }
 
-    free_tier(&map);
-    free_player_progress(&player);
-    return 0;
+    return map;
 }
