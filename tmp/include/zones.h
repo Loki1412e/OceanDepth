@@ -17,4 +17,6 @@
     void draw_tier(const TierMap *m, int player_row, int player_col);
     void spawn_monsters(TierMap *m, int tier);
 
+    char *get_zone_symbol(const Zone *z);
+
 #endif
