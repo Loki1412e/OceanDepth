@@ -204,7 +204,6 @@ char *get_zone_symbol(const Zone *z) {
 }
 
 void draw_tier(const TierMap *m, int player_row, int player_col){
-    clearConsole();
     printf("====== PALIER #%d ======\n\n", (player_row>=0? AT((TierMap*)m, player_row, player_col).tier : 0));
     for(int r=0;r<m->height;r++){
         for(int c=0;c<TIER_LANES;c++){
@@ -240,10 +239,8 @@ void show_zone(const Zone* z){
 }
 
 // --------------- TIER INITIALIZATION FROM SAVE ----------------
-TierMap *initTier(Sauvegarde *save) {
-    PlayerProgress *player_progress = save->player_progress;
+TierMap *initTier(PlayerProgress *player_progress) {
     TierMap *map = NULL;
-    
     short isNewTier;
 
     if(player_progress->tier_seed != 0){
@@ -254,25 +251,18 @@ TierMap *initTier(Sauvegarde *save) {
         ) {
             // Données corrompues, réinitialiser
             fprintf(stderr, "Erreur: Données de sauvegarde corrompues.\n");
-            free_tier(&map);
-            pressEnterToContinue();
             return NULL;
         }
         isNewTier = false;
-        printf("Progression chargée ✅\n");
-        pressEnterToContinue();
     }else{
-        printf("Nouvelle aventure ! ✅\n");
         isNewTier = true;
         player_progress->tier = 1; player_progress->start_col = TIER_LANES/2; player_progress->row = 0; player_progress->col = TIER_LANES/2; player_progress->tier_seed = getRandomSeed();
-        pressEnterToContinue();
     }
 
     // Construire le palier initial/reconstruit
     map = build_tier(player_progress->tier, player_progress->tier_seed, player_progress, isNewTier);
     if (!map) {
         fprintf(stderr, "Erreur: Échec de la construction du palier.\n");
-        pressEnterToContinue();
         return NULL;
     }
 

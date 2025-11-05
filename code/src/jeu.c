@@ -115,7 +115,7 @@ int runGame(Sauvegarde *actualSave) {
                 printf("\n>> ❌ Échec de la sauvegarde !\n");
             }
             if (c=='X') {
-                free_tier(&tierMap);
+                free_tier(tierMap);
                 printf(">> A bientôt 👋\n");
                 pressEnterToContinue();
                 break;

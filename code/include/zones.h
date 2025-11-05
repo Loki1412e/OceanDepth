@@ -10,7 +10,7 @@
     void free_tier(TierMap *m);
     void free_player_progress(PlayerProgress *p);
 
-    TierMap *initTier(Sauvegarde *save);
+    TierMap *initTier(PlayerProgress *player_progress);
 
     TierMap *build_tier(int tier, unsigned seed, PlayerProgress *p, short isNewTier);
     Zone generate_zone(int index);
