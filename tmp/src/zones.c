@@ -225,10 +225,12 @@ int startGame() {
         // --- Actions qui ne sont PAS des mouvements ---
         if(c=='X'){
             printf("A bientôt 👋\n");
+            printf("✅ Progression sauvegardée !\n"); 
+            pressEnterToContinue();
             break;
         } 
         if(c=='W'){
-            savePlayerProgress(&player); 
+            savePlayerProgress(&player);
             printf("✅ Progression sauvegardée !\n"); 
             pressEnterToContinue();
             continue; // On ne bouge pas, on re-dessine
