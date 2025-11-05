@@ -5,14 +5,15 @@
 
     int startGame();
     
-    int loadPlayerProgress(PlayerProgress* p, TierMap* m);
-    int savePlayerProgress(PlayerProgress* p, TierMap* m);
+    int loadPlayerProgress(PlayerProgress* p);
+    int savePlayerProgress(PlayerProgress* p);
 
     Zone generate_zone(int index);
     void show_zone(const Zone* z);
     void free_tier(TierMap *m);
-    int mark_cell_as_cleared(TierMap *m, int r, int c);
-    void build_tier(int tier, unsigned int seed, TierMap *m, int start_col);
+    void free_player_progress(PlayerProgress *p);
+    int mark_cell_as_cleared(PlayerProgress *p, int r, int c);
+    void build_tier(int tier, unsigned int seed, TierMap *m, PlayerProgress *p);
     void draw_tier(const TierMap *m, int player_row, int player_col);
     void spawn_monsters(TierMap *m, int tier);
 
