@@ -223,20 +223,15 @@ int savePlayerProgress(PlayerProgress *p, TierMap *m){
         return EXIT_FAILURE;
     }
 
-    printf("SAVE: PlayerProgress sauvegardé : Tier=%d, Row=%d, Col=%d, TierSeed=%u\n\n",
-           p->tier, p->row, p->col, p->tier_seed);
-
     // taille des cellules nettoyées
     if(fwrite(&m->cleared_count, sizeof(size_t), 1, f) != 1) {
         fprintf(stderr, "Erreur: savePlayerProgress(): échec écriture taille\n");
         fclose(f);
         return EXIT_FAILURE;
     }
-    printf("SAVE: Nombre de cellules nettoyées : %zu\n\n", m->cleared_count);
     // tableau des cellules nettoyées
     for (size_t i = 0; i < m->cleared_count; i++) {
         ClearedCell cell = m->cleared_cells[i];
-        printf("SAVE: Cellule nettoyée %zu : (%d, %d)\n", i, cell.row, cell.col);
         if(fwrite(&cell, sizeof(ClearedCell), 1, f) != 1) {
             fprintf(stderr, "Erreur: savePlayerProgress(): échec écriture cellule %zu\n", i);
             fclose(f);
@@ -263,9 +258,6 @@ int loadPlayerProgress(PlayerProgress *p, TierMap *m){
         return EXIT_FAILURE;
     }
 
-    printf("LOAD: PlayerProgress chargé : Tier=%d, Row=%d, Col=%d, TierSeed=%u\n\n",
-           p->tier, p->row, p->col, p->tier_seed);
-
     // Lecture de la taille des cellules nettoyées
     if(fread(&m->cleared_count, sizeof(size_t), 1, f) != 1) {
         fprintf(stderr, "Erreur: loadPlayerProgress(): échec lecture taille\n");
@@ -273,7 +265,6 @@ int loadPlayerProgress(PlayerProgress *p, TierMap *m){
         return EXIT_FAILURE;
     }
     if (m->cleared_count == 0) {
-        printf("LOAD: Aucune cellule nettoyée.\n\n");
         m->cleared_cells = NULL;
         fclose(f);
         return EXIT_SUCCESS;
@@ -285,7 +276,6 @@ int loadPlayerProgress(PlayerProgress *p, TierMap *m){
         fclose(f);
         return EXIT_FAILURE;
     }
-    printf("LOAD: Nombre de cellules nettoyées : %zu\n\n", m->cleared_count);
     // Lecture des cellules nettoyées
     for (size_t i = 0; i < m->cleared_count; i++) {
         if(fread(&m->cleared_cells[i], sizeof(ClearedCell), 1, f) != 1) {
@@ -295,7 +285,6 @@ int loadPlayerProgress(PlayerProgress *p, TierMap *m){
             fclose(f);
             return EXIT_FAILURE;
         }
-        printf("LOAD: Cellule nettoyée %zu : (%d, %d)\n", i, m->cleared_cells[i].row, m->cleared_cells[i].col);
     }
     pressEnterToContinue();
 
@@ -347,8 +336,6 @@ int startGame() {
     }
 
     // Construire le palier initial/reconstruit
-    printf("Génération du palier #%d...\n", player.tier);
-    printf("Seed utilisée : %u\n", player.tier_seed);
     build_tier(player.tier, player.tier_seed, &map, player.start_col);
 
     while(1){
