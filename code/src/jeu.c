@@ -1,6 +1,15 @@
 #include "../include/jeu.h"
 
 
+void printTierMapActionMenu() {
+    printf("\n================= Actions Disponibles =================\n");
+    printf("[Z] Monter | [S] Descendre | [X] Quitter et sauvegarder\n");
+    printf("[Q] Gauche | [D] Droite    | [W] Sauvegarder\n");
+    printf("=======================================================\n");
+    printf("> ");
+}
+
+
 // return -1 = stop le programme
 int runGame(Sauvegarde *actualSave) {
     if (!actualSave || !actualSave->diver) return EXIT_FAILURE;
@@ -9,6 +18,7 @@ int runGame(Sauvegarde *actualSave) {
 
     Plongeur *player = actualSave->diver;
     PlayerProgress *playerProgress = actualSave->player_progress;
+    TierMap *tierMap = NULL;
 
     Bestiaire *modalBestiary = NULL;
     ListeCompetence modalCreaturesSkills = {0};
@@ -18,10 +28,19 @@ int runGame(Sauvegarde *actualSave) {
 
     short res;
 
+    char c;
+
     /*===== Init Allocation ====*/
+
+    tierMap = initTier(playerProgress);
+    if (!tierMap) {
+        fprintf(stderr, "runGame(): Erreur lors de l'initialisation du palier.\n");
+        return EXIT_FAILURE;
+    }
 
     modalCreaturesSkills = initSkillsList(&res, "config/bestiaire/competences.conf");
     if (res == EXIT_FAILURE) {
+        free_tier(tierMap);
         fprintf(stderr, "runGame(): Erreur lors du chargement des compétences.\n");
         return EXIT_FAILURE;
     }
@@ -29,6 +48,7 @@ int runGame(Sauvegarde *actualSave) {
     modalBestiary = initModalBestiary(&modalCreaturesSkills);
     if (!modalBestiary) {
         freeListeCompetence(&modalCreaturesSkills);
+        free_tier(tierMap);
         fprintf(stderr, "runGame(): Erreur lors du chargement du bestiaire modèle.\n");
         return EXIT_FAILURE;
     }
@@ -37,6 +57,7 @@ int runGame(Sauvegarde *actualSave) {
     if (!modalConsumablesList) {
         freeBestiary(modalBestiary);
         freeListeCompetence(&modalCreaturesSkills);
+        free_tier(tierMap);
         fprintf(stderr, "runGame(): Erreur lors du chargement de la liste des consommables.\n");
         return EXIT_FAILURE;
     }
@@ -46,17 +67,19 @@ int runGame(Sauvegarde *actualSave) {
         freeListeObjets(modalConsumablesList);
         freeBestiary(modalBestiary);
         freeListeCompetence(&modalCreaturesSkills);
+        free_tier(tierMap);
         fprintf(stderr, "runGame(): Erreur lors du chargement de la liste des bibelots.\n");
         return EXIT_FAILURE;
     }
 
     modalArsenal = chargerArmesDepuisFichier("config/objets/armes.conf");
     if (!modalArsenal) {
-        fprintf(stderr, "runGame(): Erreur lors du chargement des armes.\n");
         freeListeObjets(modalOrnamentsList);
         freeListeObjets(modalConsumablesList);
         freeBestiary(modalBestiary);
         freeListeCompetence(&modalCreaturesSkills);
+        free_tier(tierMap);
+        fprintf(stderr, "runGame(): Erreur lors du chargement des armes.\n");
         return EXIT_FAILURE;
     }
 
@@ -73,11 +96,96 @@ int runGame(Sauvegarde *actualSave) {
     /*============================*/
 
     printSave(actualSave);
-    printf("[%s] entre dans les profondeurs maritimes.\n\n", player->nom);
+    printf("========== [%s] entre dans les profondeurs maritimes. ==========\n\n", player->nom);
     pressEnterToContinue();
 
-    while (true) {
-        
+    while (1) {
+        draw_tier(tierMap, playerProgress->row, playerProgress->col);
+        printTierMapActionMenu();
+        c = getCharInputToUpper();
+        // Touche inconnue, on ignore
+        if (strchr("ZQSDXW", c) == NULL) continue;
+
+        // --- Actions qui ne sont PAS des mouvements ---
+        // Sauvegarder et/ou Quitter
+        if(c=='X' || c=='W'){
+            if(saveGame(actualSave) == EXIT_SUCCESS) {
+                printf("\n>> ✅ Progression sauvegardée !\n"); 
+            } else {
+                printf("\n>> ❌ Échec de la sauvegarde !\n");
+            }
+            if (c=='X') {
+                free_tier(&tierMap);
+                printf(">> A bientôt 👋\n");
+                pressEnterToContinue();
+                break;
+            }
+            pressEnterToContinue();
+            continue; // On ne bouge pas, on re-dessine
+        }
+
+        // --- 1. Déterminer la position CIBLE ---
+        int new_row = playerProgress->row;
+        int new_col = playerProgress->col;
+        switch (c) {
+            case 'Q': new_col--; break;
+            case 'D': new_col++; break;
+            case 'Z': new_row--; break;
+            case 'S': new_row++; break;
+            default:  continue;
+        }
+
+        // --- 2. Vérifier la validité de la CIBLE ---
+
+        // Vérification des limites de la carte
+        if (new_row < 0 || new_row >= tierMap->height || new_col < 0 || new_col >= TIER_LANES) {
+            continue; // Mouvement hors-limites, on ignore
+        }
+
+        // Vérification de la case cible (bloqué)
+        Zone* target_zone = &AT(tierMap, new_row, new_col);
+        if (target_zone->type == ZONE_BLOCKED) {
+            printf("\n🪨 Chemin bloqué !\n"); 
+            pressEnterToContinue();
+            continue; // On ne bouge pas
+        }
+
+        // --- 3. Mouvement VALIDE : Mettre à jour le joueur ---
+        playerProgress->row = new_row;
+        playerProgress->col = new_col;
+
+        // --- 4. Gérer les conséquences (UNE SEULE FOIS) ---
+        if (target_zone->type == ZONE_TREASURE) {
+            printf("\n🪙 Trésor trouvé ! (loot plus tard)\n");
+            target_zone->type = ZONE_PATH; // On vide la case
+            mark_cell_as_cleared(playerProgress, new_row, new_col); // On marque comme nettoyée
+            pressEnterToContinue();
+        } 
+        else if (target_zone->type == ZONE_MONSTER) {
+            printf("\n🐙 Monstre rencontré ! (combat à venir)\n");
+            target_zone->type = ZONE_PATH; // On vide la case
+            mark_cell_as_cleared(playerProgress, new_row, new_col); // On marque comme nettoyée
+            pressEnterToContinue();
+        } 
+        else if (target_zone->type == ZONE_BOSS) {
+            printf("\n👹 Boss atteint ! Passage au palier suivant... ✨\n");
+            pressEnterToContinue();
+            // Génération du palier suivant
+            playerProgress->tier++;
+            playerProgress->row = 0; // On repart d'en haut
+            // On utilise la colonne d'arrivée comme colonne de départ du palier suivant
+            playerProgress->start_col = playerProgress->col;
+            playerProgress->tier_seed = getRandomSeed();
+            free_tier(tierMap);
+            tierMap = build_tier(playerProgress->tier, playerProgress->tier_seed, playerProgress, true);
+        }
+        // Si c'est ZONE_PATH, on ne fait rien et la boucle continue
+
+
+        /***************************************************/
+        /*********  TEST AVANT / NE PAS FAIRE ICI  *********/
+        /***************************************************/
+
         // // Génération aléatoire de créatures via groupe / niveau de dangerosité = 1
         // Bestiaire *bestiary = initRandomBestiaryFromDangerosityGroupLevel(modalBestiary, 1);
         // if (!bestiary) {
@@ -132,8 +240,6 @@ int runGame(Sauvegarde *actualSave) {
         // if (res == -1) {
         //     break;
         // }
-
-        break; // Pour l'instant on sort après un tour de boucle
     }
 
     // // Test suppression bibelots
@@ -144,6 +250,8 @@ int runGame(Sauvegarde *actualSave) {
     // pressEnterToContinue();
 
     /*===== free && return ====*/
+    
+    free_tier(tierMap);
     
     freeBestiary(modalBestiary);
     
