@@ -7,15 +7,15 @@ static const char* BIOMES[] = {
 };
 
 // ---------------- RNG ----------------
-static unsigned int seed_state;
-static unsigned int rnd(){
-    seed_state ^= seed_state<<13;
-    seed_state ^= seed_state>>17;
-    seed_state ^= seed_state<<5;
-    return seed_state;
+static unsigned int tier_rng_state;
+static unsigned int trnd() {
+    tier_rng_state ^= tier_rng_state<<13;
+    tier_rng_state ^= tier_rng_state>>17;
+    tier_rng_state ^= tier_rng_state<<5;
+    return tier_rng_state;
 }
-static int rnd_int(int a, int b){
-    return a + (rnd() % (b - a + 1));
+static int trnd_int(int a,int b) {
+    return a + (int)(trnd() % (unsigned)(b-a+1));
 }
 
 // --------------- TIER MAP BUILDING ----------------
@@ -26,13 +26,8 @@ void free_tier(TierMap *m){
     m->height = 0;
     m->boss_col = 0;
     m->seed = 0;
-    m->tier_rng_state = 0;
     m->cleared_count = 0;
 }
-
-static unsigned int tier_rng_state;
-static unsigned int trnd(){ tier_rng_state ^= tier_rng_state<<13; tier_rng_state ^= tier_rng_state>>17; tier_rng_state ^= tier_rng_state<<5; return tier_rng_state; }
-static int trnd_int(int a,int b){ return a + (int)(trnd() % (unsigned)(b-a+1)); }
 
 int mark_cell_as_cleared(TierMap *m, int r, int c) {
     if (!m) {
@@ -69,6 +64,8 @@ void build_tier(int tier, unsigned int seed, TierMap *m, int start_col){
 
     // Vérifier si c'est un nouveau palier (changement de seed)
     int is_new_tier = (m->seed != seed && m->seed != 0);
+
+    tier_rng_state = seed; // RNG locale stable pour ce palier
     
     m->height = height;
     m->boss_col = trnd_int(0, LANES-1);
@@ -85,20 +82,16 @@ void build_tier(int tier, unsigned int seed, TierMap *m, int start_col){
         m->cleared_count = 0;
     }
     // Sinon, on garde les cleared_cells (cas du chargement de sauvegarde)
-    
-    tier_rng_state = seed; // RNG locale stable pour ce palier
 
     // Taux qui scalent avec le palier
     int wall_rate  = 15 + tier*5;  if(wall_rate>60) wall_rate=60;    // murs plus fréquents
     int chest_rate = 20 - tier*2;  if(chest_rate<5) chest_rate=5;    // coffres plus rares
 
     // 1) Remplissage aléatoire initial
-    int nbiomes = (int)(sizeof(BIOMES)/sizeof(*BIOMES));
     for(int r=0;r<height;r++){
         for(int c=0;c<LANES;c++){
             Zone z = generate_zone(tier*1000 + r*LANES + c);
             z.tier = tier;
-            snprintf(z.biome,sizeof(z.biome),"%s", BIOMES[trnd_int(0,nbiomes-1)]);
             unsigned roll = trnd()%100;
             if(roll < (unsigned)wall_rate)      z.type = ZONE_BLOCKED;
             else if(roll < (unsigned)(wall_rate+chest_rate)) z.type = ZONE_CHEST;
@@ -139,7 +132,10 @@ void build_tier(int tier, unsigned int seed, TierMap *m, int start_col){
     // 3) S’assurer que la ligne de départ est franchissable sur la colonne de départ
     AT(m,0,(start_col>=0 && start_col<LANES)? start_col:0).type = ZONE_PATH;
 
-    // Masquer les cellules déjà nettoyées
+    // 4) Spawn monsters with frequency increasing with the tier
+    spawn_monsters(m, tier);
+
+    // 5) Masquer les cellules déjà nettoyées
     for(size_t i=0; i<m->cleared_count; i++){
         int rr = m->cleared_cells[i].row;
         int cc = m->cleared_cells[i].col;
@@ -147,9 +143,6 @@ void build_tier(int tier, unsigned int seed, TierMap *m, int start_col){
             AT(m, rr, cc).type = ZONE_PATH;
         }
     }
-
-    // 4) Spawn monsters with frequency increasing with the tier
-    spawn_monsters(m, tier);
 }
 
 void spawn_monsters(TierMap *m, int tier){
@@ -201,7 +194,7 @@ Zone generate_zone(int index){
     z.index = index;
     z.tier = (index / 3) + 1;    // difficulté augmente tous les 3 niveaux
     snprintf(z.biome, sizeof(z.biome), "%s",
-        BIOMES[rnd_int(0, (int)(sizeof(BIOMES)/sizeof(*BIOMES))-1)]
+        BIOMES[trnd_int(0, (int)(sizeof(BIOMES)/sizeof(*BIOMES))-1)]
     );
     z.type = ZONE_PATH;
     return z;
@@ -229,6 +222,9 @@ int savePlayerProgress(PlayerProgress *p, TierMap *m){
         fclose(f);
         return EXIT_FAILURE;
     }
+
+    printf("SAVE: PlayerProgress sauvegardé : Tier=%d, Row=%d, Col=%d, TierSeed=%u\n\n",
+           p->tier, p->row, p->col, p->tier_seed);
 
     // taille des cellules nettoyées
     if(fwrite(&m->cleared_count, sizeof(size_t), 1, f) != 1) {
@@ -266,6 +262,9 @@ int loadPlayerProgress(PlayerProgress *p, TierMap *m){
         fclose(f);
         return EXIT_FAILURE;
     }
+
+    printf("LOAD: PlayerProgress chargé : Tier=%d, Row=%d, Col=%d, TierSeed=%u\n\n",
+           p->tier, p->row, p->col, p->tier_seed);
 
     // Lecture de la taille des cellules nettoyées
     if(fread(&m->cleared_count, sizeof(size_t), 1, f) != 1) {
@@ -309,7 +308,6 @@ int startGame() {
     clearConsole();
     printf("=== Bienvenue dans Ocean Depth ! ===\n\n");
 
-    seed_state = getRandomSeed();
     PlayerProgress player = {0};
     TierMap map = {0};
 
@@ -344,12 +342,14 @@ int startGame() {
         pressEnterToContinue();
     }else{
         printf("Nouvelle aventure ! ✅\n");
-        player.tier = 1; player.row = 0; player.col = LANES/2; player.tier_seed = seed_state;
+        player.tier = 1; player.start_col = LANES/2; player.row = 0; player.col = LANES/2; player.tier_seed = getRandomSeed();
         pressEnterToContinue();
     }
 
     // Construire le palier initial/reconstruit
-    build_tier(player.tier, player.tier_seed, &map, player.col);
+    printf("Génération du palier #%d...\n", player.tier);
+    printf("Seed utilisée : %u\n", player.tier_seed);
+    build_tier(player.tier, player.tier_seed, &map, player.start_col);
 
     while(1){
         draw_tier(&map, player.row, player.col);
@@ -401,13 +401,12 @@ int startGame() {
             continue; // Mouvement hors-limites, on ignore
         }
 
-        // Vérification de la case cible (mur)
+        // Vérification de la case cible (bloqué)
         Zone* target_zone = &AT(&map, new_row, new_col);
-
         if (target_zone->type == ZONE_BLOCKED) {
             printf("🪨 Chemin bloqué !\n"); 
             pressEnterToContinue();
-            continue; // C'est un mur, on ne bouge pas
+            continue; // On ne bouge pas
         }
 
         // --- 3. Mouvement VALIDE : Mettre à jour le joueur ---
@@ -415,8 +414,6 @@ int startGame() {
         player.col = new_col;
 
         // --- 4. Gérer les conséquences (UNE SEULE FOIS) ---
-        // (target_zone pointe déjà vers la nouvelle case du joueur)
-
         if (target_zone->type == ZONE_CHEST) {
             printf("🪙 Trésor trouvé ! (loot plus tard)\n");
             target_zone->type = ZONE_PATH; // On vide la case
@@ -436,9 +433,10 @@ int startGame() {
             player.tier++;
             player.row = 0; // On repart d'en haut
             // On utilise la colonne d'arrivée comme colonne de départ du palier suivant
-            player.tier_seed = getRandomSeed() ^ (unsigned)(player.tier*2654435761u);
+            player.start_col = player.col;
+            player.tier_seed = getRandomSeed();
             free_tier(&map);
-            build_tier(player.tier, player.tier_seed, &map, player.col);
+            build_tier(player.tier, player.tier_seed, &map, player.start_col);
         }
         // Si c'est ZONE_PATH, on ne fait rien et la boucle continue
     }
