@@ -7,7 +7,7 @@ code/output/assets/*
 # Nom de l'executable sans extension et avec
 code/output/oceandepth*
 tmp/output/oceandepth*
-*.dat
+tmp/output/save/*
 
 # Prerequisites
 *.d

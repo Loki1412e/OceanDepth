@@ -159,14 +159,14 @@ void show_zone(const Zone* z){
 
 // --------------- SAUVEGARDE ----------------
 void savePlayerProgress(const PlayerProgress* p){
-    FILE* f = fopen("save.dat", "wb");
+    FILE* f = fopen("save/save.dat", "wb");
     if(!f) return;
     fwrite(p, sizeof(*p), 1, f);
     fclose(f);
 }
 
 int loadPlayerProgress(PlayerProgress* p){
-    FILE* f = fopen("save.dat", "rb");
+    FILE* f = fopen("save/save.dat", "rb");
     if(!f) return 0;
     size_t read = fread(p, sizeof(*p), 1, f);
     fclose(f);
