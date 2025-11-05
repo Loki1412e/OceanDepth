@@ -23,13 +23,18 @@ unsigned int get_millisecond_time() {
 }
 #endif
 
-// init srand() avec seed (temps millisecondes) + adresse d'une var local
-void seed_random() {
+
+// Combine le temps en millisecondes et l'adresse d'une variable locale pour une seed plus unique
+unsigned getRandomSeed() {
     int stack_var;
     unsigned int time_seed = get_millisecond_time();
     unsigned int addr_seed = (unsigned int)(uintptr_t)&stack_var;
+    return (time_seed ^ addr_seed);
+}
 
-    unsigned int seed = time_seed ^ addr_seed;
+// init srand() avec seed (temps millisecondes + adresse d'une var local)
+void seed_random() {
+    unsigned int seed = getRandomSeed();
     srand(seed);
 }
 
