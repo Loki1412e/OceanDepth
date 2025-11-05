@@ -8,6 +8,8 @@ int runGame(Sauvegarde *actualSave) {
     /*===== Init var ====*/
 
     Plongeur *player = actualSave->diver;
+    PlayerProgress *playerProgress = actualSave->player_progress;
+
     Bestiaire *modalBestiary = NULL;
     ListeCompetence modalCreaturesSkills = {0};
     ListeObjet *modalConsumablesList = NULL;
@@ -58,13 +60,13 @@ int runGame(Sauvegarde *actualSave) {
         return EXIT_FAILURE;
     }
 
-    // Affichage modalBestiary
-    printBestiary(modalBestiary);
-    pressEnterToContinue();
+    // // Affichage modalBestiary
+    // printBestiary(modalBestiary);
+    // pressEnterToContinue();
     
-    // On ajoute des armes de base au joueur (si pas déjà présentes)
-    ajouterArme(modalArsenal, player->arsenal, 0);
-    ajouterArme(modalArsenal, player->arsenal, 2);
+    // // On ajoute des armes de base au joueur (si pas déjà présentes)
+    // ajouterArme(modalArsenal, player->arsenal, 0);
+    // ajouterArme(modalArsenal, player->arsenal, 2);
 
     /*============================*/
     /*===== Boucle principale ====*/
@@ -76,70 +78,70 @@ int runGame(Sauvegarde *actualSave) {
 
     while (true) {
         
-        // Génération aléatoire de créatures via groupe / niveau de dangerosité = 1
-        Bestiaire *bestiary = initRandomBestiaryFromDangerosityGroupLevel(modalBestiary, 1);
-        if (!bestiary) {
-            fprintf(stderr, "Erreur: runGame(): initRandomBestiaryFromDangerosityGroupLevel()\n");
-            break;
-        }
+        // // Génération aléatoire de créatures via groupe / niveau de dangerosité = 1
+        // Bestiaire *bestiary = initRandomBestiaryFromDangerosityGroupLevel(modalBestiary, 1);
+        // if (!bestiary) {
+        //     fprintf(stderr, "Erreur: runGame(): initRandomBestiaryFromDangerosityGroupLevel()\n");
+        //     break;
+        // }
 
-        printf("Des créatures marines apparaissent !\n");
-        printBestiary(bestiary);
-        pressEnterToContinue();
+        // printf("Des créatures marines apparaissent !\n");
+        // printBestiary(bestiary);
+        // pressEnterToContinue();
 
-        // Test ajout effets
-        printf("\nAjout d'effets pour les tests:\n");
-        ajouterEffet(&player->liste_etats, player->effets_immunises, POISON, 3, 0, 0);
-        ajouterEffet(&player->liste_etats, player->effets_immunises, SAIGNEMENT, 3, 0, 0);
-        ajouterEffet(&bestiary->creatures[0]->liste_etats, bestiary->creatures[0]->effets_immunises, PARALYSIE, 5, 0, 0);
-        ajouterEffet(&bestiary->creatures[1]->liste_etats, bestiary->creatures[1]->effets_immunises, SAIGNEMENT, 5, 0, 0);
-        if (pressToContinueOrSave(actualSave) == -1) {
-            freeBestiary(bestiary);
-            break;
-        }
+        // // Test ajout effets
+        // printf("\nAjout d'effets pour les tests:\n");
+        // ajouterEffet(&player->liste_etats, player->effets_immunises, POISON, 3, 0, 0);
+        // ajouterEffet(&player->liste_etats, player->effets_immunises, SAIGNEMENT, 3, 0, 0);
+        // ajouterEffet(&bestiary->creatures[0]->liste_etats, bestiary->creatures[0]->effets_immunises, PARALYSIE, 5, 0, 0);
+        // ajouterEffet(&bestiary->creatures[1]->liste_etats, bestiary->creatures[1]->effets_immunises, SAIGNEMENT, 5, 0, 0);
+        // if (pressToContinueOrSave(actualSave) == -1) {
+        //     freeBestiary(bestiary);
+        //     break;
+        // }
 
-        // Test ajout objets (consommables)
-        ajouterObjet(modalConsumablesList, player->liste_consommables, 3);
-        ajouterObjet(modalConsumablesList, player->liste_consommables, 1);
-        printf("\nConsommables ajoutés");
-        printObjectsList(player->liste_consommables);
-        if (pressToContinueOrSave(actualSave) == -1) {
-            freeBestiary(bestiary);
-            break;
-        }
+        // // Test ajout objets (consommables)
+        // ajouterObjet(modalConsumablesList, player->liste_consommables, 3);
+        // ajouterObjet(modalConsumablesList, player->liste_consommables, 1);
+        // printf("\nConsommables ajoutés");
+        // printObjectsList(player->liste_consommables);
+        // if (pressToContinueOrSave(actualSave) == -1) {
+        //     freeBestiary(bestiary);
+        //     break;
+        // }
 
-        // Test ajout bibelots
-        ajouterBibelot(modalOrnamentsList, player, 2);
-        ajouterBibelot(modalOrnamentsList, player, 5);
-        ajouterBibelot(modalOrnamentsList, player, 7);
-        printf("\nBibelots ajoutés");
-        printObjectsList(player->liste_bibelots);
-        if (pressToContinueOrSave(actualSave) == -1) {
-            freeBestiary(bestiary);
-            break;
-        }
+        // // Test ajout bibelots
+        // ajouterBibelot(modalOrnamentsList, player, 2);
+        // ajouterBibelot(modalOrnamentsList, player, 5);
+        // ajouterBibelot(modalOrnamentsList, player, 7);
+        // printf("\nBibelots ajoutés");
+        // printObjectsList(player->liste_bibelots);
+        // if (pressToContinueOrSave(actualSave) == -1) {
+        //     freeBestiary(bestiary);
+        //     break;
+        // }
 
-        // Lancer le combat
-        res = combat(actualSave, player, bestiary->creatures, bestiary->longueur_creatures);
-        freeBestiary(bestiary); // On libère le bestiaire après le combat
-        if (res == EXIT_FAILURE) {
-            fprintf(stderr, "Erreur: runGame(): res = combat()\n");
-            break;
-        }
-        // Si le joueur a choisi de quitter
-        if (res == -1) {
-            break;
-        }
+        // // Lancer le combat
+        // res = combat(actualSave, player, bestiary->creatures, bestiary->longueur_creatures);
+        // freeBestiary(bestiary); // On libère le bestiaire après le combat
+        // if (res == EXIT_FAILURE) {
+        //     fprintf(stderr, "Erreur: runGame(): res = combat()\n");
+        //     break;
+        // }
+        // // Si le joueur a choisi de quitter
+        // if (res == -1) {
+        //     break;
+        // }
 
         break; // Pour l'instant on sort après un tour de boucle
     }
 
-    // Test suppression bibelots
-    supprimerBibelot(player, 3);
-    supprimerBibelot(player, 7);
-    printf("\nBibelots après suppression du premier:\n");
-    printObjectsList(player->liste_bibelots);
-    pressEnterToContinue();
+    // // Test suppression bibelots
+    // supprimerBibelot(player, 3);
+    // supprimerBibelot(player, 7);
+    // printf("\nBibelots après suppression du premier:\n");
+    // printObjectsList(player->liste_bibelots);
+    // pressEnterToContinue();
 
     /*===== free && return ====*/
     
