@@ -172,7 +172,8 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
         // --- 3. Mouvement VALIDE : Mettre à jour le joueur ---
         playerProgress->row = new_row;
         playerProgress->col = new_col;
-
+        player->oxygene-= appliquerConsommationOxygeneProfondeur(player);// decrimenter le niveau d'oxygene 
+        afficherEtatOxygene(player);
         // --- 4. Gérer les conséquences (UNE SEULE FOIS) ---
         switch (target_zone->type) {
             
