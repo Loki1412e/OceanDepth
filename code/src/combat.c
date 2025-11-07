@@ -790,7 +790,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur, CreatureMarine **creatures,
         printf("\n✅ Toutes les créatures ont été vaincues !\n");
 
     if (joueur->pv <= 0)
-        printf("\n☠️  Vous êtes mort... GAME OVER\n");
+        printf("\n☠️  Vous êtes mort...\n");
     
     if (pressToContinueOrSave(actualSave) == -1) return -1;
 
