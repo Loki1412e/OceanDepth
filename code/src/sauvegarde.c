@@ -11,9 +11,11 @@ int setNewSaveName(Sauvegarde *save, char *save_name);
 
 int saveInfo(Sauvegarde *save, SaveTmpFile *tmpSave);
 int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave);
+int savePlayerProgress(PlayerProgress *p, SaveTmpFile *tmpSave);
 
 int loadInfo(Sauvegarde *save, FILE *file);
 Plongeur *loadDiver(FILE *file);
+PlayerProgress *loadPlayerProgress(FILE *file);
 
 void sortByLastRun(Sauvegarde **saves, size_t len_saves);
 SaveTmpFile *initTmpFile(char *dir, char *filename);
@@ -55,11 +57,7 @@ Sauvegarde *initSave() {
     save = calloc(1, sizeof(Sauvegarde));
     if (!save) return NULL;
 
-    save->nom = NULL;
     save->derniere_modification = (size_t) time(NULL);
-    
-    save->diver = NULL;
-
     return save;
 }
 
@@ -179,6 +177,14 @@ Sauvegarde *loadSave(char *save_name, short preLoad) {
     save->diver = loadDiver(file);
     if (!save->diver) {
         fprintf(stderr, "Erreur chargement Plongeur\n");
+        fclose(file);
+        freeSauvegarde(save);
+        return NULL;
+    }
+
+    save->player_progress = loadPlayerProgress(file);
+    if (!save->player_progress) {
+        fprintf(stderr, "Erreur chargement PlayerProgress\n");
         fclose(file);
         freeSauvegarde(save);
         return NULL;
@@ -546,6 +552,63 @@ Plongeur *loadDiver(FILE *file) {
     return diver;
 }
 
+PlayerProgress *loadPlayerProgress(FILE *file) {
+    if (!file) {
+        fprintf(stderr, "loadPlayerProgress(): paramètre invalide\n");
+        return NULL;
+    }
+
+    PlayerProgress *progress = calloc(1, sizeof(PlayerProgress));
+    if (!progress) {
+        fprintf(stderr, "Erreur: loadPlayerProgress(): progress = calloc()\n");
+        return NULL;
+    }
+
+    // Lire PlayerProgress sans pointeurs
+    if (fread(progress, sizeof(PlayerProgress), 1, file) != 1) {
+        fprintf(stderr, "loadPlayerProgress fread PlayerProgress");
+        free_player_progress(progress);
+        return NULL;
+    }
+
+    // Reset pointer to NULL
+    progress->cleared_cells = NULL;
+
+    // Lire taille cleared_count
+    size_t cleared_count = 0;
+    if (fread(&cleared_count, sizeof(size_t), 1, file) != 1) {
+        fprintf(stderr, "loadPlayerProgress fread cleared_count");
+        free_player_progress(progress);
+        return NULL;
+    }
+
+    // Lire cleared_cells
+    if (cleared_count == 0) {
+        progress->cleared_count = 0;
+        progress->cleared_cells = NULL;
+        return progress;
+    }
+
+    // Allocation cleared_cells
+    progress->cleared_count = cleared_count;
+    progress->cleared_cells = calloc(progress->cleared_count, sizeof(ClearedCell));
+    if (!progress->cleared_cells) {
+        fprintf(stderr, "Erreur: loadPlayerProgress(): calloc progress->cleared_cells\n");
+        free_player_progress(progress);
+        return NULL;
+    }
+
+    // Lire chaque ClearedCell
+    for (size_t i = 0; i < progress->cleared_count; i++) {
+        if (fread(&progress->cleared_cells[i], sizeof(ClearedCell), 1, file) != 1) {
+            fprintf(stderr, "Erreur: loadPlayerProgress(): fread progress->cleared_cells[%zu]\n", i);
+            free_player_progress(progress);
+            return NULL;
+        }
+    }
+
+    return progress;
+}
 
 ListeAction loadListeAction(FILE *file, short *res) {
     *res = EXIT_SUCCESS;
@@ -767,17 +830,23 @@ int saveGame(Sauvegarde *save) {
     }
 
 
-    // Save info block
+    // Save Info block
     if (saveInfo(save, tmpSave) != EXIT_SUCCESS) {
         fprintf(stderr, "save : Erreur sauvegarde Info\n");
         freeSaveTmpFile(tmpSave);
         return EXIT_FAILURE;
     }
 
-    // Save blocks
-
+    // Save Diver block
     if (saveDiver(save->diver, tmpSave) != EXIT_SUCCESS) {
         fprintf(stderr, "save : Erreur sauvegarde Plongeur\n");
+        freeSaveTmpFile(tmpSave);
+        return EXIT_FAILURE;
+    }
+
+    // Save Player Progress block
+    if (savePlayerProgress(save->player_progress, tmpSave) != EXIT_SUCCESS) {
+        fprintf(stderr, "save : Erreur sauvegarde Player Progress\n");
         freeSaveTmpFile(tmpSave);
         return EXIT_FAILURE;
     }
@@ -1058,6 +1127,45 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
     return EXIT_SUCCESS;
 }
 
+int savePlayerProgress(PlayerProgress *p, SaveTmpFile *tmpSave) {
+    if (!p || !tmpSave) {
+        fprintf(stderr, "savePlayerProgress : Paramètre invalide\n");
+        return EXIT_FAILURE;
+    }
+    // Init clean copy
+    PlayerProgress p_copy = {0};
+    p_copy.tier = p->tier;
+    p_copy.row = p->row;
+    p_copy.col = p->col;
+    p_copy.tier_seed = p->tier_seed;
+    p_copy.start_col = p->start_col;
+    p_copy.cleared_cells = NULL;
+    p_copy.cleared_count = 0;
+    
+    // Bloc sans pointeurs (safe, no uninitialised bytes)
+    if (addBlock(tmpSave, &p_copy, sizeof(PlayerProgress)) != EXIT_SUCCESS) {
+        fprintf(stderr, "savePlayerProgress : Erreur écriture bloc\n");
+        return EXIT_FAILURE;
+    }
+
+    // taille cleared_cells
+    size_t cleared_count = p->cleared_cells ? p->cleared_count : 0;
+    if (addBlock(tmpSave, &cleared_count, sizeof(size_t)) != EXIT_SUCCESS) {
+        fprintf(stderr, "savePlayerProgress : Erreur écriture cleared_count\n");
+        return EXIT_FAILURE;
+    }
+    // tab cleared_cells
+    for (size_t i = 0; i < cleared_count; i++) {
+        ClearedCell cell = p->cleared_cells[i];
+        if (addBlock(tmpSave, &cell, sizeof(ClearedCell)) != EXIT_SUCCESS) {
+            fprintf(stderr, "savePlayerProgress : Erreur écriture cleared_cells[%zu]\n", i);
+            return EXIT_FAILURE;
+        }
+    }
+
+    return EXIT_SUCCESS;
+}
+
 int saveListeActions(ListeAction *liste, SaveTmpFile *tmpSave) {
     size_t action_len = liste ? liste->longueur : 0;
     // taille actions
@@ -1285,7 +1393,10 @@ void freeSauvegarde(Sauvegarde *save) {
 
     freeDiver(save->diver);
     save->diver = NULL;
-    
+
+    free_player_progress(save->player_progress);
+    save->player_progress = NULL;
+
     free(save);
 }
 

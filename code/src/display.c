@@ -148,6 +148,16 @@ int pressToContinueOrSave(Sauvegarde *save) {
     return res;
 }
 
+char getCharInputToUpper() {
+    char c;
+    if (scanf(" %c", &c) != 1) return '\0';
+    // Vider le buffer
+    while (getchar() != '\n');
+    // Si minuscule -> majuscule
+    if(c >= 'a' && c <= 'z') c -= 32;
+    return c;
+}
+
 /*==================*/
 
 void printListeAction(ListeAction actions, char *prefix) {

@@ -25,7 +25,7 @@ unsigned int get_millisecond_time() {
 
 
 // Combine le temps en millisecondes et l'adresse d'une variable locale pour une seed plus unique
-unsigned getRandomSeed() {
+unsigned int getRandomSeed() {
     int stack_var;
     unsigned int time_seed = get_millisecond_time();
     unsigned int addr_seed = (unsigned int)(uintptr_t)&stack_var;
