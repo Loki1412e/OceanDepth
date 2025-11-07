@@ -116,8 +116,8 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
             pressEnterToContinue();
             break;
         }
-
-        draw_tier(tierMap, playerProgress->row, playerProgress->col);
+        
+        afficherInterfaceExploration(player, tierMap, playerProgress->row, playerProgress->col);
         printTierMapActionMenu();
         c = getCharInputToUpper();
         // Touche inconnue, on ignore

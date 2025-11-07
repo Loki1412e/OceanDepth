@@ -512,3 +512,69 @@ void printProgressBar(char *prefix, int actuel, int max, int longueur) {
     }
     printf("] %3d/%-3d", actuel, max);
 }
+
+
+
+
+
+
+void afficherInterfaceJoueur(Plongeur *joueur) {
+    // --- STATS DU JOUEUR ---
+    printf("%-10s: [ %s ]\n", "\n\t    Nom", joueur->nom);
+    printf("\n\t    "); printProgressBar("Vie", joueur->pv, joueur->pv_max, 40);
+    printf("\n\t    "); printProgressBar("Oxygène", joueur->oxygene, joueur->oxygene_max, 40);
+    printf("\n\t    "); printProgressBar("Fatigue", joueur->fatigue, joueur->fatigue_max, 10);
+
+    if (joueur->liste_etats.longueur > 0) {
+        printf("\n\n\t    Etats :  ");
+        printListeEtat(joueur->liste_etats);
+    }
+
+    // Afficher les bibelots actifs
+    if (joueur->liste_bibelots->longueur > 0) {
+        printBibelotsActifs(joueur->liste_bibelots);
+    }
+
+    // Afficher arme équipée (nom, stats, description, effets, etc.)
+    Arme *a = joueur->arme_equipee;
+    printf("\n\t    Arme équipée : [ %s ]\n", a ? a->nom : "Aucune (poings)");
+    if (a) {
+        printf("\t        %s\n", a->description);
+        printf("\t        (Attaque: %d-%d, Coût Oxygène: %d)\n", a->attaque_min, a->attaque_max, a->cout_oxygene);
+        // tmp -> en vrai: ne pas afficher les actions dans tt les cas
+        if (a->listeAction.longueur > 0) printListeAction(a->listeAction, "\t        ");
+    }
+}
+
+void afficherInterfaceCreatures(CreatureMarine **creatures, size_t nb_creatures) {
+    // --- CRÉATURES ENNEMIES ---
+    for (size_t i = 0; i < nb_creatures; i++) {
+        if (creatures[i]->pv > 0) {
+            printf("\n\n\t   [%zu] %-16s | ", i + 1, creatures[i]->nom);
+            printProgressBar("  PV", creatures[i]->pv, creatures[i]->pv_max, 20);
+        }
+        else printf("\n\n\t   %-16s |  ☠️  VAINCU\n", creatures[i]->nom);
+        printf("\n");
+        if (creatures[i]->liste_etats.longueur > 0) {
+            printf("\t       Etats :  ");
+            printListeEtat(creatures[i]->liste_etats);
+        }
+    }
+}
+
+
+void afficherInterfaceCombat(Plongeur *player, CreatureMarine **creatures, size_t nb_creatures) {
+    printf("╔═════════════════════════════ COMBAT DANS LES ABYSSES ═════════════════════════════╗\n\n");
+    afficherInterfaceJoueur(player);
+    printf("\n\n╟───────────────────────────────────────────────────────────────────────────────────╢\n");
+    afficherInterfaceCreatures(creatures, nb_creatures);
+    printf("\n\n╚═══════════════════════════════════════════════════════════════════════════════════╝\n\n");
+}
+
+void afficherInterfaceExploration(Plongeur *player, const TierMap *tierMap, int player_row, int player_col) {
+    printf("╔════════════════════════════ EXPLOITATION DES PROFONDEURS ════════════════════════════╗\n\n");
+    afficherInterfaceJoueur(player);
+    printf("\n\n╟───────────────────────────────────────────────────────────────────────────────────╢\n\n");
+    draw_tier("\t", tierMap, player_row, player_col);
+    printf("\n\n╚═══════════════════════════════════════════════════════════════════════════════════╝\n\n");
+}

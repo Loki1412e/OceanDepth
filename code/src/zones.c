@@ -202,17 +202,18 @@ char *get_zone_symbol(const Zone *z) {
     }
 }
 
-void draw_tier(const TierMap *m, int player_row, int player_col){
-    printf("====== PALIER #%d ======\n\n", (player_row>=0? AT((TierMap*)m, player_row, player_col).tier : 0));
+void draw_tier(char *prefix,const TierMap *m, int player_row, int player_col){
+    printf("%s====== PALIER #%d ======\n\n", prefix ? prefix : "", (player_row>=0? AT((TierMap*)m, player_row, player_col).tier : 0));
     for(int r=0;r<m->height;r++){
+        printf("%s", prefix ? prefix : "");
         for(int c=0;c<TIER_LANES;c++){
             printf("[ %s ]", (r==player_row && c==player_col) ? "🤿" : get_zone_symbol(&AT(m, r, c)));
         }
         printf("\n");
     }
-    printf("\nLégende : | 🤿 Joueur | 👹 Boss | 🪨 Rocher | 🪙 Trésor | 🐙 Monstre |\n\n");
+    printf("\n%sLégende : | 🤿 Joueur | 👹 Boss | 🪨 Rocher | 🪙 Trésor | 🐙 Monstre |\n\n", prefix ? prefix : "");
     const Zone *z = &AT((TierMap*)m, player_row, player_col);
-    printf("Biome : %s\tDanger : ", z->biome);
+    printf("%sBiome : %s\tDanger : ", prefix ? prefix : "", z->biome);
     int stars = 1 + (z->tier/2); if(stars>5) stars=5; for(int i=0;i<stars;i++) printf("*");
     putchar('\n');
 }

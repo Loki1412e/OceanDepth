@@ -33,4 +33,7 @@
 
     void printProgressBar(char *prefix, int actuel, int max, int longueur);
 
+    void afficherInterfaceCombat(Plongeur *player, CreatureMarine **creatures, size_t nb_creatures);
+    void afficherInterfaceExploration(Plongeur *player, const TierMap *tierMap, int player_row, int player_col);
+
 #endif
