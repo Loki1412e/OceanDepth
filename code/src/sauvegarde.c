@@ -141,7 +141,7 @@ Sauvegarde *loadSave(char *save_name, short preLoad) {
 
     FILE *file = fopen(filepath, "rb");
     if (!file) {
-        perror("load fopen");
+        fprintf(stderr,"loadSave : load fopen \n");
         free(filepath);
         freeSauvegarde(save);
         return NULL;
@@ -1296,7 +1296,7 @@ SaveTmpFile *initTmpFile(char *dir, char *filename) {
 
     save->file = fopen(save->tmp_filepath, "wb"); // b = binaire
     if (!save->file) {
-        perror("initTmpFile fopen");
+        fprintf(stderr ,"initTmpFile : erreur fopen file");
         freeSaveTmpFile(save);
         return NULL;
     }
@@ -1312,7 +1312,7 @@ int addBlock(SaveTmpFile *save, void *data, size_t size) {
 
     size_t written = fwrite(data, 1, size, save->file);
     if (written != size) {
-        perror("addBlock fwrite");
+        fprintf(stderr, "addBlock : fwrite\n");
         return EXIT_FAILURE;
     }
 
@@ -1326,7 +1326,7 @@ int finalizeSave(SaveTmpFile *save) {
     }
 
     if (fclose(save->file) != 0) {
-        perror("finalizeSave fclose");
+        fprintf(stderr, "finalizeSave : erreur close file\n");
         freeSaveTmpFile(save);
         return EXIT_FAILURE;
     }
@@ -1336,7 +1336,7 @@ int finalizeSave(SaveTmpFile *save) {
     if (file_exists(save->final_filepath)) {
         // Si le fichier existe, on essaie de le supprimer
         if (remove(save->final_filepath) != 0) {
-            perror("finalizeSave remove");
+            fprintf(stderr, "finalizeSave : remove  existing final file\n");
             freeSaveTmpFile(save);
             return EXIT_FAILURE;
         }
@@ -1344,7 +1344,7 @@ int finalizeSave(SaveTmpFile *save) {
 
     // Renommer le fichier temporaire en fichier final
     if (rename(save->tmp_filepath, save->final_filepath) != 0) {
-        perror("finalizeSave rename");
+        fprintf(stderr,"finalizeSave : rename temp to final file\n");
         remove(save->tmp_filepath);
         freeSaveTmpFile(save);
         return EXIT_FAILURE;
@@ -1368,7 +1368,7 @@ void freeSaveTmpFile(SaveTmpFile *save) {
     if (save->tmp_filepath) {
         if (file_exists(save->tmp_filepath)) {
             if (remove(save->tmp_filepath) != 0)
-                perror("remove tmp file");
+                fprintf(stderr ,"freeSaveTmpFile : remove tmp file\n");
         }
         free(save->tmp_filepath);
         save->tmp_filepath = NULL;
