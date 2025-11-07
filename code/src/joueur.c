@@ -300,41 +300,25 @@ int setDiverFromConf(Plongeur *diver, ListeCompetence *modalDiverSkills, char *p
 }
 
 
-
-
 int appliquerConsommationOxygeneProfondeur(Plongeur *joueur) {
-    
-    int perte = (random_int(10, 15) / 10.) * (joueur->profondeur); // niveau de profondeur, ptet trop violent ???
-    joueur->oxygene -= perte;
+    if (!joueur) {
+        fprintf(stderr, "Erreur: appliquerConsommationOxygeneProfondeur(): Invalid params\n");
+        return 0;
+    }
+
+    int perte_ox = (random_int(10, 15) / 10.) * (joueur->profondeur); // niveau de profondeur, ptet trop violent ???
+    joueur->oxygene -= perte_ox;
     if (joueur->oxygene < 0) joueur->oxygene = 0;
 
-    return perte;
-}
-
-// Return :
-// - `true` si perte de pv due à l'oxygène
-// - `false` sinon
-int afficherEtatOxygene(Plongeur *joueur) {
-    int res = false;
-    int perte = 0;
-    int percent = joueur->oxygene * 100 / joueur->oxygene_max;
-
-    if (percent <= 10) {
-        printf("\n⚠️  Alerte critique : oxygène bas (%d%%) !\n", percent);
-        res = true;
-    }
-
+    // -= 5% de max pv
     if (joueur->oxygene == 0) {
-        perte = joueur->pv_max * 0.05; // 5% de max pv = max 20 tours : mort.
+        int perte = joueur->pv_max * 0.05;
         joueur->pv -= perte;
-        printf("⛔ Plus d'oxygène, vous suffoquez ! -%d PV\n", perte);
-        res = true;
+        if (joueur->pv < 0) joueur->pv = 0;
     }
 
-    return res;
+    return perte_ox;
 }
-
-
 
 
 void freeDiverContent(Plongeur *diver) {
