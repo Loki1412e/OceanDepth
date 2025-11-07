@@ -64,7 +64,7 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
                     
             // Lancer le jeu
             pressEnterToContinue();
-            res = runGame(actualSave);
+            res = runGame(actualSave, false);
 
             // Affichage la save après le jeu
             printSave(actualSave);
@@ -138,7 +138,7 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
 
             // Lancer le jeu
             pressEnterToContinue();
-            res = runGame(actualSave);
+            res = runGame(actualSave, true);
 
             // Affichage la save après le jeu
             printSave(actualSave);
@@ -182,7 +182,7 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
                     
             // Lancer le jeu
             pressEnterToContinue();
-            res = runGame(actualSave);
+            res = runGame(actualSave, false);
 
             // Affichage la save après le jeu
             printSave(actualSave);
