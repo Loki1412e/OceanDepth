@@ -108,6 +108,17 @@
     } CiblageType;
 
 
+    typedef enum {
+        ZONE_PATH,
+        ZONE_BLOCKED,
+        ZONE_TREASURE,
+        ZONE_BOSS,
+        ZONE_MONSTER,
+        // Suite ...
+        LENGTH_ZoneType
+    } ZoneType;
+
+
     /* Struct */
 
     typedef struct {
@@ -223,6 +234,7 @@
         size_t longueur_groupes;
     } Bestiaire;
 
+
     typedef struct {
         char *nom;
         int pv;
@@ -247,22 +259,42 @@
         ListeEffet *effets_immunises; // --> si immunisé alors executerAction(APPLIQUER_EFFET, <cible=ENTITE_PLONGEUR>) ne s'appliquera pas
     } Plongeur;
 
-    typedef struct {
-        int content;
-        short apparition; // bool
-        int difficulte;
-        Bestiaire *bestiaire;
-    } Case;
 
     typedef struct {
-        Case *cases;
-        size_t longueur_cases;
-    } Carte;
+        int row;
+        int col;
+    } ClearedCell;
+
+    typedef struct {
+        int tier;        // palier actuel (1..+)
+        int row;         // position verticale du joueur (0 .. height-1)
+        int col;         // 0..TIER_LANES-1 (chemin)
+        unsigned tier_seed; // seed pour régénérer le palier de façon stable
+        int start_col; // colonne de départ du joueur (0..TIER_LANES-1)
+        ClearedCell *cleared_cells;  // tableau dynamique des cellules nettoyées
+        size_t cleared_count; // nombre de cellules nettoyées
+    } PlayerProgress;
+
+    typedef struct {
+        int index;      // zone n°
+        int tier;       // difficulté
+        char biome[16];
+        ZoneType type;
+    } Zone;
+
+    typedef struct {
+        int height;        // nombre de rangées verticales (la longueur du palier)
+        int boss_col;      // colonne du boss (0..TIER_LANES-1)
+        unsigned seed; // seed pour ce palier (utilisée par rnd local)
+        Zone *cells;       // tableau height*TIER_LANES
+    } TierMap;
+
 
     typedef struct {
         char *nom;
         size_t derniere_modification; // time(null) -> en secondes
         Plongeur *diver;
+        PlayerProgress *player_progress;
     } Sauvegarde;
 
     typedef struct {
