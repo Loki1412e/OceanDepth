@@ -300,6 +300,20 @@ int setDiverFromConf(Plongeur *diver, ListeCompetence *modalDiverSkills, char *p
 }
 
 
+
+
+int appliquerConsommationOxygeneProfondeur(Plongeur *joueur) {
+    
+    int perte = (random_int(10, 15) / 10.) * (joueur->profondeur); // niveau de profondeur, ptet trop violent ???
+    joueur->oxygene -= perte;
+    if (joueur->oxygene < 0) joueur->oxygene = 0;
+
+    return perte;
+}
+
+
+
+
 void freeDiverContent(Plongeur *diver) {
     if (!diver) return;
     

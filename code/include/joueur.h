@@ -12,5 +12,7 @@
     void freeDiver(Plongeur *diver);
 
     Plongeur *initModalDiver(char *diver_name, ListeCompetence *modalDiverSkills);
+    
+    int appliquerConsommationOxygeneProfondeur(Plongeur *joueur);
 
 #endif

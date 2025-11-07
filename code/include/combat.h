@@ -14,7 +14,6 @@
     int diminuerFatigue(Plongeur *joueur, int perte);
     int calculerAttaquesMaxAvecFatigue(int fatigue_max, int fatigue);
     int calculerDegats(int attaque_min, int attaque_max, int defense);
-    int appliquerConsommationOxygeneProfondeur(Plongeur *joueur);
     // Actions
     void joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature);
     int botAttaque(void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, EntiteType cible_type, void** groupe_allie, long *groupe_allie_type, size_t len_groupe);
