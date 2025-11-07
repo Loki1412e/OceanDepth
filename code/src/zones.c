@@ -21,20 +21,19 @@ static int trnd_int(int a,int b) {
 // --------------- TIER MAP BUILDING ----------------
 void free_tier(TierMap *m){
     if (!m) return;
-    if(m->cells){ free(m->cells); m->cells=NULL; }
-    m->height = 0;
-    m->boss_col = 0;
-    m->seed = 0;
+    if(m->cells){ 
+        free(m->cells); 
+        m->cells = NULL; 
+    }
+    free(m);
 }
 void free_player_progress(PlayerProgress *p){
     if (!p) return;
-    if(p->cleared_cells){ free(p->cleared_cells); p->cleared_cells=NULL; }
-    p->cleared_count = 0;
-    p->tier = 0;
-    p->row = 0;
-    p->col = 0;
-    p->tier_seed = 0;
-    p->start_col = 0;
+    if(p->cleared_cells){ 
+        free(p->cleared_cells); 
+        p->cleared_cells = NULL; 
+    }
+    free(p);
 }
 
 int mark_cell_as_cleared(PlayerProgress *p, int r, int c) {
@@ -117,7 +116,7 @@ TierMap *build_tier(int tier, unsigned seed, PlayerProgress *p, short isNewTier)
         }
     }
 
-    // 2) Carve un chemin garanti...
+    // 2) Carve un chemin garanti du haut (row 0) jusqu’au boss en bas
     int c = (p->start_col>=0 && p->start_col<TIER_LANES) ? p->start_col : trnd_int(0, TIER_LANES-1);
     for(int r=0; r < height - 1; r++){
         AT(m,r,c).type = ZONE_PATH; // Ouvre la case actuelle
@@ -239,24 +238,33 @@ void show_zone(const Zone* z){
 }
 
 // --------------- TIER INITIALIZATION FROM SAVE ----------------
-TierMap *initTier(PlayerProgress *player_progress) {
+// Initialise un palier à partir de la progression du joueur
+// Si isNewTier = `true`, initialise un nouveau palier
+TierMap *initTier(PlayerProgress *player_progress, short isNewTier) {
+    if (!player_progress) {
+        fprintf(stderr, "Erreur: initTier(): PlayerProgress est NULL\n");
+        return NULL;
+    }
+    
     TierMap *map = NULL;
-    short isNewTier;
 
-    if(player_progress->tier_seed != 0){
-        if (player_progress->tier <= 0 ||
-            player_progress->col < 0 ||
-            player_progress->col >= TIER_LANES ||
-            player_progress->row < 0
-        ) {
-            // Données corrompues, réinitialiser
-            fprintf(stderr, "Erreur: Données de sauvegarde corrompues.\n");
-            return NULL;
-        }
-        isNewTier = false;
-    }else{
-        isNewTier = true;
-        player_progress->tier = 1; player_progress->start_col = TIER_LANES/2; player_progress->row = 0; player_progress->col = TIER_LANES/2; player_progress->tier_seed = getRandomSeed();
+    // Check if this is a new tier or loading from save
+    if (isNewTier == false && (
+        player_progress->col < 0 ||
+        player_progress->col >= TIER_LANES ||
+        player_progress->row < 0
+    )) {
+        // Invalid save data
+        fprintf(stderr, "Erreur: initTier(): Données de sauvegarde invalides pour le palier.\n");
+        return NULL;
+    }
+    else if (isNewTier) {
+        // New tier initialization
+        player_progress->tier = 1;
+        player_progress->start_col = TIER_LANES/2;
+        player_progress->row = 0;
+        player_progress->col = TIER_LANES/2;
+        player_progress->tier_seed = getRandomSeed();
     }
 
     // Construire le palier initial/reconstruit
