@@ -115,7 +115,10 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
         printTierMapActionMenu();
         c = getCharInputToUpper();
         // Touche inconnue, on ignore
-        if (strchr("ZQSDXW", c) == NULL) continue;
+        if (strchr("ZQSDXW", c) == NULL) {
+            clearConsole();
+            continue;
+        }
 
         // --- Actions qui ne sont PAS des mouvements ---
         // Sauvegarder et/ou Quitter
@@ -142,7 +145,6 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
             case 'D': new_col++; break;
             case 'Z': new_row--; break;
             case 'S': new_row++; break;
-            default:  continue;
         }
 
         // --- 2. Vérifier la validité de la CIBLE ---
