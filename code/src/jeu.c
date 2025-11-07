@@ -172,8 +172,10 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
         // --- 3. Mouvement VALIDE : Mettre à jour le joueur ---
         playerProgress->row = new_row;
         playerProgress->col = new_col;
-        player->oxygene-= appliquerConsommationOxygeneProfondeur(player);// decrimenter le niveau d'oxygene 
-        afficherEtatOxygene(player);
+        if (player->oxygene > 0) // decrimenter le niveau d'oxygene
+            appliquerConsommationOxygeneProfondeur(player);
+        res = (short) afficherEtatOxygene(player);
+
         // --- 4. Gérer les conséquences (UNE SEULE FOIS) ---
         switch (target_zone->type) {
             
@@ -186,7 +188,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
             }
 
             case ZONE_MONSTER: {
-                printf("\n🐙 Monstre rencontré ! (combat à venir)\n");
+                printf("\n🐙 Monstre rencontré !\n");
                 pressEnterToContinue();
                 
                 Bestiaire *bestiary = initRandomBestiaryFromDangerosityGroupLevel(modalBestiary, 1);
@@ -211,7 +213,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
             }
 
             case ZONE_BOSS: {
-                printf("\n👹 Boss atteint ! Passage au palier suivant... ✨\n");
+                printf("\n👹 Boss atteint !\n");
                 pressEnterToContinue();
                 
                 Bestiaire *bestiary = initRandomBestiaryFromDangerosityGroupLevel(modalBestiary, 5);
@@ -242,7 +244,13 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
             }
 
             // Si c'est ZONE_PATH, on ne fait rien et la boucle continue
-            default: {clearConsole(); continue;}
+            default: {
+                if (res) 
+                    pressEnterToContinue();
+                else
+                    clearConsole();
+                continue;
+            }
         }
 
         // Si on atteint la suite de la boucle, c'est qu'on doit quitter le programme.
