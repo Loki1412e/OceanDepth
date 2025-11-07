@@ -14,6 +14,5 @@
     Plongeur *initModalDiver(char *diver_name, ListeCompetence *modalDiverSkills);
     
     int appliquerConsommationOxygeneProfondeur(Plongeur *joueur);
-    int afficherEtatOxygene(Plongeur *joueur);
 
 #endif

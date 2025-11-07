@@ -283,7 +283,6 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur, CreatureMarine **creatures,
         int perte_oxy = appliquerConsommationOxygeneProfondeur(joueur);
         if (perte_oxy > 0) printf("Oxygène consommé (profondeur): -%d ( %d -> %d )\n", perte_oxy, oxy_before, joueur->oxygene);
 
-        afficherEtatOxygene(joueur);
         appliquerDegatsAvantTour(&joueur->liste_etats, &joueur->pv, joueur->pv_max, joueur->defense, &joueur->oxygene, joueur->oxygene_max);
         if (pv_before_player != joueur->pv) {
             printf("Vous subissez %d dégâts d'effets de statut (PV: %d -> %d)\n", pv_before_player - joueur->pv, pv_before_player, joueur->pv);

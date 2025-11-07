@@ -233,7 +233,7 @@ void printImmuneEffetActions(ListeAction actions) {
 
 void printListeEtat(ListeEtat etats) {
     if (etats.longueur == 0 || etats.etats == NULL) {
-        printf("Aucun");
+        printf("Aucun\n");
         return;
     }
 
@@ -519,10 +519,17 @@ void printProgressBar(char *prefix, int actuel, int max, int longueur) {
 
 
 void afficherInterfaceJoueur(Plongeur *joueur) {
+    int perte = joueur->pv_max * 0.05;
+    int ox_percent = joueur->oxygene * 100 / joueur->oxygene_max;
+    
     // --- STATS DU JOUEUR ---
     printf("%-10s: [ %s ]\n", "\n\t    Nom", joueur->nom);
     printf("\n\t    "); printProgressBar("Vie", joueur->pv, joueur->pv_max, 40);
+    if (joueur->oxygene <= 0) printf("  ⛔ Plus d'oxygène, vous suffoquez ! -%d PV\n", perte);
+    
     printf("\n\t    "); printProgressBar("Oxygène", joueur->oxygene, joueur->oxygene_max, 40);
+    if (ox_percent <= 10) printf("  ⚠️  Alerte critique : oxygène bas (%d%%) !\n", ox_percent);
+    
     printf("\n\t    "); printProgressBar("Fatigue", joueur->fatigue, joueur->fatigue_max, 10);
 
     if (joueur->liste_etats.longueur > 0) {
