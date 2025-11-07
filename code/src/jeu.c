@@ -168,35 +168,38 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
         playerProgress->col = new_col;
 
         // --- 4. Gérer les conséquences (UNE SEULE FOIS) ---
-        if (target_zone->type == ZONE_TREASURE) {
-            printf("\n🪙 Trésor trouvé ! (loot plus tard)\n");
-            target_zone->type = ZONE_PATH; // On vide la case
-            mark_cell_as_cleared(playerProgress, new_row, new_col); // On marque comme nettoyée
-            pressEnterToContinue();
-            continue;
-        } 
-        else if (target_zone->type == ZONE_MONSTER) {
-            printf("\n🐙 Monstre rencontré ! (combat à venir)\n");
-            target_zone->type = ZONE_PATH; // On vide la case
-            mark_cell_as_cleared(playerProgress, new_row, new_col); // On marque comme nettoyée
-            pressEnterToContinue();
-            continue;
-        } 
-        else if (target_zone->type == ZONE_BOSS) {
-            printf("\n👹 Boss atteint ! Passage au palier suivant... ✨\n");
-            // Génération du palier suivant
-            playerProgress->tier++;
-            playerProgress->row = 0; // On repart d'en haut
-            // On utilise la colonne d'arrivée comme colonne de départ du palier suivant
-            playerProgress->start_col = playerProgress->col;
-            playerProgress->tier_seed = getRandomSeed();
-            free_tier(tierMap);
-            tierMap = build_tier(playerProgress->tier, playerProgress->tier_seed, playerProgress, true);
-            pressEnterToContinue();
-            continue;
+        switch (target_zone->type) {
+            
+            case ZONE_TREASURE:
+                printf("\n🪙 Trésor trouvé ! (loot plus tard)\n");
+                target_zone->type = ZONE_PATH; // On vide la case
+                mark_cell_as_cleared(playerProgress, new_row, new_col); // On marque comme nettoyée
+                pressEnterToContinue();
+                continue;
+
+            case ZONE_MONSTER:
+                printf("\n🐙 Monstre rencontré ! (combat à venir)\n");
+                target_zone->type = ZONE_PATH; // On vide la case
+                mark_cell_as_cleared(playerProgress, new_row, new_col); // On marque comme nettoyée
+                pressEnterToContinue();
+                continue;
+
+            case ZONE_BOSS:
+                printf("\n👹 Boss atteint ! Passage au palier suivant... ✨\n");
+                // Génération du palier suivant
+                playerProgress->tier++;
+                playerProgress->row = 0; // On repart d'en haut
+                // On utilise la colonne d'arrivée comme colonne de départ du palier suivant
+                playerProgress->start_col = playerProgress->col;
+                playerProgress->tier_seed = getRandomSeed();
+                free_tier(tierMap);
+                tierMap = build_tier(playerProgress->tier, playerProgress->tier_seed, playerProgress, true);
+                pressEnterToContinue();
+                continue;
+
+            // Si c'est ZONE_PATH, on ne fait rien et la boucle continue
+            default: clearConsole(); break;
         }
-        // Si c'est ZONE_PATH, on ne fait rien et la boucle continue
-        else clearConsole();
 
 
         /***************************************************/
