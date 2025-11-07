@@ -111,6 +111,12 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
     pressEnterToContinue();
 
     while (1) {
+        if (player->pv <= 0) {
+            printf("\n💀 Vous ne pouvez plus continuer votre aventure... GAME OVER.\n");
+            pressEnterToContinue();
+            break;
+        }
+
         draw_tier(tierMap, playerProgress->row, playerProgress->col);
         printTierMapActionMenu();
         c = getCharInputToUpper();
@@ -196,10 +202,8 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                     break;
                 }
                 // Si le joueur a choisi de quitter
-                if (res == -1) {
-                    break;
-                }
-                
+                if (res == -1) break;
+
                 target_zone->type = ZONE_PATH; // On vide la case
                 mark_cell_as_cleared(playerProgress, new_row, new_col); // On marque comme nettoyée
                 continue;
@@ -223,9 +227,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                     break;
                 }
                 // Si le joueur a choisi de quitter
-                if (res == -1) {
-                    break;
-                }
+                if (res == -1) break;
                 
                 // Génération du palier suivant
                 playerProgress->tier++;
@@ -239,8 +241,11 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
             }
 
             // Si c'est ZONE_PATH, on ne fait rien et la boucle continue
-            default: {clearConsole(); break;}
+            default: {clearConsole(); continue;}
         }
+
+        // Si on atteint la suite de la boucle, c'est qu'on doit quitter le programme.
+        break;
 
 
         /***************************************************/
