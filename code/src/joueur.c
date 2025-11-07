@@ -311,6 +311,23 @@ int appliquerConsommationOxygeneProfondeur(Plongeur *joueur) {
     return perte;
 }
 
+int afficherEtatOxygene(Plongeur *joueur) {
+    int perte = 0;
+    
+    int p = joueur->oxygene * 100 / joueur->oxygene_max;
+
+    if (p <= 10)
+        printf("⚠️  Alerte critique : oxygène bas (%d%%) !\n", joueur->oxygene);
+
+    if (joueur->oxygene == 0) {
+        perte = joueur->pv_max * 0.05; // 5% de max pv = max 20 tours : mort.
+        joueur->pv -= perte;
+        printf("⛔ Plus d'oxygène, vous suffoquez ! -%d PV\n", perte);
+    }
+
+    return perte;
+}
+
 
 
 
