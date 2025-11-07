@@ -34,15 +34,6 @@ int calculerDegats(int attaque_min, int attaque_max, int defense) {
     return degats;
 }
 
-int appliquerConsommationOxygeneProfondeur(Plongeur *joueur) {
-    
-    int perte = (random_int(10, 15) / 10.) * (joueur->profondeur); // niveau de profondeur, ptet trop violent ???
-    joueur->oxygene -= perte;
-    if (joueur->oxygene < 0) joueur->oxygene = 0;
-
-    return perte;
-}
-
 int creaturesVivantes(CreatureMarine **creatures, size_t nb_creatures) {
     int nb_vivantes = 0;
     
