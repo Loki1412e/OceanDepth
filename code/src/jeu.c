@@ -170,22 +170,63 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
         // --- 4. Gérer les conséquences (UNE SEULE FOIS) ---
         switch (target_zone->type) {
             
-            case ZONE_TREASURE:
+            case ZONE_TREASURE: {
                 printf("\n🪙 Trésor trouvé ! (loot plus tard)\n");
                 target_zone->type = ZONE_PATH; // On vide la case
                 mark_cell_as_cleared(playerProgress, new_row, new_col); // On marque comme nettoyée
                 pressEnterToContinue();
                 continue;
+            }
 
-            case ZONE_MONSTER:
+            case ZONE_MONSTER: {
                 printf("\n🐙 Monstre rencontré ! (combat à venir)\n");
+                pressEnterToContinue();
+                
+                Bestiaire *bestiary = initRandomBestiaryFromDangerosityGroupLevel(modalBestiary, 1);
+                if (!bestiary) {
+                    fprintf(stderr, "Erreur: runGame(): initRandomBestiaryFromDangerosityGroupLevel()\n");
+                    break;
+                }
+
+                // Lancement du combat
+                int res = combat(actualSave, player, bestiary->creatures, bestiary->longueur_creatures);
+                freeBestiary(bestiary); // On libère le bestiaire après le combat
+                if (res == EXIT_FAILURE) {
+                    fprintf(stderr, "Erreur: runGame(): res = combat()\n");
+                    break;
+                }
+                // Si le joueur a choisi de quitter
+                if (res == -1) {
+                    break;
+                }
+                
                 target_zone->type = ZONE_PATH; // On vide la case
                 mark_cell_as_cleared(playerProgress, new_row, new_col); // On marque comme nettoyée
-                pressEnterToContinue();
                 continue;
+            }
 
-            case ZONE_BOSS:
+            case ZONE_BOSS: {
                 printf("\n👹 Boss atteint ! Passage au palier suivant... ✨\n");
+                pressEnterToContinue();
+                
+                Bestiaire *bestiary = initRandomBestiaryFromDangerosityGroupLevel(modalBestiary, 5);
+                if (!bestiary) {
+                    fprintf(stderr, "Erreur: runGame(): initRandomBestiaryFromDangerosityGroupLevel()\n");
+                    break;
+                }
+
+                // Lancement du combat
+                int res = combat(actualSave, player, bestiary->creatures, bestiary->longueur_creatures);
+                freeBestiary(bestiary); // On libère le bestiaire après le combat
+                if (res == EXIT_FAILURE) {
+                    fprintf(stderr, "Erreur: runGame(): res = combat()\n");
+                    break;
+                }
+                // Si le joueur a choisi de quitter
+                if (res == -1) {
+                    break;
+                }
+                
                 // Génération du palier suivant
                 playerProgress->tier++;
                 playerProgress->row = 0; // On repart d'en haut
@@ -194,11 +235,11 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                 playerProgress->tier_seed = getRandomSeed();
                 free_tier(tierMap);
                 tierMap = build_tier(playerProgress->tier, playerProgress->tier_seed, playerProgress, true);
-                pressEnterToContinue();
                 continue;
+            }
 
             // Si c'est ZONE_PATH, on ne fait rien et la boucle continue
-            default: clearConsole(); break;
+            default: {clearConsole(); break;}
         }
 
 
