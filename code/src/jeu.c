@@ -11,7 +11,7 @@ void printTierMapActionMenu() {
 
 
 // return -1 = stop le programme
-int runGame(Sauvegarde *actualSave) {
+int runGame(Sauvegarde *actualSave, short isNewSave) {
     if (!actualSave || !actualSave->diver) return EXIT_FAILURE;
 
     /*===== Init var ====*/
@@ -30,9 +30,20 @@ int runGame(Sauvegarde *actualSave) {
 
     char c;
 
+    /*===== Init Allocation Save ====*/
+
+    if (!playerProgress) {
+        actualSave->player_progress = calloc(1, sizeof(PlayerProgress));
+        if (!actualSave->player_progress) {
+            fprintf(stderr, "runGame(): Erreur lors de l'allocation de PlayerProgress.\n");
+            return EXIT_FAILURE;
+        }
+        playerProgress = actualSave->player_progress;
+    }
+
     /*===== Init Allocation ====*/
 
-    tierMap = initTier(playerProgress);
+    tierMap = initTier(playerProgress, isNewSave);
     if (!tierMap) {
         fprintf(stderr, "runGame(): Erreur lors de l'initialisation du palier.\n");
         return EXIT_FAILURE;
@@ -115,7 +126,6 @@ int runGame(Sauvegarde *actualSave) {
                 printf("\n>> ❌ Échec de la sauvegarde !\n");
             }
             if (c=='X') {
-                free_tier(tierMap);
                 printf(">> A bientôt 👋\n");
                 pressEnterToContinue();
                 break;
@@ -139,6 +149,7 @@ int runGame(Sauvegarde *actualSave) {
 
         // Vérification des limites de la carte
         if (new_row < 0 || new_row >= tierMap->height || new_col < 0 || new_col >= TIER_LANES) {
+            clearConsole();
             continue; // Mouvement hors-limites, on ignore
         }
 
@@ -160,16 +171,17 @@ int runGame(Sauvegarde *actualSave) {
             target_zone->type = ZONE_PATH; // On vide la case
             mark_cell_as_cleared(playerProgress, new_row, new_col); // On marque comme nettoyée
             pressEnterToContinue();
+            continue;
         } 
         else if (target_zone->type == ZONE_MONSTER) {
             printf("\n🐙 Monstre rencontré ! (combat à venir)\n");
             target_zone->type = ZONE_PATH; // On vide la case
             mark_cell_as_cleared(playerProgress, new_row, new_col); // On marque comme nettoyée
             pressEnterToContinue();
+            continue;
         } 
         else if (target_zone->type == ZONE_BOSS) {
             printf("\n👹 Boss atteint ! Passage au palier suivant... ✨\n");
-            pressEnterToContinue();
             // Génération du palier suivant
             playerProgress->tier++;
             playerProgress->row = 0; // On repart d'en haut
@@ -178,8 +190,11 @@ int runGame(Sauvegarde *actualSave) {
             playerProgress->tier_seed = getRandomSeed();
             free_tier(tierMap);
             tierMap = build_tier(playerProgress->tier, playerProgress->tier_seed, playerProgress, true);
+            pressEnterToContinue();
+            continue;
         }
         // Si c'est ZONE_PATH, on ne fait rien et la boucle continue
+        else clearConsole();
 
 
         /***************************************************/

@@ -12,6 +12,6 @@
     #include "effets.h"
     #include "sauvegarde.h"
 
-    int runGame(Sauvegarde *actualSave);
+    int runGame(Sauvegarde *actualSave, short isNewSave);
 
 #endif
