@@ -529,6 +529,11 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur, CreatureMarine **creatures,
                         afficherActionsDisponibles(joueur, actions_restantes, actions_max);
                         continue;
                     }
+                    if (!joueur->liste_consommables || !joueur->liste_consommables->objets || !joueur->liste_consommables->longueur == 0) {
+                        printf("\n>> Vous n'avez aucun objet dans votre inventaire.\n");
+                        if (pressToContinueOrSave(actualSave) == -1) return -1;
+                        break;
+                    }
                     printf("\nQuel objet utiliser ? (0 pour annuler) => [coût: %d action%s]\n", cout_actions, cout_actions > 1 ? "s" : "");
                     for (size_t i = 0; i < joueur->liste_consommables->longueur; i++) {
                         Objet *c = joueur->liste_consommables->objets[i];

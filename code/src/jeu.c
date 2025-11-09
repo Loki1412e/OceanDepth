@@ -2,10 +2,10 @@
 
 
 void printTierMapActionMenu() {
-    printf("\n================= Actions Disponibles =================\n");
-    printf("[Z] Monter | [S] Descendre | [X] Quitter et sauvegarder\n");
-    printf("[Q] Gauche | [D] Droite    | [W] Sauvegarder\n");
-    printf("=======================================================\n");
+    printf("\n========================================= Actions Disponibles =========================================\n");
+    printf("[Z] Monter | [S] Descendre | [O] Utiliser Objet       | [A] Changer d'Arme | [X] Quitter et sauvegarder\n");
+    printf("[Q] Gauche | [D] Droite    | [C] Utiliser compétences |                    | [W] Sauvegarder\n");
+    printf("=======================================================================================================\n");
     printf("> ");
 }
 
@@ -121,12 +121,13 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
         printTierMapActionMenu();
         c = getCharInputToUpper();
         // Touche inconnue, on ignore
-        if (strchr("ZQSDXW", c) == NULL) {
+        if (strchr("ZQSDXWCOA", c) == NULL) {
             clearConsole();
             continue;
         }
 
         // --- Actions qui ne sont PAS des mouvements ---
+        
         // Sauvegarder et/ou Quitter
         if(c=='X' || c=='W'){
             if(saveGame(actualSave) == EXIT_SUCCESS) {
@@ -140,7 +141,201 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                 break;
             }
             pressEnterToContinue();
+            clearConsole();
             continue; // On ne bouge pas, on re-dessine
+        }
+
+        // Utiliser compétence
+        else if (c=='C') {
+            printf("\nQuelle compétence utiliser ? (0 pour annuler)\n");
+            // On compte le nombre de compétences utilisables
+            size_t count_comp = 0;
+            for (size_t i = 0; i < player->liste_competences.longueur; i++) {
+                if (player->liste_competences.competences[i].ciblage == SOI_MEME)
+                    count_comp++;
+            }
+            // On affiche les compétences utilisables
+            long valid_competences[count_comp];
+            for (size_t i = 0, j = 0; i < player->liste_competences.longueur; i++) {
+                Competence *c = &player->liste_competences.competences[i];
+                if (c->ciblage == SOI_MEME) {
+                    valid_competences[j++] = i;
+                }
+            }
+            // Affichage des compétences utilisables
+            for (size_t i = 0; i < count_comp; i++) {
+                Competence *c = &player->liste_competences.competences[valid_competences[i]];
+                printf("\n[%zu] %s (coût: ", i + 1, c->nom);
+                if (c->cout_oxygene > 0)
+                    printf("%d Oxygène", c->cout_oxygene);
+                if (c->cout_pv > 0)
+                    printf(" %d PV", c->cout_pv);
+                if (c->cout_oxygene == 0 && c->cout_pv == 0)
+                    printf("Aucun");
+                printf(")");
+                if (c->cooldown_restant > 0)
+                    printf(" (cooldown: %d tour%s restant%s)", c->cooldown_restant, c->cooldown_restant > 1 ? "s" : "", c->cooldown_restant > 1 ? "s" : "");
+                printf("\n    %s\n", c->description);
+            }
+            printf("> ");
+
+            size_t choix_comp = lireEntier();
+            if (choix_comp == 0 || choix_comp > player->liste_competences.longueur) {
+                    if (choix_comp == 0)
+                        printf("\n>> Action annulée.\n");
+                    else
+                        printf("\n>> Choix invalide (Action annulée).\n");
+                pressEnterToContinue();
+                clearConsole();
+                continue;
+            }
+
+            // Indice choisi
+            long index_comp = valid_competences[choix_comp - 1];
+
+            // Utilisation de la compétence
+            Competence *comp_choisie = &player->liste_competences.competences[index_comp];
+            if (!comp_choisie) {
+                printf("Erreur interne: compétence introuvable.\n");
+                pressEnterToContinue();
+                clearConsole();
+                continue;
+            }
+            
+            if (comp_choisie->ciblage != SOI_MEME) {
+                printf("\n>> Seules les compétences ciblant 'Soi-même' sont implémentées pour l'instant en exploration.\n");
+                pressEnterToContinue();
+                clearConsole();
+                continue;
+            }
+
+            res = (short) utiliserCompetence(comp_choisie, player, ENTITE_PLONGEUR, player, ENTITE_PLONGEUR);
+            if (res != EXIT_SUCCESS) {
+                if (res == EXIT_FAILURE) fprintf(stderr, "Erreur: runGame(): utiliserCompetence() pour la compétence '%s'\n", comp_choisie->nom);
+                printf(">> [%s] n'a pas pu être lancé.\n", comp_choisie->nom);
+            }
+
+            pressEnterToContinue();
+            clearConsole();
+            continue;
+        }
+
+        // Utiliser un objet (non implémenté)
+        else if (c=='O') {
+            if (!player->liste_consommables || !player->liste_consommables->objets || !player->liste_consommables->longueur == 0) {
+                printf("\n>> Vous n'avez aucun objet dans votre inventaire.\n");
+                pressEnterToContinue();
+                clearConsole();
+                continue;
+            }
+            printf("\nQuel objet utiliser ? (0 pour annuler)\n");
+            for (size_t i = 0; i < player->liste_consommables->longueur; i++) {
+                Objet *c = player->liste_consommables->objets[i];
+                printf("\n[%zu] %s x%d", i + 1, c->nom, c->quantite);
+                printf("\n    %s\n", c->description);
+            }
+            printf("> ");
+
+            size_t choix_objet = lireEntier();
+            if (choix_objet == 0 || choix_objet > player->liste_consommables->longueur) {
+                    if (choix_objet == 0)
+                        printf("\n>> Action annulée.\n");
+                    else
+                        printf("\n>> Choix invalide (Action annulée).\n");
+                pressEnterToContinue();
+                clearConsole();
+                continue;
+            }
+
+            res = consommerObjet(
+                player->liste_consommables,
+                player->liste_consommables->objets[choix_objet - 1],
+                (void*)player,
+                ENTITE_PLONGEUR
+            );
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: combat(): consommerObjet()\n");
+                printf(">> L'objet n'a pas pu être consommé.\n");
+            }
+            
+            pressEnterToContinue();
+            clearConsole();
+            continue;
+        }
+
+        // Changement Arme
+        else if (c=='A') {
+            if (!player->arsenal || player->arsenal->longueur == 0) {
+                printf("\n>> Vous n'avez aucune arme dans votre arsenal.\n");
+                pressEnterToContinue();
+                clearConsole();
+                continue;
+            }
+            printf("\nQuelle arme équiper ? (0 pour annuler)\n");
+            printf(player->arme_equipee == NULL ? "\n[ÉQUIPÉE]" : "\n[1]");
+            printf(" Aucune (poings)\n");
+            for (size_t i = 0; i < player->arsenal->longueur; i++) {
+                Arme *a = player->arsenal->armes[i];
+                if (player->arme_equipee && a && a->id == player->arme_equipee->id)
+                    printf("\n[ÉQUIPÉE]");
+                else
+                    printf("\n[%zu]", i + 2);
+                printf(" %s (Attaque: %d-%d, Coût Oxygène: %d)", a->nom, a->attaque_min, a->attaque_max, a->cout_oxygene);
+                printf("\n    %s\n", a->description);
+            }
+            printf("> ");
+
+            size_t choix_arme = lireEntier();
+            if (choix_arme == 0 || choix_arme > player->arsenal->longueur + 1) {
+                    if (choix_arme == 0)
+                        printf("\n>> Action annulée.\n");
+                    else
+                        printf("\n>> Choix invalide (Action annulée).\n");
+                pressEnterToContinue();
+                clearConsole();
+                continue;
+            }
+
+            if (choix_arme == 1) {
+                if (player->arme_equipee == NULL) {
+                    printf(">> Vous n'avez déjà aucune arme équipée (Action annulée).\n");
+                    pressEnterToContinue();
+                    clearConsole();
+                    continue;
+                }
+
+                player->arme_equipee = NULL;
+                printf("\n→ Vous équipez vos poings.\n");
+                pressEnterToContinue();
+                clearConsole();
+                continue;
+            }
+
+            if (player->arme_equipee == player->arsenal->armes[choix_arme - 2]) {
+                printf(">> [%s] est déjà équipée (Action annulée).\n", player->arme_equipee->nom);
+                pressEnterToContinue();
+                clearConsole();
+                continue;
+            }
+
+            if (!player->arsenal->armes[choix_arme - 2]) {
+                printf(">> Erreur interne: arme introuvable.\n");
+                pressEnterToContinue();
+                clearConsole();
+                continue;
+            }
+
+            if (equiperArme(player, player->arsenal->armes[choix_arme - 2]) == EXIT_FAILURE) {
+                printf(">> Erreur interne: combat(): equiperArme()\n");
+                pressEnterToContinue();
+                clearConsole();
+                continue;
+            }
+
+            printf("\n→ Vous équipez [%s].\n", player->arme_equipee->nom);
+            pressEnterToContinue();
+            clearConsole();
+            continue;
         }
 
         // --- 1. Déterminer la position CIBLE ---
