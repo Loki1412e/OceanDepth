@@ -326,8 +326,6 @@ Objet *joueurGagneConsommableViaRareteMax(Plongeur *joueur, ListeObjet *modalObj
         return NULL;
     }
 
-    printf("\nDEBUG: joueurGagneConsommableViaRareteMax(): rarete_max = %d\n", rarete_max);
-
     Rarete rarete = random_int(COMMUN, rarete_max);
     long id_objet = getRandomObjectIdWithRarete(modalObjectsList, rarete);
     if (id_objet == -1) {
@@ -348,8 +346,6 @@ Objet *joueurGagneBibelotViaRareteMax(Plongeur *joueur, ListeObjet *modalObjects
         fprintf(stderr, "Erreur: joueurGagneBibelotViaRareteMax(): Invalid params\n");
         return NULL;
     }
-
-    printf("\nDEBUG: joueurGagneBibelotViaRareteMax(): rarete_max = %d\n", rarete_max);
 
     Rarete rarete = random_int(COMMUN, rarete_max);
     long id_objet = getRandomObjectIdWithRarete(modalObjectsList, rarete);
