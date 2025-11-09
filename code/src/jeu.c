@@ -188,8 +188,9 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
             case ZONE_MONSTER: {
                 printf("\n🐙 Monstre rencontré !\n");
                 pressEnterToContinue();
-                
-                Bestiaire *bestiary = initRandomBestiaryFromDangerosityGroupLevel(modalBestiary, 1);
+
+                int dangerosityLevel = 1;
+                Bestiaire *bestiary = initRandomBestiaryFromDangerosityGroupLevel(modalBestiary, dangerosityLevel);
                 if (!bestiary) {
                     fprintf(stderr, "Erreur: runGame(): initRandomBestiaryFromDangerosityGroupLevel()\n");
                     break;
@@ -204,7 +205,21 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                 }
                 // Si le joueur a choisi de quitter
                 if (res == -1) break;
+                if (player->pv <= 0) continue;
 
+                // Joueur pas mort
+                Objet *loot = NULL;
+
+                // Attribution du loot (consommable aléatoire de rareté max = dangerosité)
+                loot = joueurGagneObjetViaRareteMax(player, modalConsumablesList, (Rarete) dangerosityLevel);
+                if (!loot) {
+                    fprintf(stderr, "Erreur: runGame(): joueurGagneObjetViaRareteMax() pour consommable\n");
+                    break;
+                }
+                printf("\n>> Vous avez obtenu le consommable [%s] : [%s] !\n", enumRareteToChar(loot->rarete), loot->nom);
+                pressEnterToContinue();
+
+                // Nettoyage de la case
                 target_zone->type = ZONE_PATH; // On vide la case
                 mark_cell_as_cleared(playerProgress, new_row, new_col); // On marque comme nettoyée
                 continue;
@@ -214,7 +229,8 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                 printf("\n👹 Boss atteint !\n");
                 pressEnterToContinue();
                 
-                Bestiaire *bestiary = initRandomBestiaryFromDangerosityGroupLevel(modalBestiary, 5);
+                int dangerosityLevel = 5;
+                Bestiaire *bestiary = initRandomBestiaryFromDangerosityGroupLevel(modalBestiary, dangerosityLevel);
                 if (!bestiary) {
                     fprintf(stderr, "Erreur: runGame(): initRandomBestiaryFromDangerosityGroupLevel()\n");
                     break;
@@ -229,7 +245,29 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                 }
                 // Si le joueur a choisi de quitter
                 if (res == -1) break;
+                if (player->pv <= 0) continue;
+
+                // Joueur pas mort
+                Objet *loot = NULL;
+
+                // Attribution du loot (consommable aléatoire de rareté max = dangerosité)
+                loot = joueurGagneObjetViaRareteMax(player, modalConsumablesList, (Rarete) dangerosityLevel);
+                if (!loot) {
+                    fprintf(stderr, "Erreur: runGame(): joueurGagneObjetViaRareteMax() pour consommable\n");
+                    break;
+                }
+                printf("\n>> Vous avez obtenu le consommable [%s] : [%s] !\n", enumRareteToChar(loot->rarete), loot->nom);
+
+                // Attribution du loot (bibelot aléatoire de rareté max = dangerosité)
+                loot = joueurGagneObjetViaRareteMax(player, modalOrnamentsList, (Rarete) dangerosityLevel);
+                if (!loot) {
+                    fprintf(stderr, "Erreur: runGame(): joueurGagneObjetViaRareteMax() pour bibelot\n");
+                    break;
+                }
+                printf(">> Vous avez obtenu le bibelot [%s] : [%s] !\n", enumRareteToChar(loot->rarete), loot->nom);
                 
+                pressEnterToContinue();
+
                 // Génération du palier suivant
                 playerProgress->tier++;
                 playerProgress->row = 0; // On repart d'en haut

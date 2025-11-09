@@ -320,6 +320,29 @@ int appliquerConsommationOxygeneProfondeur(Plongeur *joueur) {
     return perte_ox;
 }
 
+Objet *joueurGagneObjetViaRareteMax(Plongeur *joueur, ListeObjet *modalObjectsList, Rarete rarete_max) {
+    if (!joueur || !modalObjectsList || rarete_max < COMMUN || rarete_max >= LENGTH_Rarete) {
+        fprintf(stderr, "Erreur: joueurGagneObjetViaRareteMax(): Invalid params\n");
+        return NULL;
+    }
+
+    printf("\nDEBUG: joueurGagneObjetViaRareteMax(): rarete_max = %d\n", rarete_max);
+
+    Rarete rarete = random_int(COMMUN, rarete_max);
+    long id_objet = getRandomObjectIdWithRarete(modalObjectsList, rarete);
+    if (id_objet == -1) {
+        fprintf(stderr, "Erreur: joueurGagneObjetViaRareteMax(): getRandomObjectIdWithRarete()\n");
+        return NULL;
+    }
+
+    if (ajouterObjet(modalObjectsList, joueur->liste_consommables, id_objet)) {
+        fprintf(stderr, "Erreur: joueurGagneObjetViaRareteMax(): addObjetInListeObjet()\n");
+        return NULL;
+    }
+
+    return modalObjectsList->objets[id_objet];
+}
+
 
 void freeDiverContent(Plongeur *diver) {
     if (!diver) return;

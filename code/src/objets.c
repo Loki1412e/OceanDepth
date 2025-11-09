@@ -376,6 +376,53 @@ ListeObjet *initModalListeObjet(char *path) {
     return modalObjectsList;
 }
 
+
+long getRandomObjectIdWithRarete(ListeObjet *modalObjectsList, Rarete rarete_max) {
+    if (!modalObjectsList || rarete_max < 1) {
+        fprintf(stderr, "Erreur: getRandomObjectIdWithRarete(): Parametre(s) mal initialisé(s)\n");
+        return -1;
+    }
+
+    unsigned totalPoids = 0;
+
+    // Calcul du poids total basé sur la rareté de chaque objet
+    for (size_t i = 0; i < modalObjectsList->longueur; i++) {
+        Objet *objet = modalObjectsList->objets[i];
+        if (!objet || objet->rarete < COMMUN || objet->rarete > rarete_max) continue;
+        printObject(objet, "DEBUG: "); // DEBUG
+        totalPoids += rareteToPoids(objet->rarete);  // On additionne le poids de rareté
+    }
+
+    if (totalPoids == 0) {
+        fprintf(stderr, "Erreur: getRandomObjectIdWithRarete(): Aucun objet disponible avec une rareté valide.\n");
+        return -1;
+    }
+
+    // Tirage pondéré basé sur la rareté
+    unsigned tirage = random_int(1, totalPoids);  // tirage entre 1 et totalPoids
+    unsigned cumulPoids = 0;
+
+    for (size_t i = 0; i < modalObjectsList->longueur; i++) {
+        Objet *objet = modalObjectsList->objets[i];
+        if (!objet || objet->rarete < COMMUN || objet->rarete > rarete_max) continue;
+
+        // Poids de rareté de cet objet
+        unsigned poidsRarete = rareteToPoids(objet->rarete);
+        cumulPoids += poidsRarete;
+
+        // Si le tirage est inférieur au cumul des poids, l'objet est sélectionné: on return son id
+        if (tirage <= cumulPoids) {
+            printf("DEBUG: getRandomObjectIdWithRarete(): Objet choisi = [%s] (id=%ld) (rarete=%s)\n", objet->nom, objet->id, enumRareteToChar(objet->rarete));
+            return objet->id;
+        }
+    }
+
+    // Si on arrive ici, c'est une erreur imprévue
+    fprintf(stderr, "Erreur: getRandomObjectIdWithRarete(): Pas d'objet choisi, erreur imprévue.\n");
+    return -1;
+}
+
+
 void freeObjet(Objet *c) {
     if (!c) return;
     if (c->nom) free(c->nom);
