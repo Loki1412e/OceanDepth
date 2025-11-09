@@ -710,20 +710,20 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur, CreatureMarine **creatures,
             }
         }
     }
-    
+
     if (!creaturesVivantes(creatures, nb_creatures))
         printf("\n✅ Toutes les créatures ont été vaincues !\n");
 
     if (joueur->pv <= 0)
         printf("\n☠️  Vous êtes mort...\n");
-    
-    if (pressToContinueOrSave(actualSave) == -1) return -1;
 
     // On sauvegarde tjs la partie après le combat
     if (saveGame(actualSave) != EXIT_SUCCESS) {
         fprintf(stderr, "Erreur: combat(): saveGame()\n");
         return EXIT_FAILURE;
     }
+
+    pressEnterToContinue();
 
     return EXIT_SUCCESS;
 }

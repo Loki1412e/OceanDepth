@@ -248,6 +248,20 @@ void printListeEtat(ListeEtat etats) {
     printf("\n");
 }
 
+void printObject(Objet *object, char *prefix) {
+    if (!object) {
+        printf("NULL Objet pointer\n");
+        return;
+    }
+    printf("%sObjet ID: %ld\n", prefix ? prefix : "", object->id);
+    printf("%sNom: %s\n", prefix ? prefix : "", object->nom ? object->nom : "(null)");
+    printf("%sDescription: %s\n", prefix ? prefix : "", object->description ? object->description : "(null)");
+    printf("%sRarete: %s\n", prefix ? prefix : "", enumRareteToChar(object->rarete));
+    printf("%sQuantite: %d\n", prefix ? prefix : "", object->quantite);
+    printListeAction(object->listeAction, prefix ? prefix : "");
+    printf("\n");
+}
+
 void printObjectsList(ListeObjet *objects_list) {
     if (!objects_list || objects_list->longueur == 0 || objects_list->objets == NULL) {
         printf(" Aucun\n");
@@ -258,14 +272,7 @@ void printObjectsList(ListeObjet *objects_list) {
     for (size_t i = 0; i < objects_list->longueur; i++) {
         Objet *c = objects_list->objets[i];
         if (!c) continue;
-
-        printf("\tObjet ID: %ld\n", c->id);
-        printf("\tQuantite: %d\n", c->quantite);
-        printf("\tNom: %s\n", c->nom ? c->nom : "(null)");
-        printf("\tDescription: %s\n", c->description ? c->description : "(null)");
-        printf("\tRarete: %s\n", enumRareteToChar(c->rarete));
-        printListeAction(c->listeAction, "\t");
-        printf("\n");
+        printObject(c, "\t");
     }
 }
 

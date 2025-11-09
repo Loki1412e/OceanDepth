@@ -14,5 +14,6 @@
     Plongeur *initModalDiver(char *diver_name, ListeCompetence *modalDiverSkills);
     
     int appliquerConsommationOxygeneProfondeur(Plongeur *joueur);
+    Objet *joueurGagneObjetViaRareteMax(Plongeur *joueur, ListeObjet *modalObjectsList, Rarete rarete_max);
 
 #endif

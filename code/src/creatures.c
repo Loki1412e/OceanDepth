@@ -15,7 +15,6 @@ int setBestiaryCreaturesFromConf(Bestiaire *modalBestiary, ListeCompetence *moda
 int setBestiaryGroupsFromConf(Bestiaire *modalBestiary, char *path);
 CreatureMarine *duplicateCreature(CreatureMarine *model);
 
-
 int generateCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary) {
     if (!modalBestiary || modalBestiary->longueur_creatures == 0 || !bestiary) {
         fprintf(stderr, "Erreur: generateCreatureInBestiary(): modalBestiary ou modalBestiary->longueur_creatures ou bestiary n'est pas défini.\n");

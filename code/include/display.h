@@ -23,6 +23,7 @@
     void printListeAction(ListeAction actions, char *prefix);
     void printCompetence(Competence competence);
     void printListeCompetence(ListeCompetence competences);
+    void printObject(Objet *object, char *prefix);
     void printObjectsList(ListeObjet *objects);
     void printBibelotsActifs(ListeObjet *bibelots);
 
