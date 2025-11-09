@@ -389,7 +389,6 @@ long getRandomObjectIdWithRarete(ListeObjet *modalObjectsList, Rarete rarete_max
     for (size_t i = 0; i < modalObjectsList->longueur; i++) {
         Objet *objet = modalObjectsList->objets[i];
         if (!objet || objet->rarete < COMMUN || objet->rarete > rarete_max) continue;
-        printObject(objet, "DEBUG: "); // DEBUG
         totalPoids += rareteToPoids(objet->rarete);  // On additionne le poids de rareté
     }
 
@@ -412,7 +411,6 @@ long getRandomObjectIdWithRarete(ListeObjet *modalObjectsList, Rarete rarete_max
 
         // Si le tirage est inférieur au cumul des poids, l'objet est sélectionné: on return son id
         if (tirage <= cumulPoids) {
-            printf("DEBUG: getRandomObjectIdWithRarete(): Objet choisi = [%s] (id=%ld) (rarete=%s)\n", objet->nom, objet->id, enumRareteToChar(objet->rarete));
             return objet->id;
         }
     }
