@@ -529,7 +529,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur, CreatureMarine **creatures,
                         afficherActionsDisponibles(joueur, actions_restantes, actions_max);
                         continue;
                     }
-                    if (!joueur->liste_consommables || !joueur->liste_consommables->objets || !joueur->liste_consommables->longueur == 0) {
+                    if (!joueur->liste_consommables || !joueur->liste_consommables->objets || joueur->liste_consommables->longueur == 0) {
                         printf("\n>> Vous n'avez aucun objet dans votre inventaire.\n");
                         if (pressToContinueOrSave(actualSave) == -1) return -1;
                         break;

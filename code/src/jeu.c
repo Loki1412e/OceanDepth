@@ -222,7 +222,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
 
         // Utiliser un objet (non implémenté)
         else if (c=='O') {
-            if (!player->liste_consommables || !player->liste_consommables->objets || !player->liste_consommables->longueur == 0) {
+            if (!player->liste_consommables || !player->liste_consommables->objets || player->liste_consommables->longueur == 0) {
                 printf("\n>> Vous n'avez aucun objet dans votre inventaire.\n");
                 pressEnterToContinue();
                 clearConsole();
