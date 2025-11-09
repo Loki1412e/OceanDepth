@@ -211,12 +211,12 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                 Objet *loot = NULL;
 
                 // Attribution du loot (consommable aléatoire de rareté max = dangerosité)
-                loot = joueurGagneObjetViaRareteMax(player, modalConsumablesList, (Rarete) dangerosityLevel);
+                loot = joueurGagneConsommableViaRareteMax(player, modalConsumablesList, (Rarete) dangerosityLevel);
                 if (!loot) {
-                    fprintf(stderr, "Erreur: runGame(): joueurGagneObjetViaRareteMax() pour consommable\n");
+                    fprintf(stderr, "Erreur: runGame(): joueurGagneConsommableViaRareteMax()\n");
                     break;
                 }
-                printf("\n>> Vous avez obtenu le consommable [%s] : [%s] !\n", enumRareteToChar(loot->rarete), loot->nom);
+                printf("\n>> 🎁 Vous avez obtenu le consommable [%s] : [%s] !\n", enumRareteToChar(loot->rarete), loot->nom);
                 pressEnterToContinue();
 
                 // Nettoyage de la case
@@ -251,20 +251,20 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                 Objet *loot = NULL;
 
                 // Attribution du loot (consommable aléatoire de rareté max = dangerosité)
-                loot = joueurGagneObjetViaRareteMax(player, modalConsumablesList, (Rarete) dangerosityLevel);
+                loot = joueurGagneConsommableViaRareteMax(player, modalConsumablesList, (Rarete) dangerosityLevel);
                 if (!loot) {
-                    fprintf(stderr, "Erreur: runGame(): joueurGagneObjetViaRareteMax() pour consommable\n");
+                    fprintf(stderr, "Erreur: runGame(): joueurGagneConsommableViaRareteMax()\n");
                     break;
                 }
-                printf("\n>> Vous avez obtenu le consommable [%s] : [%s] !\n", enumRareteToChar(loot->rarete), loot->nom);
+                printf("\n>> 🎁 Vous avez obtenu le consommable [%s] : [%s] !\n", enumRareteToChar(loot->rarete), loot->nom);
 
                 // Attribution du loot (bibelot aléatoire de rareté max = dangerosité)
-                loot = joueurGagneObjetViaRareteMax(player, modalOrnamentsList, (Rarete) dangerosityLevel);
+                loot = joueurGagneBibelotViaRareteMax(player, modalOrnamentsList, (Rarete) dangerosityLevel);
                 if (!loot) {
-                    fprintf(stderr, "Erreur: runGame(): joueurGagneObjetViaRareteMax() pour bibelot\n");
+                    fprintf(stderr, "Erreur: runGame(): joueurGagneBibelotViaRareteMax()\n");
                     break;
                 }
-                printf(">> Vous avez obtenu le bibelot [%s] : [%s] !\n", enumRareteToChar(loot->rarete), loot->nom);
+                printf(">> 🎁 Vous avez obtenu le bibelot [%s] : [%s] !\n", enumRareteToChar(loot->rarete), loot->nom);
                 
                 pressEnterToContinue();
 

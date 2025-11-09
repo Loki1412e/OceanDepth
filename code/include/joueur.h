@@ -6,6 +6,7 @@
     #include "effets.h"
     #include "competences.h"
     #include "objets.h"
+    #include "bibelots.h"
     #include "armes.h"
 
     void freeDiverContent(Plongeur *diver);
@@ -14,6 +15,8 @@
     Plongeur *initModalDiver(char *diver_name, ListeCompetence *modalDiverSkills);
     
     int appliquerConsommationOxygeneProfondeur(Plongeur *joueur);
-    Objet *joueurGagneObjetViaRareteMax(Plongeur *joueur, ListeObjet *modalObjectsList, Rarete rarete_max);
+
+    Objet *joueurGagneConsommableViaRareteMax(Plongeur *joueur, ListeObjet *modalObjectsList, Rarete rarete_max);
+    Objet *joueurGagneBibelotViaRareteMax(Plongeur *joueur, ListeObjet *modalObjectsList, Rarete rarete_max);
 
 #endif

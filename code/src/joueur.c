@@ -320,23 +320,46 @@ int appliquerConsommationOxygeneProfondeur(Plongeur *joueur) {
     return perte_ox;
 }
 
-Objet *joueurGagneObjetViaRareteMax(Plongeur *joueur, ListeObjet *modalObjectsList, Rarete rarete_max) {
+Objet *joueurGagneConsommableViaRareteMax(Plongeur *joueur, ListeObjet *modalObjectsList, Rarete rarete_max) {
     if (!joueur || !modalObjectsList || rarete_max < COMMUN || rarete_max >= LENGTH_Rarete) {
-        fprintf(stderr, "Erreur: joueurGagneObjetViaRareteMax(): Invalid params\n");
+        fprintf(stderr, "Erreur: joueurGagneConsommableViaRareteMax(): Invalid params\n");
         return NULL;
     }
 
-    printf("\nDEBUG: joueurGagneObjetViaRareteMax(): rarete_max = %d\n", rarete_max);
+    printf("\nDEBUG: joueurGagneConsommableViaRareteMax(): rarete_max = %d\n", rarete_max);
 
     Rarete rarete = random_int(COMMUN, rarete_max);
     long id_objet = getRandomObjectIdWithRarete(modalObjectsList, rarete);
     if (id_objet == -1) {
-        fprintf(stderr, "Erreur: joueurGagneObjetViaRareteMax(): getRandomObjectIdWithRarete()\n");
+        fprintf(stderr, "Erreur: joueurGagneConsommableViaRareteMax(): getRandomObjectIdWithRarete()\n");
         return NULL;
     }
 
     if (ajouterObjet(modalObjectsList, joueur->liste_consommables, id_objet)) {
-        fprintf(stderr, "Erreur: joueurGagneObjetViaRareteMax(): addObjetInListeObjet()\n");
+        fprintf(stderr, "Erreur: joueurGagneConsommableViaRareteMax(): addObjetInListeObjet()\n");
+        return NULL;
+    }
+
+    return modalObjectsList->objets[id_objet];
+}
+
+Objet *joueurGagneBibelotViaRareteMax(Plongeur *joueur, ListeObjet *modalObjectsList, Rarete rarete_max) {
+    if (!joueur || !modalObjectsList || rarete_max < COMMUN || rarete_max >= LENGTH_Rarete) {
+        fprintf(stderr, "Erreur: joueurGagneBibelotViaRareteMax(): Invalid params\n");
+        return NULL;
+    }
+
+    printf("\nDEBUG: joueurGagneBibelotViaRareteMax(): rarete_max = %d\n", rarete_max);
+
+    Rarete rarete = random_int(COMMUN, rarete_max);
+    long id_objet = getRandomObjectIdWithRarete(modalObjectsList, rarete);
+    if (id_objet == -1) {
+        fprintf(stderr, "Erreur: joueurGagneBibelotViaRareteMax(): getRandomObjectIdWithRarete()\n");
+        return NULL;
+    }
+
+    if (ajouterBibelot(modalObjectsList, joueur, id_objet)) {
+        fprintf(stderr, "Erreur: joueurGagneBibelotViaRareteMax(): ajouterBibelot()\n");
         return NULL;
     }
 

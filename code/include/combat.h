@@ -18,7 +18,6 @@
     void joueurAttaqueCreature(Plongeur *joueur, CreatureMarine *creature);
     int botAttaque(void *lanceur_ptr, EntiteType lanceur_type, void *cible_ptr, EntiteType cible_type, void** groupe_allie, long *groupe_allie_type, size_t len_groupe);
     // Affichage
-    void afficherInterface(Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures);
     void afficherActionsDisponibles(Plongeur *joueur, int actions_restantes, int actions_max);
 
 #endif
