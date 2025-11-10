@@ -12,6 +12,8 @@ int setNewSaveName(Sauvegarde *save, char *save_name);
 int saveInfo(Sauvegarde *save, SaveTmpFile *tmpSave);
 int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave);
 int savePlayerProgress(PlayerProgress *p, SaveTmpFile *tmpSave);
+int saveCreature(CreatureMarine *creature, SaveTmpFile *tmpSave);
+int saveEtatCombat(EtatCombat *etat, SaveTmpFile *tmpSave);
 int saveListeCompetence(ListeCompetence *liste, SaveTmpFile *tmpSave);
 
 int loadInfo(Sauvegarde *save, FILE *file);
@@ -852,6 +854,13 @@ int saveGame(Sauvegarde *save) {
         return EXIT_FAILURE;
     }
 
+    // Save EtatCombat block
+    if (saveEtatCombat(save->etat_combat, tmpSave) != EXIT_SUCCESS) {
+        fprintf(stderr, "save : Erreur sauvegarde Etat Combat\n");
+        freeSaveTmpFile(tmpSave);
+        return EXIT_FAILURE;
+    }
+
     // Save final && free
     if (finalizeSave(tmpSave) != EXIT_SUCCESS) {
         fprintf(stderr, "save : Erreur finalisation sauvegarde\n");
@@ -1092,6 +1101,93 @@ int savePlayerProgress(PlayerProgress *p, SaveTmpFile *tmpSave) {
             fprintf(stderr, "savePlayerProgress : Erreur écriture cleared_cells[%zu]\n", i);
             return EXIT_FAILURE;
         }
+    }
+
+    return EXIT_SUCCESS;
+}
+
+int saveCreature(CreatureMarine *creature, SaveTmpFile *tmpSave) {
+    if (!creature || !tmpSave) {
+        fprintf(stderr, "saveCreature : Paramètre invalide\n");
+        return EXIT_FAILURE;
+    }
+
+    // Init clean copy
+    CreatureMarine creature_copy = {0};
+    creature_copy.id = creature->id;
+    creature_copy.pv_max = creature->pv_max;
+    creature_copy.pv_min = creature->pv_min;
+    creature_copy.pv = creature->pv;
+    creature_copy.attaque_min = creature->attaque_min;
+    creature_copy.attaque_max = creature->attaque_max;
+    creature_copy.defense = creature->defense;
+    creature_copy.vitesse = creature->vitesse;
+    creature_copy.rarete = creature->rarete;
+    // On garde la longueur des listes mais pas les pointeurs
+    creature_copy.liste_etats.longueur = creature->liste_etats.etats ? creature->liste_etats.longueur : 0;
+    creature_copy.liste_competences.longueur = creature->liste_competences.competences ? creature->liste_competences.longueur : 0;
+
+    // Bloc sans pointeurs (safe, no uninitialised bytes)
+    if (addBlock(tmpSave, &creature_copy, sizeof(CreatureMarine)) != EXIT_SUCCESS)
+        return EXIT_FAILURE;
+
+    size_t nom_len = creature->nom ? strlen(creature->nom) + 1 : 0;
+    // taille nom
+    if (addBlock(tmpSave, &nom_len, sizeof(size_t)) != EXIT_SUCCESS)
+        return EXIT_FAILURE;
+    // tab nom
+    if (nom_len > 0 && addBlock(tmpSave, creature->nom, nom_len) != EXIT_SUCCESS)
+        return EXIT_FAILURE;
+
+    size_t etats_len = creature->liste_etats.longueur;
+    // taille états
+    if (addBlock(tmpSave, &etats_len, sizeof(size_t)) != EXIT_SUCCESS)
+        return EXIT_FAILURE;
+    // tab états
+    for (size_t i = 0; i < etats_len; i++) {
+        Etat etat_copy = creature->liste_etats.etats[i];
+        if (addBlock(tmpSave, &etat_copy, sizeof(Etat)) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+    }
+
+    // Sauvegarde des compétences
+    if (saveListeCompetence(&creature->liste_competences, tmpSave) != EXIT_SUCCESS)
+        return EXIT_FAILURE;
+
+    // taille effets_immunises
+    size_t effets_len = creature->effets_immunises ? creature->effets_immunises->longueur : 0;
+    if (addBlock(tmpSave, &effets_len, sizeof(size_t)) != EXIT_SUCCESS)
+        return EXIT_FAILURE;
+    // tab effets_immunises
+    for (size_t i = 0; i < effets_len; i++) {
+        Effet effet = creature->effets_immunises->effets[i];
+        if (addBlock(tmpSave, &effet, sizeof(Effet)) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
+}
+
+int saveEtatCombat(EtatCombat *etat, SaveTmpFile *tmpSave) {
+    if (!etat || !tmpSave) {
+        fprintf(stderr, "saveEtatCombat : Paramètre invalide\n");
+        return EXIT_FAILURE;
+    }
+
+    // Init clean copy
+    EtatCombat etat_copy = {0};
+    etat_copy.action_restante = etat->action_restante;
+    // Garde la longueur des listes mais pas les pointeurs
+    etat_copy.longueur_creatures = etat->creatures ? etat->longueur_creatures : 0;
+
+    // Bloc sans pointeurs (safe, no uninitialised bytes)
+    if (addBlock(tmpSave, &etat_copy, sizeof(EtatCombat)) != EXIT_SUCCESS)
+        return EXIT_FAILURE;
+
+    // Sauvegarde des créatures
+    for (size_t i = 0; i < etat_copy.longueur_creatures; i++) {
+        if (saveCreature(etat->creatures[i], tmpSave) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
     }
 
     return EXIT_SUCCESS;
@@ -1338,6 +1434,20 @@ int finalizeSave(SaveTmpFile *save) {
 
 /*================ FREE ================*/
 
+void freeSauvegardeEtatCombat(Sauvegarde *save) {
+    if (!save || !save->etat_combat) return;
+
+    if (save->etat_combat->creatures) {
+        for (size_t i = 0; i < save->etat_combat->longueur_creatures; i++) {
+            freeCreature(save->etat_combat->creatures[i]);
+        }
+        free(save->etat_combat->creatures);
+    }
+
+    free(save->etat_combat);
+    save->etat_combat = NULL;
+}
+
 void freeSaveTmpFile(SaveTmpFile *save) {
     if (!save) return;
     
@@ -1377,6 +1487,8 @@ void freeSauvegarde(Sauvegarde *save) {
 
     free_player_progress(save->player_progress);
     save->player_progress = NULL;
+
+    freeSauvegardeEtatCombat(save);
 
     free(save);
 }

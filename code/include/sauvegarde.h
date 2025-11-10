@@ -14,6 +14,7 @@
     } SaveTmpFile;
 
     Sauvegarde *initSave();
+    void freeSauvegardeEtatCombat(Sauvegarde *save);
     void freeSauvegarde(Sauvegarde *save);
     void freeSauvegardes(ListeSauvegardes *saves);
 
