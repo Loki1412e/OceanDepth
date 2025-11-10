@@ -12,6 +12,7 @@ int setNewSaveName(Sauvegarde *save, char *save_name);
 int saveInfo(Sauvegarde *save, SaveTmpFile *tmpSave);
 int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave);
 int savePlayerProgress(PlayerProgress *p, SaveTmpFile *tmpSave);
+int saveListeCompetence(ListeCompetence *liste, SaveTmpFile *tmpSave);
 
 int loadInfo(Sauvegarde *save, FILE *file);
 Plongeur *loadDiver(FILE *file);
@@ -982,79 +983,9 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
             return EXIT_FAILURE;
     }
 
-    size_t comp_len = diver->liste_competences.longueur;
-    // taille competences
-    if (addBlock(tmpSave, &comp_len, sizeof(size_t)) != EXIT_SUCCESS)
+    // Sauvegarde des compétences
+    if (saveListeCompetence(&diver->liste_competences, tmpSave) != EXIT_SUCCESS)
         return EXIT_FAILURE;
-    // tab competences
-    for (size_t i = 0; i < comp_len; i++) {
-        Competence *comp = &diver->liste_competences.competences[i];
-
-        // Build a clean competence copy with only scalar fields
-        Competence comp_copy = {0};
-        comp_copy.id = comp->id;
-        comp_copy.cout_oxygene = comp->cout_oxygene;
-        comp_copy.cout_pv = comp->cout_pv;
-        comp_copy.ciblage = comp->ciblage;
-        comp_copy.cooldown_max = comp->cooldown_max;
-        comp_copy.cooldown_restant = comp->cooldown_restant;
-        comp_copy.listeAction.longueur = comp->listeAction.longueur;
-        comp_copy.listeAction.actions = NULL;
-        comp_copy.nom = NULL;
-        comp_copy.description = NULL;
-
-        if (addBlock(tmpSave, &comp_copy, sizeof(Competence)) != EXIT_SUCCESS)
-            return EXIT_FAILURE;
-
-        size_t comp_nom_len = comp->nom ? strlen(comp->nom) + 1 : 0;
-        // taille nom de la compétence
-        if (addBlock(tmpSave, &comp_nom_len, sizeof(size_t)) != EXIT_SUCCESS)
-            return EXIT_FAILURE;
-        // tab nom de la compétence
-        if (comp_nom_len > 0 && addBlock(tmpSave, comp->nom, comp_nom_len) != EXIT_SUCCESS)
-            return EXIT_FAILURE;
-
-        size_t comp_desc_len = comp->description ? strlen(comp->description) + 1 : 0;
-        // taille description de la compétence
-        if (addBlock(tmpSave, &comp_desc_len, sizeof(size_t)) != EXIT_SUCCESS)
-            return EXIT_FAILURE;
-        // tab description de la compétence
-        if (comp_desc_len > 0 && addBlock(tmpSave, comp->description, comp_desc_len) != EXIT_SUCCESS)
-            return EXIT_FAILURE;
-
-        size_t comp_action_len = comp->listeAction.longueur;
-        // taille actions de la compétence
-        if (addBlock(tmpSave, &comp_action_len, sizeof(size_t)) != EXIT_SUCCESS)
-            return EXIT_FAILURE;
-        // tab actions de la compétence
-        for (size_t j = 0; j < comp_action_len; j++) {
-            Action *action = &comp->listeAction.actions[j];
-            Action action_copy = {0};
-            action_copy.type = action->type;
-            action_copy.params = NULL;
-            action_copy.longueur_params = action->longueur_params;
-            
-            // Bloc action sans pointeurs
-            if (addBlock(tmpSave, &action_copy, sizeof(Action)) != EXIT_SUCCESS)
-                return EXIT_FAILURE;
-
-            size_t action_params_len = action->longueur_params;
-            // nombre de parametres
-            if (addBlock(tmpSave, &action_params_len, sizeof(size_t)) != EXIT_SUCCESS)
-                return EXIT_FAILURE;
-            
-            for (size_t k = 0; k < action_params_len; k++) {
-                char *param = action->params[k];
-                size_t param_len = param ? strlen(param) + 1 : 0;
-                // taille parametre
-                if (addBlock(tmpSave, &param_len, sizeof(size_t)) != EXIT_SUCCESS)
-                    return EXIT_FAILURE;
-                // tab parametre
-                if (param_len > 0 && addBlock(tmpSave, param, param_len) != EXIT_SUCCESS)
-                    return EXIT_FAILURE;
-            }
-        }
-    }
 
     // Sauvegarde des consommables
     if (saveListeObjet(diver->liste_consommables, tmpSave) != EXIT_SUCCESS)
@@ -1201,6 +1132,85 @@ int saveListeActions(ListeAction *liste, SaveTmpFile *tmpSave) {
         }
     }
 
+    return EXIT_SUCCESS;
+}
+
+int saveListeCompetence(ListeCompetence *liste, SaveTmpFile *tmpSave) {
+
+    size_t comp_len = liste->longueur;
+    // taille competences
+    if (addBlock(tmpSave, &comp_len, sizeof(size_t)) != EXIT_SUCCESS)
+        return EXIT_FAILURE;
+    // tab competences
+    for (size_t i = 0; i < comp_len; i++) {
+        Competence *comp = &liste->competences[i];
+
+        // Build a clean competence copy with only scalar fields
+        Competence comp_copy = {0};
+        comp_copy.id = comp->id;
+        comp_copy.cout_oxygene = comp->cout_oxygene;
+        comp_copy.cout_pv = comp->cout_pv;
+        comp_copy.ciblage = comp->ciblage;
+        comp_copy.cooldown_max = comp->cooldown_max;
+        comp_copy.cooldown_restant = comp->cooldown_restant;
+        comp_copy.listeAction.longueur = comp->listeAction.longueur;
+        comp_copy.listeAction.actions = NULL;
+        comp_copy.nom = NULL;
+        comp_copy.description = NULL;
+
+        if (addBlock(tmpSave, &comp_copy, sizeof(Competence)) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+
+        size_t comp_nom_len = comp->nom ? strlen(comp->nom) + 1 : 0;
+        // taille nom de la compétence
+        if (addBlock(tmpSave, &comp_nom_len, sizeof(size_t)) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+        // tab nom de la compétence
+        if (comp_nom_len > 0 && addBlock(tmpSave, comp->nom, comp_nom_len) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+
+        size_t comp_desc_len = comp->description ? strlen(comp->description) + 1 : 0;
+        // taille description de la compétence
+        if (addBlock(tmpSave, &comp_desc_len, sizeof(size_t)) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+        // tab description de la compétence
+        if (comp_desc_len > 0 && addBlock(tmpSave, comp->description, comp_desc_len) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+
+        size_t comp_action_len = comp->listeAction.longueur;
+        // taille actions de la compétence
+        if (addBlock(tmpSave, &comp_action_len, sizeof(size_t)) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+        // tab actions de la compétence
+        for (size_t j = 0; j < comp_action_len; j++) {
+            Action *action = &comp->listeAction.actions[j];
+            Action action_copy = {0};
+            action_copy.type = action->type;
+            action_copy.params = NULL;
+            action_copy.longueur_params = action->longueur_params;
+            
+            // Bloc action sans pointeurs
+            if (addBlock(tmpSave, &action_copy, sizeof(Action)) != EXIT_SUCCESS)
+                return EXIT_FAILURE;
+
+            size_t action_params_len = action->longueur_params;
+            // nombre de parametres
+            if (addBlock(tmpSave, &action_params_len, sizeof(size_t)) != EXIT_SUCCESS)
+                return EXIT_FAILURE;
+            
+            for (size_t k = 0; k < action_params_len; k++) {
+                char *param = action->params[k];
+                size_t param_len = param ? strlen(param) + 1 : 0;
+                // taille parametre
+                if (addBlock(tmpSave, &param_len, sizeof(size_t)) != EXIT_SUCCESS)
+                    return EXIT_FAILURE;
+                // tab parametre
+                if (param_len > 0 && addBlock(tmpSave, param, param_len) != EXIT_SUCCESS)
+                    return EXIT_FAILURE;
+            }
+        }
+    }
+    
     return EXIT_SUCCESS;
 }
 
