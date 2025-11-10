@@ -111,9 +111,14 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
     printf("========== [%s] entre dans les profondeurs maritimes. ==========\n\n", player->nom);
     pressEnterToContinue();
 
-    // Si combat en cours
+    Zone *target_zone = NULL;
+    int new_row, new_col;
+
     if (combatState) {
-        combat(actualSave, player);
+        target_zone = &AT(tierMap, playerProgress->row, playerProgress->col);
+        playerProgress->zone_actuelle = target_zone->type; // on save la zone actuelle (pour sauvegarde)
+        pressEnterToContinue();
+        goto SWITCH_CHECK_ZONE; // on saute directement au combat
     }
 
     // Boucle principale d'exploration
@@ -123,7 +128,10 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
             pressEnterToContinue();
             break;
         }
+
         
+
+        // --- Affichage de l'interface ---
         afficherInterfaceExploration(player, tierMap, playerProgress->row, playerProgress->col);
         printTierMapActionMenu();
         c = getCharInputToUpper();
@@ -346,8 +354,8 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
         }
 
         // --- 1. Déterminer la position CIBLE ---
-        int new_row = playerProgress->row;
-        int new_col = playerProgress->col;
+        new_row = playerProgress->row;
+        new_col = playerProgress->col;
         switch (c) {
             case 'Q': new_col--; break;
             case 'D': new_col++; break;
@@ -364,7 +372,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
         }
 
         // Vérification de la case cible (bloqué)
-        Zone* target_zone = &AT(tierMap, new_row, new_col);
+        target_zone = &AT(tierMap, new_row, new_col);
         if (target_zone->type == ZONE_BLOCKED) {
             printf("\n🪨 Chemin bloqué !\n"); 
             pressEnterToContinue();
@@ -378,6 +386,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
 
         // --- 4. Gérer les conséquences (UNE SEULE FOIS) ---
         playerProgress->zone_actuelle = target_zone->type; // on save la zone actuelle (pour sauvegarde)
+        SWITCH_CHECK_ZONE: // label pour le goto plus haut
         switch (target_zone->type) {
             
             case ZONE_TREASURE: {
