@@ -209,9 +209,9 @@ void appliquerDegatsAvantTour(ListeEtat *etats, int *pv, int maxPv, int defense,
 
 /* ==== Affichage ==== */
 
-void afficherActionsDisponibles(Plongeur *joueur, int actions_restantes, int *actions_max) {
+void afficherActionsDisponibles(Plongeur *joueur, int actions_restantes, int actions_max) {
     char *plur = actions_restantes > 1 ? "s" : "";
-    printf("===> MENU DES ACTIONS (0 pour quitter et sauvegarder) <=== [action%s restante%s : %d/%d]\n", plur, plur, actions_restantes, *actions_max);
+    printf("===> MENU DES ACTIONS (0 pour quitter et sauvegarder) <=== [action%s restante%s : %d/%d]\n", plur, plur, actions_restantes, actions_max);
     printf("[1] - Attaquer avec [%s] (coût: %d action%s)\n", joueur->arme_equipee ? joueur->arme_equipee->nom : "vos poings (aled)", 1, 1 > 1 ? "s" : "");
     printf("[2] - Utiliser Compétence (coût: %d action%s)\n", 1, 1 > 1 ? "s" : "");
     printf("[3] - Utiliser Objet (coût: %d action%s)\n", 1, 1 > 1 ? "s" : "");
