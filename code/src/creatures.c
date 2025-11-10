@@ -363,19 +363,6 @@ int setBestiaryCreaturesFromConf(Bestiaire *modalBestiary, ListeCompetence *moda
                 return EXIT_FAILURE;
             }
         }
-
-        else if (strncmp(line, "pv_min=", 7) == 0) {
-            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
-            if (line[7] == '\0') continue; // ligne vide
-
-            modalBestiary->creatures[index]->pv_min = my_strToInt(line + 7, &res);
-            if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setBestiaryCreaturesFromConf(): my_strToInt() -> \"pv_min=\"\n");
-                freeBestiary(modalBestiary);
-                fclose(f);
-                return EXIT_FAILURE;
-            }
-        }
         
         else if (strncmp(line, "pv_max=", 7) == 0) {
             line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
@@ -673,7 +660,6 @@ CreatureMarine *duplicateCreature(CreatureMarine *modal) {
     // Init
     
     creature->id = modal->id;
-    creature->pv_min = modal->pv_min;
     creature->pv_max = modal->pv_max;
     creature->pv = modal->pv;
     creature->attaque_min = modal->attaque_min;

@@ -214,7 +214,6 @@
     typedef struct {
         long id;
         char *nom;
-        int pv_min;
         int pv_max;
         int pv;
         int attaque_min;
