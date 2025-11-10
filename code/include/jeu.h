@@ -11,6 +11,7 @@
     #include "armes.h"
     #include "effets.h"
     #include "sauvegarde.h"
+    #include "combat.h"
 
     int runGame(Sauvegarde *actualSave, short isNewSave);
 

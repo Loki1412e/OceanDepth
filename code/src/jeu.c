@@ -385,15 +385,16 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                 pressEnterToContinue();
 
                 int dangerosityLevel = 1;
-                Bestiaire *bestiary = initRandomBestiaryFromDangerosityGroupLevel(modalBestiary, dangerosityLevel);
-                if (!bestiary) {
-                    fprintf(stderr, "Erreur: runGame(): initRandomBestiaryFromDangerosityGroupLevel()\n");
+                if (actualSave->etat_combat) freeSauvegardeEtatCombat(actualSave); // si non null on free l'ancien état de combat
+                actualSave->etat_combat = initRandomCreaturesFromDangerosityGroupLevel(modalBestiary, dangerosityLevel);
+                if (!actualSave->etat_combat) {
+                    fprintf(stderr, "Erreur: runGame(): initRandomCreaturesFromDangerosityGroupLevel()\n");
                     break;
                 }
 
                 // Lancement du combat
-                int res = combat(actualSave, player, bestiary->creatures, bestiary->longueur_creatures);
-                freeBestiary(bestiary); // On libère le bestiaire après le combat
+                int res = combat(actualSave, player);
+                freeSauvegardeEtatCombat(actualSave); // On libère l'état de combat après le combat
                 if (res == EXIT_FAILURE) {
                     fprintf(stderr, "Erreur: runGame(): res = combat()\n");
                     break;
@@ -425,15 +426,16 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                 pressEnterToContinue();
                 
                 int dangerosityLevel = 5;
-                Bestiaire *bestiary = initRandomBestiaryFromDangerosityGroupLevel(modalBestiary, dangerosityLevel);
-                if (!bestiary) {
-                    fprintf(stderr, "Erreur: runGame(): initRandomBestiaryFromDangerosityGroupLevel()\n");
+                if (actualSave->etat_combat) freeSauvegardeEtatCombat(actualSave); // si non null on free l'ancien état de combat
+                actualSave->etat_combat = initRandomCreaturesFromDangerosityGroupLevel(modalBestiary, dangerosityLevel);
+                if (!actualSave->etat_combat) {
+                    fprintf(stderr, "Erreur: runGame(): initRandomCreaturesFromDangerosityGroupLevel()\n");
                     break;
                 }
 
                 // Lancement du combat
-                int res = combat(actualSave, player, bestiary->creatures, bestiary->longueur_creatures);
-                freeBestiary(bestiary); // On libère le bestiaire après le combat
+                int res = combat(actualSave, player);
+                freeSauvegardeEtatCombat(actualSave); // On libère l'état de combat après le combat
                 if (res == EXIT_FAILURE) {
                     fprintf(stderr, "Erreur: runGame(): res = combat()\n");
                     break;
@@ -490,9 +492,9 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
         /***************************************************/
 
         // // Génération aléatoire de créatures via groupe / niveau de dangerosité = 1
-        // Bestiaire *bestiary = initRandomBestiaryFromDangerosityGroupLevel(modalBestiary, 1);
+        // Bestiaire *bestiary = initRandomCreaturesFromDangerosityGroupLevel(modalBestiary, 1);
         // if (!bestiary) {
-        //     fprintf(stderr, "Erreur: runGame(): initRandomBestiaryFromDangerosityGroupLevel()\n");
+        //     fprintf(stderr, "Erreur: runGame(): initRandomCreaturesFromDangerosityGroupLevel()\n");
         //     break;
         // }
 
@@ -533,7 +535,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
         // }
 
         // // Lancer le combat
-        // res = combat(actualSave, player, bestiary->creatures, bestiary->longueur_creatures);
+        // res = combat(actualSave, player);
         // freeBestiary(bestiary); // On libère le bestiaire après le combat
         // if (res == EXIT_FAILURE) {
         //     fprintf(stderr, "Erreur: runGame(): res = combat()\n");
