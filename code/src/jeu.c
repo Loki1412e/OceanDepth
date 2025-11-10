@@ -435,6 +435,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                 // Nettoyage de la case
                 target_zone->type = ZONE_PATH; // On vide la case
                 mark_cell_as_cleared(playerProgress, new_row, new_col); // On marque comme nettoyée
+                playerProgress->zone_actuelle = ZONE_PATH; // on update la zone actuelle (pour sauvegarde)
                 continue;
             }
 
@@ -490,6 +491,12 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                 playerProgress->tier_seed = getRandomSeed();
                 free_tier(tierMap);
                 tierMap = build_tier(playerProgress->tier, playerProgress->tier_seed, playerProgress, true);
+                if (!tierMap) {
+                    fprintf(stderr, "Erreur: runGame(): build_tier() après boss\n");
+                    break;
+                }
+                // on update la zone actuelle (pour sauvegarde)
+                playerProgress->zone_actuelle = ZONE_PATH;
                 continue;
             }
 
