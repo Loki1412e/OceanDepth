@@ -6,6 +6,7 @@
     #include "effets.h"
     #include "competences.h"
     #include "sauvegarde.h"
+    #include "zones.h"
     
     // Temp
     size_t lireEntier();
