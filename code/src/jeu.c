@@ -420,11 +420,13 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
 
                 // Lancement du combat
                 int res = combat(actualSave, player, isNewCombat);
-                freeSauvegardeEtatCombat(actualSave); // On libère l'état de combat après le combat
                 if (res == EXIT_FAILURE) {
                     fprintf(stderr, "Erreur: runGame(): res = combat()\n");
                     break;
                 }
+                printSave(actualSave); // DEBUG
+                pressEnterToContinue(); // DEBUG
+                freeSauvegardeEtatCombat(actualSave); // On libère l'état de combat après le combat
                 // Si le joueur a choisi de quitter
                 if (res == -1) break;
                 if (player->pv <= 0) continue;
@@ -469,11 +471,13 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
 
                 // Lancement du combat
                 int res = combat(actualSave, player, isNewCombat);
-                freeSauvegardeEtatCombat(actualSave); // On libère l'état de combat après le combat
                 if (res == EXIT_FAILURE) {
                     fprintf(stderr, "Erreur: runGame(): res = combat()\n");
                     break;
                 }
+                printSave(actualSave); // DEBUG
+                pressEnterToContinue(); // DEBUG
+                freeSauvegardeEtatCombat(actualSave); // On libère l'état de combat après le combat
                 // Si le joueur a choisi de quitter
                 if (res == -1) break;
                 if (player->pv <= 0) continue;
