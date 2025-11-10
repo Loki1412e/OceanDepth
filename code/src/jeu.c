@@ -393,7 +393,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
             case ZONE_TREASURE: {
                 printf("\n🪙 Trésor trouvé ! (loot plus tard)\n");
                 target_zone->type = ZONE_PATH; // On vide la case
-                mark_cell_as_cleared(playerProgress, new_row, new_col); // On marque comme nettoyée
+                mark_cell_as_cleared(playerProgress, playerProgress->row, playerProgress->col); // On marque comme nettoyée
                 pressEnterToContinue();
                 continue;
             }
@@ -435,7 +435,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
 
                 // Nettoyage de la case
                 target_zone->type = ZONE_PATH; // On vide la case
-                mark_cell_as_cleared(playerProgress, new_row, new_col); // On marque comme nettoyée
+                mark_cell_as_cleared(playerProgress, playerProgress->row, playerProgress->col); // On marque comme nettoyée
                 playerProgress->zone_actuelle = ZONE_PATH; // on update la zone actuelle (pour sauvegarde)
                 continue;
             }
