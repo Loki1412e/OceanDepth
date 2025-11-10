@@ -20,6 +20,7 @@ int loadInfo(Sauvegarde *save, FILE *file);
 Plongeur *loadDiver(FILE *file);
 PlayerProgress *loadPlayerProgress(FILE *file);
 EtatCombat *loadEtatCombat(FILE *file);
+CreatureMarine *loadCreature(FILE *file);
 
 void sortByLastRun(Sauvegarde **saves, size_t len_saves);
 SaveTmpFile *initTmpFile(char *dir, char *filename);
@@ -253,6 +254,9 @@ Sauvegarde *loadSave(char *save_name, short preLoad) {
         freeSauvegarde(save);
         return NULL;
     }
+
+    // si etat_combat NULL : pas en combat
+    save->etat_combat = loadEtatCombat(file);
 
     // free
 
@@ -647,9 +651,21 @@ EtatCombat *loadEtatCombat(FILE *file) {
         return NULL;
     }
 
+    // Reset pointer to NULL
+    etat->creatures = NULL;
+
     // Lire creatures tab
     size_t creatures_len = etat->longueur_creatures;
     if (creatures_len == 0) return etat;
+
+    // Allouer le tableau de créatures
+    etat->creatures = calloc(creatures_len, sizeof(CreatureMarine*));
+    if (!etat->creatures) {
+        fprintf(stderr, "Erreur: loadEtatCombat(): calloc etat->creatures\n");
+        freeEtatCombat(etat);
+        return NULL;
+    }
+
     for (size_t i = 0; i < creatures_len; i++) {
         CreatureMarine *creature = loadCreature(file);
         if (!creature) {
@@ -678,14 +694,20 @@ CreatureMarine *loadCreature(FILE *file) {
     // Lire CreatureMarine sans pointeurs
     if (fread(creature, sizeof(CreatureMarine), 1, file) != 1) {
         fprintf(stderr, "loadCreature fread CreatureMarine");
-        freeCreatureMarine(creature);
+        freeCreature(creature);
         return NULL;
     }
+
+    // Reset pointer fields to NULL (they contain garbage values from the file)
+    creature->nom = NULL;
+    creature->liste_etats.etats = NULL;
+    creature->liste_competences.competences = NULL;
+    creature->effets_immunises = NULL;
 
     // Lire nom
     creature->nom = loadString(file);
     if (!creature->nom) {
-        freeCreatureMarine(creature);
+        freeCreature(creature);
         return NULL;
     }
 
