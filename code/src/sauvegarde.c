@@ -1169,10 +1169,18 @@ int saveCreature(CreatureMarine *creature, SaveTmpFile *tmpSave) {
 }
 
 int saveEtatCombat(EtatCombat *etat, SaveTmpFile *tmpSave) {
-    if (!etat || !tmpSave) {
+    if (!tmpSave) {
         fprintf(stderr, "saveEtatCombat : Paramètre invalide\n");
         return EXIT_FAILURE;
     }
+
+    // Indicateur : 0 si pas en combat (NULL), 1 si en combat
+    int en_combat = etat ? 1 : 0;
+    if (addBlock(tmpSave, &en_combat, sizeof(int)) != EXIT_SUCCESS)
+        return EXIT_FAILURE;
+
+    // Si pas en combat, on s'arrête ici
+    if (!etat) return EXIT_SUCCESS;
 
     // Init clean copy
     EtatCombat etat_copy = {0};
