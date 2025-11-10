@@ -1348,7 +1348,6 @@ int saveCreature(CreatureMarine *creature, SaveTmpFile *tmpSave) {
     CreatureMarine creature_copy = {0};
     creature_copy.id = creature->id;
     creature_copy.pv_max = creature->pv_max;
-    creature_copy.pv_min = creature->pv_min;
     creature_copy.pv = creature->pv;
     creature_copy.attaque_min = creature->attaque_min;
     creature_copy.attaque_max = creature->attaque_max;
