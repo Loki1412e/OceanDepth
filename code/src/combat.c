@@ -42,6 +42,19 @@ EtatCombat *initRandomCreaturesFromDangerosityGroupLevel(Bestiaire *modalBestiar
     return combat;
 }
 
+void freeEtatCombat(EtatCombat *etat) {
+    if (!etat) return;
+
+    if (etat->creatures) {
+        for (size_t i = 0; i < etat->longueur_creatures; i++) {
+            freeCreature(etat->creatures[i]);
+        }
+        free(etat->creatures);
+    }
+
+    free(etat);
+}
+
 /*====== Utils ======*/
 
 void updateFatigue(Plongeur *joueur, int gain) {

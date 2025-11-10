@@ -11,6 +11,7 @@
 
     // Initialisation
     EtatCombat *initRandomCreaturesFromDangerosityGroupLevel(Bestiaire *modalBestiary, int dangerosityLevel);
+    void freeEtatCombat(EtatCombat *etat);
     // Utils
     void updateFatigue(Plongeur *joueur, int gain);
     int diminuerFatigue(Plongeur *joueur, int perte);

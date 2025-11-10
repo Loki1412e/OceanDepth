@@ -1675,15 +1675,7 @@ int finalizeSave(SaveTmpFile *save) {
 
 void freeSauvegardeEtatCombat(Sauvegarde *save) {
     if (!save || !save->etat_combat) return;
-
-    if (save->etat_combat->creatures) {
-        for (size_t i = 0; i < save->etat_combat->longueur_creatures; i++) {
-            freeCreature(save->etat_combat->creatures[i]);
-        }
-        free(save->etat_combat->creatures);
-    }
-
-    free(save->etat_combat);
+    freeEtatCombat(save->etat_combat);
     save->etat_combat = NULL;
 }
 
