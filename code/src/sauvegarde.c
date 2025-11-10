@@ -12,10 +12,15 @@ int setNewSaveName(Sauvegarde *save, char *save_name);
 int saveInfo(Sauvegarde *save, SaveTmpFile *tmpSave);
 int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave);
 int savePlayerProgress(PlayerProgress *p, SaveTmpFile *tmpSave);
+int saveCreature(CreatureMarine *creature, SaveTmpFile *tmpSave);
+int saveEtatCombat(EtatCombat *etat, SaveTmpFile *tmpSave);
+int saveListeCompetence(ListeCompetence *liste, SaveTmpFile *tmpSave);
 
 int loadInfo(Sauvegarde *save, FILE *file);
 Plongeur *loadDiver(FILE *file);
 PlayerProgress *loadPlayerProgress(FILE *file);
+EtatCombat *loadEtatCombat(FILE *file);
+CreatureMarine *loadCreature(FILE *file);
 
 void sortByLastRun(Sauvegarde **saves, size_t len_saves);
 SaveTmpFile *initTmpFile(char *dir, char *filename);
@@ -111,6 +116,66 @@ ListeSauvegardes *preLoadListSaves(char *dir) {
 
 /*================ LOAD ================*/
 
+char *loadString(FILE *file) {
+    if (!file) return NULL;
+
+    size_t str_len = 0;
+    if (fread(&str_len, sizeof(size_t), 1, file) != 1) {
+        fprintf(stderr, "Erreur: loadString(): fread str_len\n");
+        return NULL;
+    }
+    if (str_len == 0) {
+        fprintf(stderr, "Erreur: loadString(): str_len == 0\n");
+        return NULL;
+    }
+
+    char *str = calloc(str_len, sizeof(char));
+    if (!str) {
+        fprintf(stderr, "Erreur: loadString(): calloc str\n");
+        return NULL;
+    }
+    if (fread(str, 1, str_len, file) != str_len) {
+        fprintf(stderr, "Erreur: loadString(): fread str\n");
+        free(str);
+        return NULL;
+    }
+
+    return str;
+}
+
+ListeEffet *loadListeEffet(FILE *file) {
+    if (!file) return NULL;
+
+    ListeEffet *effets_immunises = calloc(1, sizeof(ListeEffet));
+    if (!effets_immunises) {
+        fprintf(stderr, "Erreur: loadDiver(): calloc diver->effets_immunises\n");
+        return NULL;
+    }
+    // Lire longueur
+    if (fread(&effets_immunises->longueur, sizeof(size_t), 1, file) != 1) {
+        fprintf(stderr, "Erreur: loadDiver(): fread diver->effets_immunises->longueur\n");
+        freeListeEffet(effets_immunises);
+        return NULL;
+    }
+    // Lire tab si longueur > 0
+    if (effets_immunises->longueur > 0) {
+        effets_immunises->effets = calloc(effets_immunises->longueur, sizeof(Effet));
+        if (!effets_immunises->effets) {
+            fprintf(stderr, "Erreur: loadDiver(): calloc diver->effets_immunises->effets\n");
+            freeListeEffet(effets_immunises);
+            return NULL;
+        }
+        for (size_t i = 0; i < effets_immunises->longueur; i++) {
+            if (fread(&effets_immunises->effets[i], sizeof(Effet), 1, file) != 1) {
+                fprintf(stderr, "Erreur: loadDiver(): fread diver->effets_immunises->effets[%zu]\n", i);
+                freeListeEffet(effets_immunises);
+                return NULL;
+            }
+        }
+    }
+    return effets_immunises;
+}
+
 Sauvegarde *loadSave(char *save_name, short preLoad) {
     if (!(save_name) || (preLoad != 0 && preLoad != 1)) {
         fprintf(stderr, "load : paramètre invalide\n");
@@ -190,6 +255,9 @@ Sauvegarde *loadSave(char *save_name, short preLoad) {
         return NULL;
     }
 
+    // si etat_combat NULL : pas en combat
+    save->etat_combat = loadEtatCombat(file);
+
     // free
 
     fclose(file);
@@ -235,25 +303,9 @@ Plongeur *loadDiver(FILE *file) {
     diver->effets_immunises = NULL;
 
     // Lire nom
-    size_t nom_len = 0;
-    if (fread(&nom_len, sizeof(size_t), 1, file) != 1) {
-        fprintf(stderr, "Erreur: loadDiver(): fread nom_len");
-        freeDiver(diver);
-        return NULL;
-    }
-    if (nom_len == 0) {
-        fprintf(stderr, "Erreur: loadDiver(): nom_len == 0");
-        freeDiver(diver);
-        return NULL;
-    }
-    diver->nom = calloc(nom_len, sizeof(char));
+    diver->nom = loadString(file);
     if (!diver->nom) {
-        fprintf(stderr, "Erreur: loadDiver(): calloc nom\n");
-        freeDiver(diver);
-        return NULL;
-    }
-    if (fread(diver->nom, 1, nom_len, file) != nom_len) {
-        fprintf(stderr, "Erreur: loadDiver(): fread nom\n");
+        fprintf(stderr, "Erreur: loadDiver(): loadString nom\n");
         freeDiver(diver);
         return NULL;
     }
@@ -440,28 +492,10 @@ Plongeur *loadDiver(FILE *file) {
         arme->nom = NULL;
         arme->description = NULL;
         
-        // Lire taille nom
-        size_t arme_nom_len = 0;
-        if (fread(&arme_nom_len, sizeof(size_t), 1, file) != 1) {
-            fprintf(stderr, "Erreur: loadDiver(): fread arme_nom_len\n");
-            freeDiver(diver);
-            return NULL;
-        }
-        if (arme_nom_len == 0) {
-            fprintf(stderr, "Erreur: loadDiver(): arme_nom_len == 0\n");
-            freeDiver(diver);
-            return NULL;
-        }
-        // Allocation nom
-        arme->nom = calloc(arme_nom_len, sizeof(char));
-        if (!arme->nom) {
-            fprintf(stderr, "Erreur: loadDiver(): calloc arme->nom\n");
-            freeDiver(diver);
-            return NULL;
-        }
         // Lire nom
-        if (fread(arme->nom, sizeof(char), arme_nom_len, file) != arme_nom_len) {
-            fprintf(stderr, "Erreur: loadDiver(): fread arme->nom\n");
+        arme->nom = loadString(file);
+        if (!arme->nom) {
+            fprintf(stderr, "Erreur: loadDiver(): loadString arme->nom\n");
             freeDiver(diver);
             return NULL;
         }
@@ -520,33 +554,11 @@ Plongeur *loadDiver(FILE *file) {
     }
 
     // Lire effets_immunises
-    diver->effets_immunises = calloc(1, sizeof(ListeEffet));
+    diver->effets_immunises = loadListeEffet(file);
     if (!diver->effets_immunises) {
-        fprintf(stderr, "Erreur: loadDiver(): calloc diver->effets_immunises\n");
+        fprintf(stderr, "Erreur: loadDiver(): loadListeEffet for effets_immunises failed\n");
         freeDiver(diver);
         return NULL;
-    }
-    // Lire longueur
-    if (fread(&diver->effets_immunises->longueur, sizeof(size_t), 1, file) != 1) {
-        fprintf(stderr, "Erreur: loadDiver(): fread diver->effets_immunises->longueur\n");
-        freeDiver(diver);
-        return NULL;
-    }
-    // Lire tab si longueur > 0
-    if (diver->effets_immunises->longueur > 0) {
-        diver->effets_immunises->effets = calloc(diver->effets_immunises->longueur, sizeof(Effet));
-        if (!diver->effets_immunises->effets) {
-            fprintf(stderr, "Erreur: loadDiver(): calloc diver->effets_immunises->effets\n");
-            freeDiver(diver);
-            return NULL;
-        }
-        for (size_t i = 0; i < diver->effets_immunises->longueur; i++) {
-            if (fread(&diver->effets_immunises->effets[i], sizeof(Effet), 1, file) != 1) {
-                fprintf(stderr, "Erreur: loadDiver(): fread diver->effets_immunises->effets[%zu]\n", i);
-                freeDiver(diver);
-                return NULL;
-            }
-        }
     }
 
     return diver;
@@ -608,6 +620,228 @@ PlayerProgress *loadPlayerProgress(FILE *file) {
     }
 
     return progress;
+}
+
+EtatCombat *loadEtatCombat(FILE *file) {
+    if (!file) {
+        fprintf(stderr, "loadEtatCombat(): paramètre invalide\n");
+        return NULL;
+    }
+
+    int en_combat = 0;
+    if (fread(&en_combat, sizeof(int), 1, file) != 1) {
+        fprintf(stderr, "loadEtatCombat fread en_combat");
+        return NULL;
+    }
+
+    // Pas de combat en cours
+    if (!en_combat) return NULL;
+
+    // Allouer EtatCombat
+    EtatCombat *etat = calloc(1, sizeof(EtatCombat));
+    if (!etat) {
+        fprintf(stderr, "Erreur: loadEtatCombat(): etat = calloc()\n");
+        return NULL;
+    }
+
+    // Lire EtatCombat sans pointeurs
+    if (fread(etat, sizeof(EtatCombat), 1, file) != 1) {
+        fprintf(stderr, "loadEtatCombat fread EtatCombat");
+        freeEtatCombat(etat);
+        return NULL;
+    }
+
+    // Reset pointer to NULL
+    etat->creatures = NULL;
+
+    // Lire creatures tab
+    size_t creatures_len = etat->longueur_creatures;
+    if (creatures_len == 0) return etat;
+
+    // Allouer le tableau de créatures
+    etat->creatures = calloc(creatures_len, sizeof(CreatureMarine*));
+    if (!etat->creatures) {
+        fprintf(stderr, "Erreur: loadEtatCombat(): calloc etat->creatures\n");
+        freeEtatCombat(etat);
+        return NULL;
+    }
+
+    for (size_t i = 0; i < creatures_len; i++) {
+        CreatureMarine *creature = loadCreature(file);
+        if (!creature) {
+            fprintf(stderr, "Erreur: loadEtatCombat(): loadCreature for creature %zu failed\n", i);
+            freeEtatCombat(etat);
+            return NULL;
+        }
+        etat->creatures[i] = creature;
+    }
+
+    return etat;
+}
+
+CreatureMarine *loadCreature(FILE *file) {
+    if (!file) {
+        fprintf(stderr, "loadCreature(): paramètre invalide\n");
+        return NULL;
+    }
+
+    CreatureMarine *creature = calloc(1, sizeof(CreatureMarine));
+    if (!creature) {
+        fprintf(stderr, "Erreur: loadCreature(): creature = calloc()\n");
+        return NULL;
+    }
+
+    // Lire CreatureMarine sans pointeurs
+    if (fread(creature, sizeof(CreatureMarine), 1, file) != 1) {
+        fprintf(stderr, "loadCreature fread CreatureMarine");
+        freeCreature(creature);
+        return NULL;
+    }
+
+    // Reset pointer fields to NULL (they contain garbage values from the file)
+    creature->nom = NULL;
+    creature->liste_etats.etats = NULL;
+    creature->liste_competences.competences = NULL;
+    creature->effets_immunises = NULL;
+
+    // Lire nom
+    creature->nom = loadString(file);
+    if (!creature->nom) {
+        freeCreature(creature);
+        return NULL;
+    }
+
+    // Lire liste_etats.etats
+    size_t etats_len = 0;
+    if (fread(&etats_len, sizeof(size_t), 1, file) != 1) {
+        fprintf(stderr, "Erreur: loadCreature(): fread etats_len\n");
+        freeCreature(creature);
+        return NULL;
+    }
+    creature->liste_etats.longueur = etats_len;
+    creature->liste_etats.etats = NULL;
+
+    if (etats_len > 0) {
+        creature->liste_etats.etats = calloc(etats_len, sizeof(Etat));
+        if (!creature->liste_etats.etats) {
+            fprintf(stderr, "Erreur: loadCreature(): calloc etats\n");
+            freeCreature(creature);
+            return NULL;
+        }
+
+        for (size_t i = 0; i < etats_len; i++) {
+            // Lire Etats sans pointeurs
+            Etat tmp_etat;
+            if (fread(&tmp_etat, sizeof(Etat), 1, file) != 1) {
+                fprintf(stderr, "Erreur: loadCreature(): fread Etat\n");
+                freeCreature(creature);
+                return NULL;
+            }
+
+            // Copier les données
+            creature->liste_etats.etats[i] = tmp_etat;
+        }
+    }
+
+    // Lire competences
+    size_t comp_len = 0;
+    if (fread(&comp_len, sizeof(size_t), 1, file) != 1) {
+        fprintf(stderr, "Erreur: loadCreature(): fread comp_len\n");
+        freeCreature(creature);
+        return NULL;
+    }
+    creature->liste_competences.longueur = comp_len;
+    creature->liste_competences.competences = NULL;
+
+    if (comp_len > 0) {
+        creature->liste_competences.competences = calloc(comp_len, sizeof(Competence));
+        if (!creature->liste_competences.competences) {
+            fprintf(stderr, "Erreur: loadCreature(): calloc competences\n");
+            freeCreature(creature);
+            return NULL;
+        }
+
+        for (size_t i = 0; i < comp_len; i++) {
+            // Lire Competence sans nom
+            Competence tmp_comp;
+            if (fread(&tmp_comp, sizeof(Competence), 1, file) != 1) {
+                fprintf(stderr, "Erreur: loadCreature(): fread Competence\n");
+                freeCreature(creature);
+                return NULL;
+            }
+
+            // Copier données sauf le nom
+            creature->liste_competences.competences[i] = tmp_comp;
+            creature->liste_competences.competences[i].nom = NULL;
+
+            // Lire taille nom de la compétence
+            size_t comp_nom_len = 0;
+            if (fread(&comp_nom_len, sizeof(size_t), 1, file) != 1) {
+                fprintf(stderr, "Erreur: loadCreature(): fread comp_nom_len\n");
+                freeCreature(creature);
+                return NULL;
+            }
+
+            if (comp_nom_len > 0) {
+                creature->liste_competences.competences[i].nom = calloc(comp_nom_len, sizeof(char));
+                if (!creature->liste_competences.competences[i].nom) {
+                    fprintf(stderr, "Erreur: loadCreature(): calloc comp nom\n");
+                    freeCreature(creature);
+                    return NULL;
+                }
+                if (fread(creature->liste_competences.competences[i].nom, 1, comp_nom_len, file) != comp_nom_len) {
+                    fprintf(stderr, "Erreur: loadCreature(): fread comp nom\n");
+                    freeCreature(creature);
+                    return NULL;
+                }
+            } else {
+                creature->liste_competences.competences[i].nom = NULL;
+            }
+
+            /* Lire description de la competence */
+            size_t comp_desc_len = 0;
+            if (fread(&comp_desc_len, sizeof(size_t), 1, file) != 1) {
+                fprintf(stderr, "Erreur: loadCreature(): fread comp_desc_len\n");
+                freeCreature(creature);
+                return NULL;
+            }
+
+            if (comp_desc_len > 0) {
+                creature->liste_competences.competences[i].description = calloc(comp_desc_len, sizeof(char));
+                if (!creature->liste_competences.competences[i].description) {
+                    fprintf(stderr, "Erreur: loadCreature(): calloc comp description\n");
+                    freeCreature(creature);
+                    return NULL;
+                }
+                if (fread(creature->liste_competences.competences[i].description, 1, comp_desc_len, file) != comp_desc_len) {
+                    fprintf(stderr, "Erreur: loadCreature(): fread comp description\n");
+                    freeCreature(creature);
+                    return NULL;
+                }
+            } else {
+                creature->liste_competences.competences[i].description = NULL;
+            }
+
+            // Lire actions de la competence
+            short res;
+            creature->liste_competences.competences[i].listeAction = loadListeAction(file, &res);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: loadCreature(): loadListeAction for competence %zu failed\n", i);
+                freeCreature(creature);
+                return NULL;
+            }
+        }
+    }
+
+    // Lire effets_immunises
+    creature->effets_immunises = loadListeEffet(file);
+    if (!creature->effets_immunises) {
+        fprintf(stderr, "Erreur: loadCreature(): loadListeEffet for effets_immunises failed\n");
+        freeCreature(creature);
+        return NULL;
+    }
+
+    return creature;
 }
 
 ListeAction loadListeAction(FILE *file, short *res) {
@@ -712,12 +946,12 @@ ListeObjet *loadListeObjet(FILE *file) {
     // Lire objets
     ListeObjet *liste = calloc(1, sizeof(ListeObjet));
     if (!liste) {
-        fprintf(stderr, "Erreur: loadDiver(): liste_consommables = calloc()\n");
+        fprintf(stderr, "Erreur: loadListeObjet(): liste_consommables = calloc()\n");
         return NULL;
     }
     size_t cons_len = 0;
     if (fread(&cons_len, sizeof(size_t), 1, file) != 1) {
-        fprintf(stderr, "Erreur: loadDiver(): fread cons_len\n");
+        fprintf(stderr, "Erreur: loadListeObjet(): fread cons_len\n");
         freeListeObjets(liste);
         return NULL;
     }
@@ -725,7 +959,7 @@ ListeObjet *loadListeObjet(FILE *file) {
     if (cons_len > 0) {
         liste->objets = calloc(cons_len, sizeof(Objet*));
         if (!liste->objets) {
-            fprintf(stderr, "Erreur: loadDiver(): liste->objets = calloc()\n");
+            fprintf(stderr, "Erreur: loadListeObjet(): liste->objets = calloc()\n");
             freeListeObjets(liste);
             return NULL;
         }
@@ -733,13 +967,13 @@ ListeObjet *loadListeObjet(FILE *file) {
     for (size_t i = 0; i < cons_len; i++) {
         Objet *tmp_cons = calloc(1, sizeof(Objet));
         if (!tmp_cons) {
-            fprintf(stderr, "Erreur: loadDiver(): tmp_cons = calloc()\n");
+            fprintf(stderr, "Erreur: loadListeObjet(): tmp_cons = calloc()\n");
             freeListeObjets(liste);
             return NULL;
         }
         // Lire l'objet sans pointeurs
         if (fread(tmp_cons, sizeof(Objet), 1, file) != 1) {
-            fprintf(stderr, "Erreur: loadDiver(): fread Objet\n");
+            fprintf(stderr, "Erreur: loadListeObjet(): fread Objet\n");
             free(tmp_cons);
             freeListeObjets(liste);
             return NULL;
@@ -748,7 +982,7 @@ ListeObjet *loadListeObjet(FILE *file) {
         size_t cons_nom_len = 0;
         // taille nom
         if (fread(&cons_nom_len, sizeof(size_t), 1, file) != 1) {
-            fprintf(stderr, "Erreur: loadDiver(): fread cons_nom_len\n");
+            fprintf(stderr, "Erreur: loadListeObjet(): fread cons_nom_len\n");
             free(tmp_cons);
             freeListeObjets(liste);
             return NULL;
@@ -757,13 +991,13 @@ ListeObjet *loadListeObjet(FILE *file) {
         if (cons_nom_len > 0) {
             tmp_cons->nom = calloc(cons_nom_len, sizeof(char));
             if (!tmp_cons->nom) {
-                fprintf(stderr, "Erreur: loadDiver(): calloc cons nom\n");
+                fprintf(stderr, "Erreur: loadListeObjet(): calloc cons nom\n");
                 free(tmp_cons);
                 freeListeObjets(liste);
                 return NULL;
             }
             if (fread(tmp_cons->nom, 1, cons_nom_len, file) != cons_nom_len) {
-                fprintf(stderr, "Erreur: loadDiver(): fread cons nom\n");
+                fprintf(stderr, "Erreur: loadListeObjet(): fread cons nom\n");
                 free(tmp_cons);
                 freeListeObjets(liste);
                 return NULL;
@@ -773,7 +1007,7 @@ ListeObjet *loadListeObjet(FILE *file) {
         size_t cons_desc_len = 0;
         // taille description
         if (fread(&cons_desc_len, sizeof(size_t), 1, file) != 1) {
-            fprintf(stderr, "Erreur: loadDiver(): fread cons_desc_len\n");
+            fprintf(stderr, "Erreur: loadListeObjet(): fread cons_desc_len\n");
             free(tmp_cons);
             freeListeObjets(liste);
             return NULL;
@@ -782,13 +1016,13 @@ ListeObjet *loadListeObjet(FILE *file) {
         if (cons_desc_len > 0) {
             tmp_cons->description = calloc(cons_desc_len, sizeof(char));
             if (!tmp_cons->description) {
-                fprintf(stderr, "Erreur: loadDiver(): calloc cons description\n");
+                fprintf(stderr, "Erreur: loadListeObjet(): calloc cons description\n");
                 free(tmp_cons);
                 freeListeObjets(liste);
                 return NULL;
             }
             if (fread(tmp_cons->description, 1, cons_desc_len, file) != cons_desc_len) {
-                fprintf(stderr, "Erreur: loadDiver(): fread cons description\n");
+                fprintf(stderr, "Erreur: loadListeObjet(): fread cons description\n");
                 free(tmp_cons);
                 freeListeObjets(liste);
                 return NULL;
@@ -799,7 +1033,7 @@ ListeObjet *loadListeObjet(FILE *file) {
         short res;
         tmp_cons->listeAction = loadListeAction(file, &res);
         if (res == EXIT_FAILURE) {
-            fprintf(stderr, "Erreur: loadDiver(): loadListeAction for objet\n");
+            fprintf(stderr, "Erreur: loadListeObjet(): loadListeAction for objet\n");
             free(tmp_cons);
             freeListeObjets(liste);
             return NULL;
@@ -847,6 +1081,13 @@ int saveGame(Sauvegarde *save) {
     // Save Player Progress block
     if (savePlayerProgress(save->player_progress, tmpSave) != EXIT_SUCCESS) {
         fprintf(stderr, "save : Erreur sauvegarde Player Progress\n");
+        freeSaveTmpFile(tmpSave);
+        return EXIT_FAILURE;
+    }
+
+    // Save EtatCombat block
+    if (saveEtatCombat(save->etat_combat, tmpSave) != EXIT_SUCCESS) {
+        fprintf(stderr, "save : Erreur sauvegarde Etat Combat\n");
         freeSaveTmpFile(tmpSave);
         return EXIT_FAILURE;
     }
@@ -982,79 +1223,9 @@ int saveDiver(Plongeur *diver, SaveTmpFile *tmpSave) {
             return EXIT_FAILURE;
     }
 
-    size_t comp_len = diver->liste_competences.longueur;
-    // taille competences
-    if (addBlock(tmpSave, &comp_len, sizeof(size_t)) != EXIT_SUCCESS)
+    // Sauvegarde des compétences
+    if (saveListeCompetence(&diver->liste_competences, tmpSave) != EXIT_SUCCESS)
         return EXIT_FAILURE;
-    // tab competences
-    for (size_t i = 0; i < comp_len; i++) {
-        Competence *comp = &diver->liste_competences.competences[i];
-
-        // Build a clean competence copy with only scalar fields
-        Competence comp_copy = {0};
-        comp_copy.id = comp->id;
-        comp_copy.cout_oxygene = comp->cout_oxygene;
-        comp_copy.cout_pv = comp->cout_pv;
-        comp_copy.ciblage = comp->ciblage;
-        comp_copy.cooldown_max = comp->cooldown_max;
-        comp_copy.cooldown_restant = comp->cooldown_restant;
-        comp_copy.listeAction.longueur = comp->listeAction.longueur;
-        comp_copy.listeAction.actions = NULL;
-        comp_copy.nom = NULL;
-        comp_copy.description = NULL;
-
-        if (addBlock(tmpSave, &comp_copy, sizeof(Competence)) != EXIT_SUCCESS)
-            return EXIT_FAILURE;
-
-        size_t comp_nom_len = comp->nom ? strlen(comp->nom) + 1 : 0;
-        // taille nom de la compétence
-        if (addBlock(tmpSave, &comp_nom_len, sizeof(size_t)) != EXIT_SUCCESS)
-            return EXIT_FAILURE;
-        // tab nom de la compétence
-        if (comp_nom_len > 0 && addBlock(tmpSave, comp->nom, comp_nom_len) != EXIT_SUCCESS)
-            return EXIT_FAILURE;
-
-        size_t comp_desc_len = comp->description ? strlen(comp->description) + 1 : 0;
-        // taille description de la compétence
-        if (addBlock(tmpSave, &comp_desc_len, sizeof(size_t)) != EXIT_SUCCESS)
-            return EXIT_FAILURE;
-        // tab description de la compétence
-        if (comp_desc_len > 0 && addBlock(tmpSave, comp->description, comp_desc_len) != EXIT_SUCCESS)
-            return EXIT_FAILURE;
-
-        size_t comp_action_len = comp->listeAction.longueur;
-        // taille actions de la compétence
-        if (addBlock(tmpSave, &comp_action_len, sizeof(size_t)) != EXIT_SUCCESS)
-            return EXIT_FAILURE;
-        // tab actions de la compétence
-        for (size_t j = 0; j < comp_action_len; j++) {
-            Action *action = &comp->listeAction.actions[j];
-            Action action_copy = {0};
-            action_copy.type = action->type;
-            action_copy.params = NULL;
-            action_copy.longueur_params = action->longueur_params;
-            
-            // Bloc action sans pointeurs
-            if (addBlock(tmpSave, &action_copy, sizeof(Action)) != EXIT_SUCCESS)
-                return EXIT_FAILURE;
-
-            size_t action_params_len = action->longueur_params;
-            // nombre de parametres
-            if (addBlock(tmpSave, &action_params_len, sizeof(size_t)) != EXIT_SUCCESS)
-                return EXIT_FAILURE;
-            
-            for (size_t k = 0; k < action_params_len; k++) {
-                char *param = action->params[k];
-                size_t param_len = param ? strlen(param) + 1 : 0;
-                // taille parametre
-                if (addBlock(tmpSave, &param_len, sizeof(size_t)) != EXIT_SUCCESS)
-                    return EXIT_FAILURE;
-                // tab parametre
-                if (param_len > 0 && addBlock(tmpSave, param, param_len) != EXIT_SUCCESS)
-                    return EXIT_FAILURE;
-            }
-        }
-    }
 
     // Sauvegarde des consommables
     if (saveListeObjet(diver->liste_consommables, tmpSave) != EXIT_SUCCESS)
@@ -1139,6 +1310,7 @@ int savePlayerProgress(PlayerProgress *p, SaveTmpFile *tmpSave) {
     p_copy.col = p->col;
     p_copy.tier_seed = p->tier_seed;
     p_copy.start_col = p->start_col;
+    p_copy.zone_actuelle = p->zone_actuelle;
     p_copy.cleared_cells = NULL;
     p_copy.cleared_count = 0;
     
@@ -1161,6 +1333,101 @@ int savePlayerProgress(PlayerProgress *p, SaveTmpFile *tmpSave) {
             fprintf(stderr, "savePlayerProgress : Erreur écriture cleared_cells[%zu]\n", i);
             return EXIT_FAILURE;
         }
+    }
+
+    return EXIT_SUCCESS;
+}
+
+int saveCreature(CreatureMarine *creature, SaveTmpFile *tmpSave) {
+    if (!creature || !tmpSave) {
+        fprintf(stderr, "saveCreature : Paramètre invalide\n");
+        return EXIT_FAILURE;
+    }
+
+    // Init clean copy
+    CreatureMarine creature_copy = {0};
+    creature_copy.id = creature->id;
+    creature_copy.pv_max = creature->pv_max;
+    creature_copy.pv = creature->pv;
+    creature_copy.attaque_min = creature->attaque_min;
+    creature_copy.attaque_max = creature->attaque_max;
+    creature_copy.defense = creature->defense;
+    creature_copy.vitesse = creature->vitesse;
+    creature_copy.rarete = creature->rarete;
+    // On garde la longueur des listes mais pas les pointeurs
+    creature_copy.liste_etats.longueur = creature->liste_etats.etats ? creature->liste_etats.longueur : 0;
+    creature_copy.liste_competences.longueur = creature->liste_competences.competences ? creature->liste_competences.longueur : 0;
+
+    // Bloc sans pointeurs (safe, no uninitialised bytes)
+    if (addBlock(tmpSave, &creature_copy, sizeof(CreatureMarine)) != EXIT_SUCCESS)
+        return EXIT_FAILURE;
+
+    size_t nom_len = creature->nom ? strlen(creature->nom) + 1 : 0;
+    // taille nom
+    if (addBlock(tmpSave, &nom_len, sizeof(size_t)) != EXIT_SUCCESS)
+        return EXIT_FAILURE;
+    // tab nom
+    if (nom_len > 0 && addBlock(tmpSave, creature->nom, nom_len) != EXIT_SUCCESS)
+        return EXIT_FAILURE;
+
+    size_t etats_len = creature->liste_etats.longueur;
+    // taille états
+    if (addBlock(tmpSave, &etats_len, sizeof(size_t)) != EXIT_SUCCESS)
+        return EXIT_FAILURE;
+    // tab états
+    for (size_t i = 0; i < etats_len; i++) {
+        Etat etat_copy = creature->liste_etats.etats[i];
+        if (addBlock(tmpSave, &etat_copy, sizeof(Etat)) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+    }
+
+    // Sauvegarde des compétences
+    if (saveListeCompetence(&creature->liste_competences, tmpSave) != EXIT_SUCCESS)
+        return EXIT_FAILURE;
+
+    // taille effets_immunises
+    size_t effets_len = creature->effets_immunises ? creature->effets_immunises->longueur : 0;
+    if (addBlock(tmpSave, &effets_len, sizeof(size_t)) != EXIT_SUCCESS)
+        return EXIT_FAILURE;
+    // tab effets_immunises
+    for (size_t i = 0; i < effets_len; i++) {
+        Effet effet = creature->effets_immunises->effets[i];
+        if (addBlock(tmpSave, &effet, sizeof(Effet)) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
+}
+
+int saveEtatCombat(EtatCombat *etat, SaveTmpFile *tmpSave) {
+    if (!tmpSave) {
+        fprintf(stderr, "saveEtatCombat : Paramètre invalide\n");
+        return EXIT_FAILURE;
+    }
+
+    // Indicateur : 0 si pas en combat (NULL), 1 si en combat
+    int en_combat = etat ? 1 : 0;
+    if (addBlock(tmpSave, &en_combat, sizeof(int)) != EXIT_SUCCESS)
+        return EXIT_FAILURE;
+
+    // Si pas en combat, on s'arrête ici
+    if (!etat) return EXIT_SUCCESS;
+
+    // Init clean copy
+    EtatCombat etat_copy = {0};
+    etat_copy.action_restante = etat->action_restante;
+    etat_copy.action_max = etat->action_max;
+    // Garde la longueur des listes mais pas les pointeurs
+    etat_copy.longueur_creatures = etat->creatures ? etat->longueur_creatures : 0;
+
+    // Bloc sans pointeurs (safe, no uninitialised bytes)
+    if (addBlock(tmpSave, &etat_copy, sizeof(EtatCombat)) != EXIT_SUCCESS)
+        return EXIT_FAILURE;
+
+    // Sauvegarde des créatures
+    for (size_t i = 0; i < etat_copy.longueur_creatures; i++) {
+        if (saveCreature(etat->creatures[i], tmpSave) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
     }
 
     return EXIT_SUCCESS;
@@ -1201,6 +1468,56 @@ int saveListeActions(ListeAction *liste, SaveTmpFile *tmpSave) {
         }
     }
 
+    return EXIT_SUCCESS;
+}
+
+int saveListeCompetence(ListeCompetence *liste, SaveTmpFile *tmpSave) {
+
+    size_t comp_len = liste->longueur;
+    // taille competences
+    if (addBlock(tmpSave, &comp_len, sizeof(size_t)) != EXIT_SUCCESS)
+        return EXIT_FAILURE;
+    // tab competences
+    for (size_t i = 0; i < comp_len; i++) {
+        Competence *comp = &liste->competences[i];
+
+        // Build a clean competence copy with only scalar fields
+        Competence comp_copy = {0};
+        comp_copy.id = comp->id;
+        comp_copy.cout_oxygene = comp->cout_oxygene;
+        comp_copy.cout_pv = comp->cout_pv;
+        comp_copy.ciblage = comp->ciblage;
+        comp_copy.cooldown_max = comp->cooldown_max;
+        comp_copy.cooldown_restant = comp->cooldown_restant;
+        comp_copy.listeAction.longueur = comp->listeAction.longueur;
+        comp_copy.listeAction.actions = NULL;
+        comp_copy.nom = NULL;
+        comp_copy.description = NULL;
+
+        if (addBlock(tmpSave, &comp_copy, sizeof(Competence)) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+
+        size_t comp_nom_len = comp->nom ? strlen(comp->nom) + 1 : 0;
+        // taille nom de la compétence
+        if (addBlock(tmpSave, &comp_nom_len, sizeof(size_t)) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+        // tab nom de la compétence
+        if (comp_nom_len > 0 && addBlock(tmpSave, comp->nom, comp_nom_len) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+
+        size_t comp_desc_len = comp->description ? strlen(comp->description) + 1 : 0;
+        // taille description de la compétence
+        if (addBlock(tmpSave, &comp_desc_len, sizeof(size_t)) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+        // tab description de la compétence
+        if (comp_desc_len > 0 && addBlock(tmpSave, comp->description, comp_desc_len) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+
+        // Sauvegarde des actions de la compétence
+        if (saveListeActions(&comp->listeAction, tmpSave) != EXIT_SUCCESS)
+            return EXIT_FAILURE;
+    }
+    
     return EXIT_SUCCESS;
 }
 
@@ -1357,6 +1674,12 @@ int finalizeSave(SaveTmpFile *save) {
 
 /*================ FREE ================*/
 
+void freeSauvegardeEtatCombat(Sauvegarde *save) {
+    if (!save || !save->etat_combat) return;
+    freeEtatCombat(save->etat_combat);
+    save->etat_combat = NULL;
+}
+
 void freeSaveTmpFile(SaveTmpFile *save) {
     if (!save) return;
     
@@ -1396,6 +1719,8 @@ void freeSauvegarde(Sauvegarde *save) {
 
     free_player_progress(save->player_progress);
     save->player_progress = NULL;
+
+    freeSauvegardeEtatCombat(save);
 
     free(save);
 }

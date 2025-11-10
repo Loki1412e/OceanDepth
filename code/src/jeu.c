@@ -18,6 +18,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
 
     Plongeur *player = actualSave->diver;
     PlayerProgress *playerProgress = actualSave->player_progress;
+    EtatCombat *combatState = actualSave->etat_combat;
     TierMap *tierMap = NULL;
 
     Bestiaire *modalBestiary = NULL;
@@ -38,6 +39,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
             fprintf(stderr, "runGame(): Erreur lors de l'allocation de PlayerProgress.\n");
             return EXIT_FAILURE;
         }
+        actualSave->player_progress->zone_actuelle = ZONE_PATH; // initialisation
         playerProgress = actualSave->player_progress;
     }
 
@@ -110,13 +112,26 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
     printf("========== [%s] entre dans les profondeurs maritimes. ==========\n\n", player->nom);
     pressEnterToContinue();
 
+    Zone *target_zone = NULL;
+    int new_row, new_col;
+
+    if (combatState && playerProgress) {
+        target_zone = &AT(tierMap, playerProgress->row, playerProgress->col);
+        playerProgress->zone_actuelle = target_zone->type; // on save la zone actuelle (pour sauvegarde)
+        goto SWITCH_CHECK_ZONE; // on saute directement au combat
+    }
+
+    // Boucle principale d'exploration
     while (1) {
         if (player->pv <= 0) {
             printf("\n💀 Vous ne pouvez plus continuer votre aventure... GAME OVER.\n");
             pressEnterToContinue();
             break;
         }
+
         
+
+        // --- Affichage de l'interface ---
         afficherInterfaceExploration(player, tierMap, playerProgress->row, playerProgress->col);
         printTierMapActionMenu();
         c = getCharInputToUpper();
@@ -339,8 +354,8 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
         }
 
         // --- 1. Déterminer la position CIBLE ---
-        int new_row = playerProgress->row;
-        int new_col = playerProgress->col;
+        new_row = playerProgress->row;
+        new_col = playerProgress->col;
         switch (c) {
             case 'Q': new_col--; break;
             case 'D': new_col++; break;
@@ -357,7 +372,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
         }
 
         // Vérification de la case cible (bloqué)
-        Zone* target_zone = &AT(tierMap, new_row, new_col);
+        target_zone = &AT(tierMap, new_row, new_col);
         if (target_zone->type == ZONE_BLOCKED) {
             printf("\n🪨 Chemin bloqué !\n"); 
             pressEnterToContinue();
@@ -370,34 +385,48 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
         appliquerConsommationOxygeneProfondeur(player);
 
         // --- 4. Gérer les conséquences (UNE SEULE FOIS) ---
+        playerProgress->zone_actuelle = target_zone->type; // on save la zone actuelle (pour sauvegarde)
+        SWITCH_CHECK_ZONE: // label pour le goto plus haut
+        int isNewCombat;
         switch (target_zone->type) {
             
             case ZONE_TREASURE: {
                 printf("\n🪙 Trésor trouvé ! (loot plus tard)\n");
                 target_zone->type = ZONE_PATH; // On vide la case
-                mark_cell_as_cleared(playerProgress, new_row, new_col); // On marque comme nettoyée
+                mark_cell_as_cleared(playerProgress, playerProgress->row, playerProgress->col); // On marque comme nettoyée
                 pressEnterToContinue();
+                playerProgress->zone_actuelle = ZONE_PATH; // on update la zone actuelle (pour sauvegarde)
                 continue;
             }
 
             case ZONE_MONSTER: {
-                printf("\n🐙 Monstre rencontré !\n");
-                pressEnterToContinue();
-
                 int dangerosityLevel = 1;
-                Bestiaire *bestiary = initRandomBestiaryFromDangerosityGroupLevel(modalBestiary, dangerosityLevel);
-                if (!bestiary) {
-                    fprintf(stderr, "Erreur: runGame(): initRandomBestiaryFromDangerosityGroupLevel()\n");
-                    break;
+
+                if (!combatState) {
+                    // Initialisation de l'état de combat
+                    printf("\n🐙 Monstre rencontré !\n");
+                    pressEnterToContinue();
+
+                    if (actualSave->etat_combat) freeSauvegardeEtatCombat(actualSave); // si non null on free l'ancien état de combat
+                    actualSave->etat_combat = initRandomCreaturesFromDangerosityGroupLevel(modalBestiary, dangerosityLevel);
+                    if (!actualSave->etat_combat) {
+                        fprintf(stderr, "Erreur: runGame(): initRandomCreaturesFromDangerosityGroupLevel()\n");
+                        break;
+                    }
+
+                    isNewCombat = true;
                 }
+                else isNewCombat = false;
 
                 // Lancement du combat
-                int res = combat(actualSave, player, bestiary->creatures, bestiary->longueur_creatures);
-                freeBestiary(bestiary); // On libère le bestiaire après le combat
+                int res = combat(actualSave, player, isNewCombat);
                 if (res == EXIT_FAILURE) {
                     fprintf(stderr, "Erreur: runGame(): res = combat()\n");
                     break;
                 }
+                printSave(actualSave); // DEBUG
+                pressEnterToContinue(); // DEBUG
+                freeSauvegardeEtatCombat(actualSave); // On libère l'état de combat après le combat
                 // Si le joueur a choisi de quitter
                 if (res == -1) break;
                 if (player->pv <= 0) continue;
@@ -416,28 +445,39 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
 
                 // Nettoyage de la case
                 target_zone->type = ZONE_PATH; // On vide la case
-                mark_cell_as_cleared(playerProgress, new_row, new_col); // On marque comme nettoyée
+                mark_cell_as_cleared(playerProgress, playerProgress->row, playerProgress->col); // On marque comme nettoyée
+                playerProgress->zone_actuelle = ZONE_PATH; // on update la zone actuelle (pour sauvegarde)
                 continue;
             }
 
             case ZONE_BOSS: {
-                printf("\n👹 Boss atteint !\n");
-                pressEnterToContinue();
-                
                 int dangerosityLevel = 5;
-                Bestiaire *bestiary = initRandomBestiaryFromDangerosityGroupLevel(modalBestiary, dangerosityLevel);
-                if (!bestiary) {
-                    fprintf(stderr, "Erreur: runGame(): initRandomBestiaryFromDangerosityGroupLevel()\n");
-                    break;
+
+                if (!combatState) {
+                    // Initialisation de l'état de combat
+                    printf("\n👹 Boss atteint !\n");
+                    pressEnterToContinue();
+                    
+                    if (actualSave->etat_combat) freeSauvegardeEtatCombat(actualSave); // si non null on free l'ancien état de combat
+                    actualSave->etat_combat = initRandomCreaturesFromDangerosityGroupLevel(modalBestiary, dangerosityLevel);
+                    if (!actualSave->etat_combat) {
+                        fprintf(stderr, "Erreur: runGame(): initRandomCreaturesFromDangerosityGroupLevel()\n");
+                        break;
+                    }
+
+                    isNewCombat = true;
                 }
+                else isNewCombat = false;
 
                 // Lancement du combat
-                int res = combat(actualSave, player, bestiary->creatures, bestiary->longueur_creatures);
-                freeBestiary(bestiary); // On libère le bestiaire après le combat
+                int res = combat(actualSave, player, isNewCombat);
                 if (res == EXIT_FAILURE) {
                     fprintf(stderr, "Erreur: runGame(): res = combat()\n");
                     break;
                 }
+                printSave(actualSave); // DEBUG
+                pressEnterToContinue(); // DEBUG
+                freeSauvegardeEtatCombat(actualSave); // On libère l'état de combat après le combat
                 // Si le joueur a choisi de quitter
                 if (res == -1) break;
                 if (player->pv <= 0) continue;
@@ -471,11 +511,18 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                 playerProgress->tier_seed = getRandomSeed();
                 free_tier(tierMap);
                 tierMap = build_tier(playerProgress->tier, playerProgress->tier_seed, playerProgress, true);
+                if (!tierMap) {
+                    fprintf(stderr, "Erreur: runGame(): build_tier() après boss\n");
+                    break;
+                }
+                // on update la zone actuelle (pour sauvegarde)
+                playerProgress->zone_actuelle = ZONE_PATH;
                 continue;
             }
 
             // Si c'est ZONE_PATH, on ne fait rien et la boucle continue
             default: {
+                playerProgress->zone_actuelle = ZONE_PATH;
                 clearConsole();
                 continue;
             }
@@ -490,9 +537,9 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
         /***************************************************/
 
         // // Génération aléatoire de créatures via groupe / niveau de dangerosité = 1
-        // Bestiaire *bestiary = initRandomBestiaryFromDangerosityGroupLevel(modalBestiary, 1);
+        // Bestiaire *bestiary = initRandomCreaturesFromDangerosityGroupLevel(modalBestiary, 1);
         // if (!bestiary) {
-        //     fprintf(stderr, "Erreur: runGame(): initRandomBestiaryFromDangerosityGroupLevel()\n");
+        //     fprintf(stderr, "Erreur: runGame(): initRandomCreaturesFromDangerosityGroupLevel()\n");
         //     break;
         // }
 
@@ -533,7 +580,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
         // }
 
         // // Lancer le combat
-        // res = combat(actualSave, player, bestiary->creatures, bestiary->longueur_creatures);
+        // res = combat(actualSave, player);
         // freeBestiary(bestiary); // On libère le bestiaire après le combat
         // if (res == EXIT_FAILURE) {
         //     fprintf(stderr, "Erreur: runGame(): res = combat()\n");
