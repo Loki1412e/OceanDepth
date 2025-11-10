@@ -115,7 +115,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
     Zone *target_zone = NULL;
     int new_row, new_col;
 
-    if (combatState) {
+    if (combatState && playerProgress) {
         target_zone = &AT(tierMap, playerProgress->row, playerProgress->col);
         playerProgress->zone_actuelle = target_zone->type; // on save la zone actuelle (pour sauvegarde)
         pressEnterToContinue();
