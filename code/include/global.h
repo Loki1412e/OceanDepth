@@ -281,6 +281,7 @@
         int start_col; // colonne de départ du joueur (0..TIER_LANES-1)
         ClearedCell *cleared_cells;  // tableau dynamique des cellules nettoyées
         size_t cleared_count; // nombre de cellules nettoyées
+        ZoneType zone_actuelle;
     } PlayerProgress;
 
     typedef struct {

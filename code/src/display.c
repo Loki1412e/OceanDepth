@@ -496,6 +496,7 @@ void printPlayerProgress(PlayerProgress *progress) {
     printf(" Position: (row: %d, col: %d)\n", progress->row, progress->col);
     printf(" Colonne de départ: %d\n", progress->start_col);
     printf(" Cellules nettoyées: %zu\n", progress->cleared_count);
+    printf(" Zone actuelle: %s\n", enumZoneTypeToChar(progress->zone_actuelle));
 }
 
 void printEtatCombat(EtatCombat *etat) {
