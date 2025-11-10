@@ -1310,6 +1310,7 @@ int savePlayerProgress(PlayerProgress *p, SaveTmpFile *tmpSave) {
     p_copy.col = p->col;
     p_copy.tier_seed = p->tier_seed;
     p_copy.start_col = p->start_col;
+    p_copy.zone_actuelle = p->zone_actuelle;
     p_copy.cleared_cells = NULL;
     p_copy.cleared_count = 0;
     

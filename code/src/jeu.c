@@ -18,6 +18,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
 
     Plongeur *player = actualSave->diver;
     PlayerProgress *playerProgress = actualSave->player_progress;
+    EtatCombat *combatState = actualSave->etat_combat;
     TierMap *tierMap = NULL;
 
     Bestiaire *modalBestiary = NULL;
@@ -110,6 +111,12 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
     printf("========== [%s] entre dans les profondeurs maritimes. ==========\n\n", player->nom);
     pressEnterToContinue();
 
+    // Si combat en cours
+    if (combatState) {
+        combat(actualSave, player);
+    }
+
+    // Boucle principale d'exploration
     while (1) {
         if (player->pv <= 0) {
             printf("\n💀 Vous ne pouvez plus continuer votre aventure... GAME OVER.\n");
@@ -370,6 +377,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
         appliquerConsommationOxygeneProfondeur(player);
 
         // --- 4. Gérer les conséquences (UNE SEULE FOIS) ---
+        playerProgress->zone_actuelle = target_zone->type; // on save la zone actuelle (pour sauvegarde)
         switch (target_zone->type) {
             
             case ZONE_TREASURE: {
@@ -478,6 +486,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
 
             // Si c'est ZONE_PATH, on ne fait rien et la boucle continue
             default: {
+                playerProgress->zone_actuelle = ZONE_PATH;
                 clearConsole();
                 continue;
             }
