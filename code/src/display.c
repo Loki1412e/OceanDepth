@@ -496,7 +496,7 @@ void printPlayerProgress(PlayerProgress *progress) {
     printf(" Position: (row: %d, col: %d)\n", progress->row, progress->col);
     printf(" Colonne de départ: %d\n", progress->start_col);
     printf(" Cellules nettoyées: %zu\n", progress->cleared_count);
-    printf(" Zone actuelle: %s\n", get_zone_symbol((const Zone*) &progress->zone_actuelle));
+    printf(" Zone actuelle: %s\n", get_zone_type_symbol(progress->zone_actuelle));
 }
 
 void printEtatCombat(EtatCombat *etat) {
@@ -537,8 +537,9 @@ void printSave(Sauvegarde *save) {
     printDiver(save->diver);
 
     printPlayerProgress(save->player_progress);
-    printf("\n====================================\n");
+    printf("\n====================================\n\n");
     printEtatCombat(save->etat_combat);
+    printf("\n====================================\n\n");
 }
 
 

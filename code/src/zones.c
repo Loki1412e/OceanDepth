@@ -192,14 +192,18 @@ int spawn_monsters(TierMap *m, int tier){
     return EXIT_SUCCESS;
 }
 
-char *get_zone_symbol(const Zone *z) {
-    switch(z->type){
+char *get_zone_type_symbol(ZoneType type) {
+    switch(type){
         case ZONE_BOSS:     return "👹";
         case ZONE_BLOCKED:  return "🪨";
         case ZONE_TREASURE: return "🪙";
         case ZONE_MONSTER:  return "🐙";
         default:            return "  ";
     }
+}
+
+char *get_zone_symbol(const Zone *z) {
+    return get_zone_type_symbol(z->type);
 }
 
 void draw_tier(char *prefix,const TierMap *m, int player_row, int player_col){
