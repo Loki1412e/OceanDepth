@@ -505,7 +505,7 @@ void printEtatCombat(EtatCombat *etat) {
         return;
     }
     printf("État du combat:\n");
-    printf(" Action restante: %d\n", etat->action_restante);
+    printf(" Action restante: %d/%d\n", etat->action_restante, etat->action_max);
     printf(" Nombre de créatures: %zu\n", etat->longueur_creatures);
     for (size_t i = 0; i < etat->longueur_creatures; i++) {
         printf("  - Créature [%zu]: ", i);

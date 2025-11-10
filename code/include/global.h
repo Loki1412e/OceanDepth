@@ -263,6 +263,7 @@
         CreatureMarine **creatures;
         size_t longueur_creatures;
         int action_restante;
+        int action_max;
     } EtatCombat;
     
 
