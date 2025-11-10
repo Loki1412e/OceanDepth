@@ -289,9 +289,22 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur, int isNewCombat) {
     clearConsole();
 
     EtatCombat *etatCombat = actualSave->etat_combat;
+    
+    // Vérifier que l'état de combat existe
+    if (!etatCombat) {
+        fprintf(stderr, "Erreur: combat() - etat_combat est NULL\n");
+        return EXIT_FAILURE;
+    }
 
     CreatureMarine **creatures = etatCombat->creatures;
     size_t nb_creatures = etatCombat->longueur_creatures;
+    
+    // Vérifier que le tableau de créatures existe
+    if (!creatures && nb_creatures > 0) {
+        fprintf(stderr, "Erreur: combat() - creatures est NULL mais nb_creatures = %zu\n", nb_creatures);
+        return EXIT_FAILURE;
+    }
+    
     int *actions_restantes = &etatCombat->action_restante;
     int *actions_max = &etatCombat->action_max;
 

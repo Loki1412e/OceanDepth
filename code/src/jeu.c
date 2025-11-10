@@ -18,7 +18,6 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
 
     Plongeur *player = actualSave->diver;
     PlayerProgress *playerProgress = actualSave->player_progress;
-    EtatCombat *combatState = actualSave->etat_combat;
     TierMap *tierMap = NULL;
 
     Bestiaire *modalBestiary = NULL;
@@ -115,7 +114,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
     Zone *target_zone = NULL;
     int new_row, new_col;
 
-    if (combatState && playerProgress) {
+    if (actualSave->etat_combat && playerProgress) {
         target_zone = &AT(tierMap, playerProgress->row, playerProgress->col);
         playerProgress->zone_actuelle = target_zone->type; // on save la zone actuelle (pour sauvegarde)
         goto SWITCH_CHECK_ZONE; // on saute directement au combat
@@ -402,7 +401,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
             case ZONE_MONSTER: {
                 int dangerosityLevel = 1;
 
-                if (!combatState) {
+                if (!actualSave->etat_combat) {
                     // Initialisation de l'état de combat
                     printf("\n🐙 Monstre rencontré !\n");
                     pressEnterToContinue();
@@ -453,7 +452,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
             case ZONE_BOSS: {
                 int dangerosityLevel = 5;
 
-                if (!combatState) {
+                if (!actualSave->etat_combat) {
                     // Initialisation de l'état de combat
                     printf("\n👹 Boss atteint !\n");
                     pressEnterToContinue();
