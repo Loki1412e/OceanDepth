@@ -118,7 +118,6 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
     if (combatState && playerProgress) {
         target_zone = &AT(tierMap, playerProgress->row, playerProgress->col);
         playerProgress->zone_actuelle = target_zone->type; // on save la zone actuelle (pour sauvegarde)
-        pressEnterToContinue();
         goto SWITCH_CHECK_ZONE; // on saute directement au combat
     }
 
@@ -399,15 +398,19 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
             }
 
             case ZONE_MONSTER: {
-                printf("\n🐙 Monstre rencontré !\n");
-                pressEnterToContinue();
-
                 int dangerosityLevel = 1;
-                if (actualSave->etat_combat) freeSauvegardeEtatCombat(actualSave); // si non null on free l'ancien état de combat
-                actualSave->etat_combat = initRandomCreaturesFromDangerosityGroupLevel(modalBestiary, dangerosityLevel);
-                if (!actualSave->etat_combat) {
-                    fprintf(stderr, "Erreur: runGame(): initRandomCreaturesFromDangerosityGroupLevel()\n");
-                    break;
+
+                if (!combatState) {
+                    // Initialisation de l'état de combat
+                    printf("\n🐙 Monstre rencontré !\n");
+                    pressEnterToContinue();
+
+                    if (actualSave->etat_combat) freeSauvegardeEtatCombat(actualSave); // si non null on free l'ancien état de combat
+                    actualSave->etat_combat = initRandomCreaturesFromDangerosityGroupLevel(modalBestiary, dangerosityLevel);
+                    if (!actualSave->etat_combat) {
+                        fprintf(stderr, "Erreur: runGame(): initRandomCreaturesFromDangerosityGroupLevel()\n");
+                        break;
+                    }
                 }
 
                 // Lancement du combat
@@ -441,15 +444,19 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
             }
 
             case ZONE_BOSS: {
-                printf("\n👹 Boss atteint !\n");
-                pressEnterToContinue();
-                
                 int dangerosityLevel = 5;
-                if (actualSave->etat_combat) freeSauvegardeEtatCombat(actualSave); // si non null on free l'ancien état de combat
-                actualSave->etat_combat = initRandomCreaturesFromDangerosityGroupLevel(modalBestiary, dangerosityLevel);
-                if (!actualSave->etat_combat) {
-                    fprintf(stderr, "Erreur: runGame(): initRandomCreaturesFromDangerosityGroupLevel()\n");
-                    break;
+
+                if (!combatState) {
+                    // Initialisation de l'état de combat
+                    printf("\n👹 Boss atteint !\n");
+                    pressEnterToContinue();
+                    
+                    if (actualSave->etat_combat) freeSauvegardeEtatCombat(actualSave); // si non null on free l'ancien état de combat
+                    actualSave->etat_combat = initRandomCreaturesFromDangerosityGroupLevel(modalBestiary, dangerosityLevel);
+                    if (!actualSave->etat_combat) {
+                        fprintf(stderr, "Erreur: runGame(): initRandomCreaturesFromDangerosityGroupLevel()\n");
+                        break;
+                    }
                 }
 
                 // Lancement du combat
