@@ -255,7 +255,7 @@ int setListeObjetFromConf(ListeObjet *modalObjectsList, char *path) {
             line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
             if (line[0] == '\0') continue; // ligne vide
 
-            objects[index]->nom = strdup(line + 4);
+            objects[index]->nom = my_strdup(line + 4);
             if (!objects[index]->nom) {
                 fprintf(stderr, "Erreur: setListeObjetFromConf(): my_strdup() -> \"nom=\"\n");
                 freeListeObjetsContent(modalObjectsList);
@@ -268,7 +268,7 @@ int setListeObjetFromConf(ListeObjet *modalObjectsList, char *path) {
             line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
             if (line[0] == '\0') continue; // ligne vide
 
-            objects[index]->description = strdup(line + 12);
+            objects[index]->description = my_strdup(line + 12);
             if (!objects[index]->description) {
                 fprintf(stderr, "Erreur: setListeObjetFromConf(): my_strdup() -> \"description=\"\n");
                 freeListeObjetsContent(modalObjectsList);
