@@ -6,6 +6,7 @@
     #include "objets.h"
     #include "armes.h"
     #include "zones.h"
+    #include "combat.h"
 
     typedef struct {
         FILE *file;
