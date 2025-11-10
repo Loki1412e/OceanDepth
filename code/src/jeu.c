@@ -39,6 +39,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
             fprintf(stderr, "runGame(): Erreur lors de l'allocation de PlayerProgress.\n");
             return EXIT_FAILURE;
         }
+        actualSave->player_progress->zone_actuelle = ZONE_PATH; // initialisation
         playerProgress = actualSave->player_progress;
     }
 
