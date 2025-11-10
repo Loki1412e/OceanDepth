@@ -1177,38 +1177,9 @@ int saveListeCompetence(ListeCompetence *liste, SaveTmpFile *tmpSave) {
         if (comp_desc_len > 0 && addBlock(tmpSave, comp->description, comp_desc_len) != EXIT_SUCCESS)
             return EXIT_FAILURE;
 
-        size_t comp_action_len = comp->listeAction.longueur;
-        // taille actions de la compétence
-        if (addBlock(tmpSave, &comp_action_len, sizeof(size_t)) != EXIT_SUCCESS)
+        // Sauvegarde des actions de la compétence
+        if (saveListeActions(&comp->listeAction, tmpSave) != EXIT_SUCCESS)
             return EXIT_FAILURE;
-        // tab actions de la compétence
-        for (size_t j = 0; j < comp_action_len; j++) {
-            Action *action = &comp->listeAction.actions[j];
-            Action action_copy = {0};
-            action_copy.type = action->type;
-            action_copy.params = NULL;
-            action_copy.longueur_params = action->longueur_params;
-            
-            // Bloc action sans pointeurs
-            if (addBlock(tmpSave, &action_copy, sizeof(Action)) != EXIT_SUCCESS)
-                return EXIT_FAILURE;
-
-            size_t action_params_len = action->longueur_params;
-            // nombre de parametres
-            if (addBlock(tmpSave, &action_params_len, sizeof(size_t)) != EXIT_SUCCESS)
-                return EXIT_FAILURE;
-            
-            for (size_t k = 0; k < action_params_len; k++) {
-                char *param = action->params[k];
-                size_t param_len = param ? strlen(param) + 1 : 0;
-                // taille parametre
-                if (addBlock(tmpSave, &param_len, sizeof(size_t)) != EXIT_SUCCESS)
-                    return EXIT_FAILURE;
-                // tab parametre
-                if (param_len > 0 && addBlock(tmpSave, param, param_len) != EXIT_SUCCESS)
-                    return EXIT_FAILURE;
-            }
-        }
     }
     
     return EXIT_SUCCESS;
