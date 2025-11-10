@@ -387,6 +387,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
         // --- 4. Gérer les conséquences (UNE SEULE FOIS) ---
         playerProgress->zone_actuelle = target_zone->type; // on save la zone actuelle (pour sauvegarde)
         SWITCH_CHECK_ZONE: // label pour le goto plus haut
+        int isNewCombat;
         switch (target_zone->type) {
             
             case ZONE_TREASURE: {
@@ -394,6 +395,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                 target_zone->type = ZONE_PATH; // On vide la case
                 mark_cell_as_cleared(playerProgress, playerProgress->row, playerProgress->col); // On marque comme nettoyée
                 pressEnterToContinue();
+                playerProgress->zone_actuelle = ZONE_PATH; // on update la zone actuelle (pour sauvegarde)
                 continue;
             }
 
@@ -411,10 +413,13 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                         fprintf(stderr, "Erreur: runGame(): initRandomCreaturesFromDangerosityGroupLevel()\n");
                         break;
                     }
+
+                    isNewCombat = true;
                 }
+                else isNewCombat = false;
 
                 // Lancement du combat
-                int res = combat(actualSave, player);
+                int res = combat(actualSave, player, isNewCombat);
                 freeSauvegardeEtatCombat(actualSave); // On libère l'état de combat après le combat
                 if (res == EXIT_FAILURE) {
                     fprintf(stderr, "Erreur: runGame(): res = combat()\n");
@@ -457,10 +462,13 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                         fprintf(stderr, "Erreur: runGame(): initRandomCreaturesFromDangerosityGroupLevel()\n");
                         break;
                     }
+
+                    isNewCombat = true;
                 }
+                else isNewCombat = false;
 
                 // Lancement du combat
-                int res = combat(actualSave, player);
+                int res = combat(actualSave, player, isNewCombat);
                 freeSauvegardeEtatCombat(actualSave); // On libère l'état de combat après le combat
                 if (res == EXIT_FAILURE) {
                     fprintf(stderr, "Erreur: runGame(): res = combat()\n");

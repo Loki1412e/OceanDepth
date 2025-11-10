@@ -7,7 +7,7 @@
     #include "creatures.h"
     #include "effets.h"
 
-    int combat(Sauvegarde *actualSave, Plongeur *joueur);
+    int combat(Sauvegarde *actualSave, Plongeur *joueur, int isNewCombat);
 
     // Initialisation
     EtatCombat *initRandomCreaturesFromDangerosityGroupLevel(Bestiaire *modalBestiary, int dangerosityLevel);
