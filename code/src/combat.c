@@ -209,9 +209,9 @@ void appliquerDegatsAvantTour(ListeEtat *etats, int *pv, int maxPv, int defense,
 
 /* ==== Affichage ==== */
 
-void afficherActionsDisponibles(Plongeur *joueur, int actions_restantes, int actions_max) {
+void afficherActionsDisponibles(Plongeur *joueur, int actions_restantes, int *actions_max) {
     char *plur = actions_restantes > 1 ? "s" : "";
-    printf("===> MENU DES ACTIONS (0 pour quitter et sauvegarder) <=== [action%s restante%s : %d/%d]\n", plur, plur, actions_restantes, actions_max);
+    printf("===> MENU DES ACTIONS (0 pour quitter et sauvegarder) <=== [action%s restante%s : %d/%d]\n", plur, plur, actions_restantes, *actions_max);
     printf("[1] - Attaquer avec [%s] (coût: %d action%s)\n", joueur->arme_equipee ? joueur->arme_equipee->nom : "vos poings (aled)", 1, 1 > 1 ? "s" : "");
     printf("[2] - Utiliser Compétence (coût: %d action%s)\n", 1, 1 > 1 ? "s" : "");
     printf("[3] - Utiliser Objet (coût: %d action%s)\n", 1, 1 > 1 ? "s" : "");
@@ -279,7 +279,7 @@ int appliquerTourCreature(CreatureMarine **creatures, size_t nb_creatures, Creat
 
 // creatures deja sort by speed (voir creature.c -> generateCreatureInBestiary)
 // Return `-1` si le joueur a choisi de quitter et sauvegarder
-int combat(Sauvegarde *actualSave, Plongeur *joueur) {
+int combat(Sauvegarde *actualSave, Plongeur *joueur, int isNewCombat) {
     
     int choix;
     size_t cible;
@@ -293,6 +293,9 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur) {
     CreatureMarine **creatures = etatCombat->creatures;
     size_t nb_creatures = etatCombat->longueur_creatures;
     int *actions_restantes = &etatCombat->action_restante;
+    int *actions_max = &etatCombat->action_max;
+
+    if (!isNewCombat) goto REPRENDRE_COMBAT; // reprendre un combat en cours
 
     while (finDuCombat(joueur, creatures, nb_creatures) != true) {
 
@@ -329,9 +332,8 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur) {
         // Joueur
         clearConsole();
 
-        int actions_max = calculerAttaquesMaxAvecFatigue(joueur->fatigue_max, joueur->fatigue);
-        *actions_restantes = actions_max;
-        int cout_actions;
+        *actions_max = calculerAttaquesMaxAvecFatigue(joueur->fatigue_max, joueur->fatigue);
+        *actions_restantes = *actions_max;
 
         /* Affichage clair pour le joueur */
         afficherInterfaceCombat(joueur, creatures, nb_creatures);
@@ -350,6 +352,11 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur) {
         }
         pressEnterToContinue(); // if (pressToContinueOrSave(actualSave) == -1) return -1;
 
+        // Label pour reprendre le combat après une sauvegarde
+        REPRENDRE_COMBAT:
+
+        int cout_actions;
+        
         afficherInterfaceCombat(joueur, creatures, nb_creatures);
 
         if (*actions_restantes == 0) {
@@ -361,7 +368,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur) {
             *actions_restantes = 0;
             pressEnterToContinue(); // if (pressToContinueOrSave(actualSave) == -1) return -1;
         }
-        else afficherActionsDisponibles(joueur, *actions_restantes, actions_max);
+        else afficherActionsDisponibles(joueur, *actions_restantes, *actions_max);
 
         while (*actions_restantes > 0) {
 
@@ -402,7 +409,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur) {
                         printf("\n>> Vous n'avez pas assez d'actions restantes pour attaquer.\n");
                         pressEnterToContinue(); // if (pressToContinueOrSave(actualSave) == -1) return -1;
                         afficherInterfaceCombat(joueur, creatures, nb_creatures);
-                        afficherActionsDisponibles(joueur, *actions_restantes, actions_max);
+                        afficherActionsDisponibles(joueur, *actions_restantes, *actions_max);
                         continue;
                     }
 
@@ -430,7 +437,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur) {
                                 printf("\n>> Choix invalide (Action annulée).\n");
                             pressEnterToContinue(); // if (pressToContinueOrSave(actualSave) == -1) return -1;
                             afficherInterfaceCombat(joueur, creatures, nb_creatures);
-                            afficherActionsDisponibles(joueur, *actions_restantes, actions_max);
+                            afficherActionsDisponibles(joueur, *actions_restantes, *actions_max);
                             continue; // Ne termine pas le tour, redemande une action
                         }
                     }
@@ -453,7 +460,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur) {
                         printf("\n>> Vous n'avez pas assez d'actions restantes pour attaquer.\n");
                         pressEnterToContinue(); // if (pressToContinueOrSave(actualSave) == -1) return -1;
                         afficherInterfaceCombat(joueur, creatures, nb_creatures);
-                        afficherActionsDisponibles(joueur, *actions_restantes, actions_max);
+                        afficherActionsDisponibles(joueur, *actions_restantes, *actions_max);
                         continue;
                     }
                     printf("\nQuelle compétence utiliser ? (0 pour annuler) => [coût: %d action%s]\n", cout_actions, cout_actions > 1 ? "s" : "");
@@ -481,7 +488,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur) {
                                 printf("\n>> Choix invalide (Action annulée).\n");
                         pressEnterToContinue(); // if (pressToContinueOrSave(actualSave) == -1) return -1;
                         afficherInterfaceCombat(joueur, creatures, nb_creatures);
-                        afficherActionsDisponibles(joueur, *actions_restantes, actions_max);
+                        afficherActionsDisponibles(joueur, *actions_restantes, *actions_max);
                         continue; // Ne termine pas le tour, redemande une action
                     }
 
@@ -490,7 +497,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur) {
                         printf("Erreur interne: compétence introuvable.\n");
                         pressEnterToContinue(); // if (pressToContinueOrSave(actualSave) == -1) return -1;
                         afficherInterfaceCombat(joueur, creatures, nb_creatures);
-                        afficherActionsDisponibles(joueur, *actions_restantes, actions_max);
+                        afficherActionsDisponibles(joueur, *actions_restantes, *actions_max);
                         continue;
                     }
 
@@ -524,7 +531,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur) {
                                     printf("\n>> Choix invalide (Action annulée).\n");
                                 pressEnterToContinue(); // if (pressToContinueOrSave(actualSave) == -1) return -1;
                                 afficherInterfaceCombat(joueur, creatures, nb_creatures);
-                                afficherActionsDisponibles(joueur, *actions_restantes, actions_max);
+                                afficherActionsDisponibles(joueur, *actions_restantes, *actions_max);
                                 continue; // Ne termine pas le tour, redemande une action
                             }
                         }
@@ -537,7 +544,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur) {
                             printf(">> Erreur interne: cible introuvable.\n");
                             pressEnterToContinue(); // if (pressToContinueOrSave(actualSave) == -1) return -1;
                             afficherInterfaceCombat(joueur, creatures, nb_creatures);
-                            afficherActionsDisponibles(joueur, *actions_restantes, actions_max);
+                            afficherActionsDisponibles(joueur, *actions_restantes, *actions_max);
                             continue;
                         }
                     }
@@ -551,7 +558,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur) {
                         printf(">> Erreur: Ciblage de compétence non géré dans l'interface.\n");
                         pressEnterToContinue(); // if (pressToContinueOrSave(actualSave) == -1) return -1;
                         afficherInterfaceCombat(joueur, creatures, nb_creatures);
-                        afficherActionsDisponibles(joueur, *actions_restantes, actions_max);
+                        afficherActionsDisponibles(joueur, *actions_restantes, *actions_max);
                         continue;
                     }
                     
@@ -565,7 +572,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur) {
                         printf(">> Vous pouvez choisir une autre action.\n");
                         pressEnterToContinue(); // if (pressToContinueOrSave(actualSave) == -1) return -1;
                         afficherInterfaceCombat(joueur, creatures, nb_creatures);
-                        afficherActionsDisponibles(joueur, *actions_restantes, actions_max);
+                        afficherActionsDisponibles(joueur, *actions_restantes, *actions_max);
                         continue;
                     }
 
@@ -590,7 +597,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur) {
                         printf("\n>> Vous n'avez pas assez d'actions restantes pour attaquer.\n");
                         pressEnterToContinue(); // if (pressToContinueOrSave(actualSave) == -1) return -1;
                         afficherInterfaceCombat(joueur, creatures, nb_creatures);
-                        afficherActionsDisponibles(joueur, *actions_restantes, actions_max);
+                        afficherActionsDisponibles(joueur, *actions_restantes, *actions_max);
                         continue;
                     }
                     if (!joueur->liste_consommables || !joueur->liste_consommables->objets || joueur->liste_consommables->longueur == 0) {
@@ -614,7 +621,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur) {
                                 printf("\n>> Choix invalide (Action annulée).\n");
                         pressEnterToContinue(); // if (pressToContinueOrSave(actualSave) == -1) return -1;
                         afficherInterfaceCombat(joueur, creatures, nb_creatures);
-                        afficherActionsDisponibles(joueur, *actions_restantes, actions_max);
+                        afficherActionsDisponibles(joueur, *actions_restantes, *actions_max);
                         continue; // Ne termine pas le tour, redemande une action
                     }
 
@@ -641,7 +648,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur) {
                         printf("\n>> Vous n'avez pas assez d'actions restantes pour changer d'arme.\n");
                         pressEnterToContinue(); // if (pressToContinueOrSave(actualSave) == -1) return -1;
                         afficherInterfaceCombat(joueur, creatures, nb_creatures);
-                        afficherActionsDisponibles(joueur, *actions_restantes, actions_max);
+                        afficherActionsDisponibles(joueur, *actions_restantes, *actions_max);
                         continue;
                     }
                     if (!joueur->arsenal || joueur->arsenal->longueur == 0) {
@@ -671,7 +678,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur) {
                                 printf("\n>> Choix invalide (Action annulée).\n");
                         pressEnterToContinue(); // if (pressToContinueOrSave(actualSave) == -1) return -1;
                         afficherInterfaceCombat(joueur, creatures, nb_creatures);
-                        afficherActionsDisponibles(joueur, *actions_restantes, actions_max);
+                        afficherActionsDisponibles(joueur, *actions_restantes, *actions_max);
                         continue; // Ne termine pas le tour, redemande une action
                     }
 
@@ -680,7 +687,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur) {
                             printf(">> Vous n'avez déjà aucune arme équipée (Action annulée).\n");
                             pressEnterToContinue(); // if (pressToContinueOrSave(actualSave) == -1) return -1;
                             afficherInterfaceCombat(joueur, creatures, nb_creatures);
-                            afficherActionsDisponibles(joueur, *actions_restantes, actions_max);
+                            afficherActionsDisponibles(joueur, *actions_restantes, *actions_max);
                             continue; // Ne termine pas le tour, redemande une action
                         }
 
@@ -696,7 +703,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur) {
                         printf(">> [%s] est déjà équipée (Action annulée).\n", joueur->arme_equipee->nom);
                         pressEnterToContinue(); // if (pressToContinueOrSave(actualSave) == -1) return -1;
                         afficherInterfaceCombat(joueur, creatures, nb_creatures);
-                        afficherActionsDisponibles(joueur, *actions_restantes, actions_max);
+                        afficherActionsDisponibles(joueur, *actions_restantes, *actions_max);
                         continue; // Ne termine pas le tour, redemande une action
                     }
 
@@ -704,7 +711,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur) {
                         printf(">> Erreur interne: arme introuvable.\n");
                         pressEnterToContinue(); // if (pressToContinueOrSave(actualSave) == -1) return -1;
                         afficherInterfaceCombat(joueur, creatures, nb_creatures);
-                        afficherActionsDisponibles(joueur, *actions_restantes, actions_max);
+                        afficherActionsDisponibles(joueur, *actions_restantes, *actions_max);
                         continue; // Ne termine pas le tour, redemande une action
                     }
 
@@ -712,7 +719,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur) {
                         printf(">> Erreur interne: combat(): equiperArme()\n");
                         pressEnterToContinue(); // if (pressToContinueOrSave(actualSave) == -1) return -1;
                         afficherInterfaceCombat(joueur, creatures, nb_creatures);
-                        afficherActionsDisponibles(joueur, *actions_restantes, actions_max);
+                        afficherActionsDisponibles(joueur, *actions_restantes, *actions_max);
                         continue; // Ne termine pas le tour, redemande une action
                     }
 
@@ -736,7 +743,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur) {
             if (*actions_restantes > 0) {
                 clearConsole();
                 afficherInterfaceCombat(joueur, creatures, nb_creatures);
-                afficherActionsDisponibles(joueur, *actions_restantes, actions_max);
+                afficherActionsDisponibles(joueur, *actions_restantes, *actions_max);
             }
         }
 

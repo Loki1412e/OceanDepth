@@ -1416,6 +1416,7 @@ int saveEtatCombat(EtatCombat *etat, SaveTmpFile *tmpSave) {
     // Init clean copy
     EtatCombat etat_copy = {0};
     etat_copy.action_restante = etat->action_restante;
+    etat_copy.action_max = etat->action_max;
     // Garde la longueur des listes mais pas les pointeurs
     etat_copy.longueur_creatures = etat->creatures ? etat->longueur_creatures : 0;
 
