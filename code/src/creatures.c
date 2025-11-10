@@ -141,46 +141,6 @@ GroupeCreatureMarine *initRandomGroupByDangerosity(Bestiaire *modalBestiary, int
     return modalBestiary->groupes[index_group];
 }
 
-Bestiaire *initRandomBestiaryFromDangerosityGroupLevel(Bestiaire *modalBestiary, int dangerosityLevel) {
-    if (!modalBestiary || !modalBestiary->creatures || modalBestiary->longueur_creatures == 0 || !modalBestiary->groupes || modalBestiary->longueur_groupes == 0) {
-        fprintf(stderr, "Erreur: initRandomBestiaryFromDangerosityGroupLevel(): Parametre(s) mal initialisé(s)\n");
-        return NULL;
-    }
-
-    GroupeCreatureMarine *group = initRandomGroupByDangerosity(modalBestiary, dangerosityLevel);
-    if (!group) {
-        fprintf(stderr, "Erreur: initRandomBestiaryFromDangerosityGroupLevel(): Aucune groupe valide trouvée\n");
-        return NULL;
-    }
-
-    Bestiaire *bestiary = calloc(1, sizeof(Bestiaire));
-    if (!bestiary) {
-        fprintf(stderr, "Erreur: initRandomBestiaryFromDangerosityGroupLevel(): Allocation mémoire échouée\n");
-        return NULL;
-    }
-
-    bestiary->longueur_creatures = group->longueur;
-    bestiary->creatures = calloc(group->longueur, sizeof(CreatureMarine*));
-    if (!bestiary->creatures) {
-        fprintf(stderr, "Erreur: initRandomBestiaryFromDangerosityGroupLevel(): Allocation mémoire échouée\n");
-        freeBestiary(bestiary);
-        return NULL;
-    }
-
-    for (size_t i = 0; i < group->longueur; i++) {
-        bestiary->creatures[i] = duplicateCreature(modalBestiary->creatures[group->id_creatures[i]]);
-        if (!bestiary->creatures[i]) {
-            fprintf(stderr, "Erreur: initRandomBestiaryFromDangerosityGroupLevel(): Allocation mémoire échouée\n");
-            freeBestiary(bestiary);
-            return NULL;
-        }
-    }
-
-    sortCreaturesBySpeed(bestiary->creatures, bestiary->longueur_creatures);
-
-    return bestiary;
-}
-
 
 int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, long idConf) {
     if (!modalBestiary || !modalBestiary->creatures || modalBestiary->longueur_creatures == 0 || !bestiary)

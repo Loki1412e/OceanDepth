@@ -261,6 +261,14 @@
 
 
     typedef struct {
+        CreatureMarine **creatures;
+        size_t longueur_creatures;
+        int action_restante;
+    } EtatCombat;
+    
+
+
+    typedef struct {
         int row;
         int col;
     } ClearedCell;
@@ -295,6 +303,7 @@
         size_t derniere_modification; // time(null) -> en secondes
         Plongeur *diver;
         PlayerProgress *player_progress;
+        EtatCombat *etat_combat; // NULL si pas en combat
     } Sauvegarde;
 
     typedef struct {
