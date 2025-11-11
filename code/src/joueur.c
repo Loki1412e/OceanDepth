@@ -327,9 +327,9 @@ Objet *joueurGagneConsommableViaRareteMax(Plongeur *joueur, ListeObjet *modalObj
     }
 
     Rarete rarete = random_int(COMMUN, rarete_max);
-    long id_objet = getRandomObjectIdWithRarete(modalObjectsList, rarete);
+    long id_objet = getRandomObjectIdWithRareteMax(modalObjectsList, rarete);
     if (id_objet == -1) {
-        fprintf(stderr, "Erreur: joueurGagneConsommableViaRareteMax(): getRandomObjectIdWithRarete()\n");
+        fprintf(stderr, "Erreur: joueurGagneConsommableViaRareteMax(): getRandomObjectIdWithRareteMax()\n");
         return NULL;
     }
 
@@ -348,9 +348,9 @@ Objet *joueurGagneBibelotViaRareteMax(Plongeur *joueur, ListeObjet *modalObjects
     }
 
     Rarete rarete = random_int(COMMUN, rarete_max);
-    long id_objet = getRandomObjectIdWithRarete(modalObjectsList, rarete);
+    long id_objet = getRandomObjectIdWithRareteMax(modalObjectsList, rarete);
     if (id_objet == -1) {
-        fprintf(stderr, "Erreur: joueurGagneBibelotViaRareteMax(): getRandomObjectIdWithRarete()\n");
+        fprintf(stderr, "Erreur: joueurGagneBibelotViaRareteMax(): getRandomObjectIdWithRareteMax()\n");
         return NULL;
     }
 
