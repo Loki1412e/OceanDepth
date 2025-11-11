@@ -245,6 +245,11 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
         goto SWITCH_CHECK_ZONE; // on saute directement au combat
     }
 
+    // // DEBUG: test loot arme
+    // joueurGagneRandomArmeViaRarete(player, modalArsenal, COMMUN); // DEBUG: appel getRandomWeaponIdFromRareteMax(modalArsenal, rarete);
+    // printDiver(player); // DEBUG
+    // pressEnterToContinue(); // DEBUG
+
     // Boucle principale d'exploration
     while (1) {
         player->profondeur = playerProgress->tier * 10; // initialisation profondeur
