@@ -37,7 +37,7 @@
     #define SAVE_DIR "save"
 
     #define RARETE_POIDS_MAX 100
-    #define RARETE_BASE_EXP 1.5
+    #define RARETE_EXP 1.2
 
 
     /* Enum */
