@@ -12,7 +12,7 @@ Rarete tirerRareteSelonProfondeur(int tier) {
     return COMMUN;
 }
 
-void handleMerchantZone(Plongeur *player, ListeObjet *modalConsumablesList, ListeObjet *modalOrnamentsList) {
+void handleMerchantZone(Plongeur *player, ListeObjet *modalConsumablesList, ListeObjet *modalOrnamentsList, Arsenal *modalArsenal) {
     if (!player) {
         fprintf(stderr, "Erreur: handleMerchantZone(): player est NULL.\n");
         return;
@@ -23,6 +23,7 @@ void handleMerchantZone(Plongeur *player, ListeObjet *modalConsumablesList, List
         printf("\n💰 Vous avez %u perles.\n", player->perles);
         printf("[1] - Acheter un consommable (25 perles)\n");
         printf("[2] - Acheter un bibelot (60 perles)\n");
+        printf("[3] - Acheter une arme (100 perles)\n");
         printf("[0] - Quitter\n> ");
         choix = lireEntier();
 
@@ -30,21 +31,18 @@ void handleMerchantZone(Plongeur *player, ListeObjet *modalConsumablesList, List
 
         if (choix == 1 && player->perles >= 25) {
             player->perles -= 25;
-            long id_obj = getRandomObjectIdWithRareteMax(modalConsumablesList, RARE);
-            if (id_obj >= 0) {
-                ajouterObjet(modalConsumablesList, player->liste_consommables, id_obj);
-                Objet *loot = player->liste_consommables->objets[player->liste_consommables->longueur - 1];
-                printf(">> 🧴 Vous achetez [%s] (%s)\n", loot->nom, enumRareteToChar(loot->rarete));
-            }
+            Objet *loot = joueurGagneConsommableViaRareteMax(player, modalConsumablesList, ABERANT); // entre COMMUN et ABERANT
+            printf(">> 🥐 Vous achetez [%s] (%s)\n", loot->nom, enumRareteToChar(loot->rarete));
         }
         else if (choix == 2 && player->perles >= 60) {
             player->perles -= 60;
-            long id_obj = getRandomObjectIdWithRareteMax(modalOrnamentsList, TRES_RARE);
-            if (id_obj >= 0) {
-                ajouterObjet(modalOrnamentsList, player->liste_bibelots, id_obj);
-                Objet *loot = player->liste_bibelots->objets[player->liste_bibelots->longueur - 1];
-                printf(">> 💎 Vous achetez [%s] (%s)\n", loot->nom, enumRareteToChar(loot->rarete));
-            }
+            Objet *loot = joueurGagneBibelotViaRareteMax(player, modalOrnamentsList, ABERANT); // entre COMMUN et ABERANT
+            printf(">> 💎 Vous achetez [%s] (%s)\n", loot->nom, enumRareteToChar(loot->rarete));
+        }
+        else if (choix == 3 && player->perles >= 100) {
+            player->perles -= 100;
+            Arme *loot = joueurGagneRandomArmeViaRarete(player, modalArsenal, TRES_RARE);
+            printf(">> ⚔️ Vous achetez [%s] (%s)\n", loot->nom, enumRareteToChar(loot->rarete));
         }
         else {
             printf("⛔ Fonds insuffisants !\n");
@@ -531,8 +529,8 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
             }
 
             case ZONE_MERCHANT: {
-                printf("\n🧿 Marchand rencontré !\n");
-                handleMerchantZone(player, modalConsumablesList, modalOrnamentsList);
+                printf("\n🧐 Marchand rencontré !\n");
+                handleMerchantZone(player, modalConsumablesList, modalOrnamentsList, modalArsenal);
                 target_zone->type = ZONE_PATH;
                 mark_cell_as_cleared(playerProgress, playerProgress->row, playerProgress->col); // On marque comme nettoyée
                 pressEnterToContinue();

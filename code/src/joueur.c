@@ -369,9 +369,9 @@ Arme *joueurGagneRandomArmeViaRarete(Plongeur *joueur, Arsenal *modalArsenal, Ra
         return NULL;
     }
 
-    long id_arme = getRandomWeaponIdFromRareteMax(modalArsenal, rarete);
+    long id_arme = getRandomWeaponIdFromRarete(modalArsenal, rarete);
     if (id_arme == -1) {
-        fprintf(stderr, "Erreur: joueurGagneRandomArmeViaRarete(): getRandomWeaponIdFromRareteMax()\n");
+        fprintf(stderr, "Erreur: joueurGagneRandomArmeViaRarete(): getRandomWeaponIdFromRarete()\n");
         return NULL;
     }
 

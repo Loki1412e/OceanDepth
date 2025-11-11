@@ -110,7 +110,7 @@ TierMap *build_tier(int tier, unsigned seed, PlayerProgress *p, short isNewTier)
                 z.type = ZONE_TREASURE;
 
             else if(roll < (unsigned)(blocked_rate+treasure_rate+merchant_rate))
-                z.type = ZONE_MERCHANT; // 🧿 apparition du marchand
+                z.type = ZONE_MERCHANT; // 🧐 apparition du marchand
 
             else
                 z.type = ZONE_PATH;
@@ -196,7 +196,7 @@ char *get_zone_type_symbol(ZoneType type) {
         case ZONE_BLOCKED:  return "🪨";
         case ZONE_TREASURE: return "🪙";
         case ZONE_MONSTER:  return "🐙";
-        case ZONE_MERCHANT: return "🧿"; // 🆕 symbole marchand
+        case ZONE_MERCHANT: return "🧐"; // 🆕 symbole marchand
         default:            return "  ";
     }
 }
@@ -214,7 +214,7 @@ void draw_tier(char *prefix,const TierMap *m, int player_row, int player_col){
         }
         printf("\n");
     }
-    printf("\n%sLégende : | 🤿 Joueur | 👹 Boss | 🪨 Rocher | 🪙 Trésor | 🐙 Monstre | 🧿 Marchand |\n\n", prefix ? prefix : "");
+    printf("\n%sLégende : | 🤿 Joueur | 👹 Boss | 🪨 Rocher | 🪙 Trésor | 🐙 Monstre | 🧐 Marchand |\n\n", prefix ? prefix : "");
     const Zone *z = &AT((TierMap*)m, player_row, player_col);
     printf("%sBiome : %s\tDanger : ", prefix ? prefix : "", z->biome);
     int stars = 1 + (z->tier/2); if(stars>5) stars=5; for(int i=0;i<stars;i++) printf("*");
