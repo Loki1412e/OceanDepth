@@ -3,6 +3,7 @@
 code/output/save/*
 code/output/assets/*
 !code/output/assets/README.md
+!code/output/assets/logo/
 
 # Nom de l'executable sans extension et avec
 code/output/oceandepth*
