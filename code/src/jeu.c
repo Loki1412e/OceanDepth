@@ -226,19 +226,10 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
         return EXIT_FAILURE;
     }
 
-    // // Affichage modalBestiary
-    // printBestiary(modalBestiary);
-    // pressEnterToContinue();
-
-    // // On ajoute des armes de base au joueur (si pas déjà présentes)
-    // ajouterArme(modalArsenal, player->arsenal, 0);
-    // ajouterArme(modalArsenal, player->arsenal, 2);
-
     /*============================*/
     /*===== Boucle principale ====*/
     /*============================*/
 
-    printSave(actualSave); // DEBUG
     printf("========== [%s] entre dans les profondeurs maritimes. ==========\n\n", player->nom);
     pressEnterToContinue();
 
@@ -250,11 +241,6 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
         playerProgress->zone_actuelle = target_zone->type; // on save la zone actuelle (pour sauvegarde)
         goto SWITCH_CHECK_ZONE; // on saute directement au combat
     }
-
-    // // DEBUG: test loot arme
-    // joueurGagneRandomArmeViaRarete(player, modalArsenal, COMMUN); // DEBUG: appel getRandomWeaponIdFromRareteMax(modalArsenal, rarete);
-    // printDiver(player); // DEBUG
-    // pressEnterToContinue(); // DEBUG
 
     // Boucle principale d'exploration
     while (1) {
@@ -572,8 +558,6 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                     fprintf(stderr, "Erreur: runGame(): res = combat()\n");
                     break;
                 }
-                printSave(actualSave); // DEBUG
-                pressEnterToContinue(); // DEBUG
                 freeSauvegardeEtatCombat(actualSave); // On libère l'état de combat après le combat
                 // Si le joueur a choisi de quitter
                 if (res == -1) break;
@@ -629,8 +613,6 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                     fprintf(stderr, "Erreur: runGame(): res = combat()\n");
                     break;
                 }
-                printSave(actualSave); // DEBUG
-                pressEnterToContinue(); // DEBUG
                 freeSauvegardeEtatCombat(actualSave); // On libère l'état de combat après le combat
                 // Si le joueur a choisi de quitter
                 if (res == -1) break;
