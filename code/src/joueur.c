@@ -363,6 +363,27 @@ Objet *joueurGagneBibelotViaRareteMax(Plongeur *joueur, ListeObjet *modalObjects
 }
 
 
+Arme *joueurGagneRandomArmeViaRarete(Plongeur *joueur, Arsenal *modalArsenal, Rarete rarete) {
+    if (!joueur || !modalArsenal || rarete < COMMUN || rarete >= LENGTH_Rarete) {
+        fprintf(stderr, "Erreur: joueurGagneRandomArmeViaRarete(): Invalid params\n");
+        return NULL;
+    }
+
+    long id_arme = getRandomWeaponIdFromRareteMax(modalArsenal, rarete);
+    if (id_arme == -1) {
+        fprintf(stderr, "Erreur: joueurGagneRandomArmeViaRarete(): getRandomWeaponIdFromRareteMax()\n");
+        return NULL;
+    }
+
+    if (ajouterArme(modalArsenal, joueur->arsenal, id_arme)) {
+        fprintf(stderr, "Erreur: joueurGagneRandomArmeViaRarete(): ajouterArme()\n");
+        return NULL;
+    }
+
+    return modalArsenal->armes[id_arme];
+}
+
+
 void freeDiverContent(Plongeur *diver) {
     if (!diver) return;
     
