@@ -22,7 +22,16 @@ Rarete charToEnumRarete(char *type) {
 
 unsigned rareteToPoids(Rarete rarete) {
     if (rarete <= 0) return 0;
-    double res = RARETE_POIDS_MAX * pow(RARETE_BASE_EXP, (double) (1 - rarete));
+    
+    // IMPORTANT : caster en int AVANT la soustraction pour éviter l'underflow
+    double exposant = (double) (1 - (int)rarete);
+    double puissance = pow(RARETE_BASE_EXP, exposant);
+    double res = RARETE_POIDS_MAX * puissance;
+    
+    // Sécurités
+    if (isinf(res) || isnan(res) || res < 0.0) return 0;
+    if (res > UINT_MAX) return UINT_MAX;
+    
     return (unsigned) round(res);
 }
 
