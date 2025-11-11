@@ -345,6 +345,50 @@ int appliquerActionsArme(Plongeur *joueur, void *cible, EntiteType cible_type) {
 }
 
 
+long getRandomWeaponIdFromRareteMax(Arsenal *modalArsenal, Rarete rarete) {
+    if (!modalArsenal || rarete < 1 || rarete >= LENGTH_Rarete) {
+        fprintf(stderr, "Erreur: getRandomWeaponIdFromRareteMax(): Parametre(s) mal initialisé(s)\n");
+        return -1;
+    }
+
+    unsigned totalPoids = 0;
+
+    // Calcul du poids total basé sur la rareté de chaque arme
+    for (size_t i = 0; i < modalArsenal->longueur; i++) {
+        Arme *weapon = modalArsenal->armes[i];
+        if (!weapon || weapon->rarete != rarete) continue; // Strict égalité de rareté
+        totalPoids += rareteToPoids(weapon->rarete);  // On additionne le poids de rareté
+    }
+
+    if (totalPoids == 0) {
+        fprintf(stderr, "Erreur: getRandomWeaponIdFromRareteMax(): Aucune arme disponible avec une rareté valide.\n");
+        return -1;
+    }
+
+    // Tirage pondéré basé sur la rareté
+    unsigned tirage = random_int(1, totalPoids);  // tirage entre 1 et totalPoids
+    unsigned cumulPoids = 0;
+
+    for (size_t i = 0; i < modalArsenal->longueur; i++) {
+        Arme *weapon = modalArsenal->armes[i];
+        if (!weapon || weapon->rarete != rarete) continue; // Strict égalité de rareté
+
+        // Poids de rareté de cette arme
+        unsigned poidsRarete = rareteToPoids(weapon->rarete);
+        cumulPoids += poidsRarete;
+
+        // Si le tirage est inférieur au cumul des poids, l'arme est sélectionnée: on return son id
+        if (tirage <= cumulPoids) {
+            return weapon->id;
+        }
+    }
+
+    // Si on arrive ici, c'est une erreur imprévue
+    fprintf(stderr, "Erreur: getRandomWeaponIdFromRareteMax(): Pas d'arme choisie, erreur imprévue.\n");
+    return -1;
+}
+
+
 void freeArme(Arme *arme) {
     if (!arme) return;
     if (arme->nom) free(arme->nom);

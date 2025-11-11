@@ -12,6 +12,8 @@ int ajouterArme(Arsenal *modal, Arsenal *arsenal, long id_arme);
 int equiperArme(Plongeur *joueur, Arme *arme);
 int appliquerActionsArme(Plongeur *joueur, void *cible, EntiteType cible_type);
 
+long getRandomWeaponIdFromRareteMax(Arsenal *modalArsenal, Rarete rarete);
+
 void freeArme(Arme *arme);
 void freeArsenal(Arsenal *arsenal);
 
