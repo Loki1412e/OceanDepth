@@ -16,22 +16,25 @@ Les différents niveaux de rareté et leurs poids sont déterminés par une fonc
 
 Les poids des différentes raretés sont calculés à l’aide de la fonction exponentielle suivante *(r pour "rarete")* :
 
+- **p** (`RARETE_POIDS_MAX`) est le poids maximum assigné à la rareté la plus commune (`rarete=1`/`Commun`).
+- **k** (`RARETE_EXP`) est l'exposant régulant la décroissance des poids ; plus k est élevé, plus les poids (et donc la probabilité) chutent rapidement lorsque r augmente.
+- **r** (`rarete`) est le niveau de rareté, qui commnce à **`1`** (`COMMUN`).
+
 ```yml
-f(r) = 100 * 1.5^(1 - r)
+f(r) = p / r^(k)
 ```
 *Voir la courbe de la fonction: [desmos.com](https://www.desmos.com/calculator/srums3bofj)*
 
 ```c
-unsigned rareteToPoids(RARETE rarete) {
+unsigned rareteToPoids(Rarete rarete) {
     if (rarete <= 0) return 0;
-    double res = RARETE_POIDS_MAX * pow(RARETE_BASE_EXP, (double) (1 - rarete));
+    double res = RARETE_POIDS_MAX * pow((double) rarete, RARETE_EXP);
+    // Sécurités
+    if (isinf(res) || isnan(res) || res < 0.0) return 0;
+    if (res > UINT_MAX) return UINT_MAX;
     return (unsigned) round(res);
 }
 ```
-
-- **`100`** (`RARETE_POIDS_MAX`) est le poids maximum assigné à la rareté la plus commune (`rarete=1`).
-- **`1.5`** (`RARETE_BASE_EXP`) est la base de l'exponentielle qui détermine la vitesse de décroissance des poids.
-- **`rarete`** est le niveau de rareté, qui commnce à **`1`** (`COMMUN`).
 
 ### Explication des Poids Calculés :
 
@@ -49,11 +52,13 @@ La répartition des poids permet de donner une plus grande probabilité d'appari
 
 *Si le niveau de rareté maximum ou maxmimum est dépassé alors on remet au niveau le plus proche (`0` ou `len-1`)*
 
+Pour `f(r) = 100 / r^(1.2)` :
+
 | `rarete=` | Nommage | Poids de Tirage | Probabilité (indicative) |
 | :-: | :-: | :-: | :-: |
-| 0  | DESACTIVE     | 0     | Nulle         |
-| 1  | COMMUN        | 100   | Très haute    |
-| 2  | PEU_COMMUN    | 67    | Haute         |
-| 3  | RARE          | 44    | Moyenne       |
-| 4  | TRES_RARE     | 30    | Faible        |
-| 5  | ABERANT       | 20    | Très faible   |
+| 0  | DESACTIVE     | 0     | Nulle            |
+| 1  | COMMUN        | 100   | Très haute       |
+| 2  | PEU_COMMUN    | 44    | Moyenne          |
+| 3  | RARE          | 27    | Faible           |
+| 4  | TRES_RARE     | 19    | Très faible      |
+| 5  | ABERANT       | 15    | Très très faible |
