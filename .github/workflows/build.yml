@@ -1,7 +1,7 @@
 name: Build C/C++ Project
 
-# Se déclenche à chaque push ou pull request
-on: [push, pull_request]
+# Se déclenche à chaque push ou pull request, et manuellement
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   # Job 1: Compiler pour toutes les plateformes "natives"
@@ -40,7 +40,7 @@ jobs:
         install: >-
           mingw-w64-x86_64-gcc
           mingw-w64-x86_64-binutils
-          mingw-w64-x86_64-windres
+          mingw-w64-x86_64-tools
 
     - name: 2. Installer les outils (Windows ARM64)
       if: runner.os == 'Windows' && runner.arch == 'ARM64'
