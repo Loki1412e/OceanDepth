@@ -28,20 +28,40 @@ void handleMerchantZone(Plongeur *player, TierMap *tierMap, PlayerProgress *play
 
         if (choix == 0) break;
 
+        int cost;
+
         if (choix == 1 && player->perles >= 25) {
-            player->perles -= 25;
+            cost = 25;
+            player->perles -= cost;
             Objet *loot = joueurGagneConsommableViaRareteMax(player, modalConsumablesList, ABERANT); // entre COMMUN et ABERANT
-            printf(">> 🥐 Vous achetez [%s] (%s)\n", loot->nom, enumRareteToChar(loot->rarete));
+            if (loot) {
+                printf(">> 🥐 Vous achetez [%s] (%s)\n", loot->nom, enumRareteToChar(loot->rarete));
+            } else {
+                fprintf(stderr, "Erreur: handleMerchantZone(): joueurGagneConsommableViaRareteMax() a échoué\n");
+                player->perles += cost; // On rembourse
+            }
         }
         else if (choix == 2 && player->perles >= 60) {
-            player->perles -= 60;
+            cost = 60;
+            player->perles -= cost;
             Arme *loot = joueurGagneRandomArmeViaRarete(player, modalArsenal, TRES_RARE);
-            printf(">> ⚔️ Vous achetez [%s] (%s)\n", loot->nom, enumRareteToChar(loot->rarete));
+            if (loot) {
+                printf(">> ⚔️ Vous achetez [%s] (%s)\n", loot->nom, enumRareteToChar(loot->rarete));
+            } else {
+                fprintf(stderr, "Erreur: handleMerchantZone(): joueurGagneRandomArmeViaRarete() a échoué\n");
+                player->perles += cost; // On rembourse
+            }
         }
         else if (choix == 3 && player->perles >= 100) {
-            player->perles -= 100;
+            cost = 100;
+            player->perles -= cost;
             Objet *loot = joueurGagneBibelotViaRareteMax(player, modalOrnamentsList, ABERANT); // entre COMMUN et ABERANT
-            printf(">> 💎 Vous achetez [%s] (%s)\n", loot->nom, enumRareteToChar(loot->rarete));
+            if (loot) {
+                printf(">> 💎 Vous achetez [%s] (%s)\n", loot->nom, enumRareteToChar(loot->rarete));
+            } else {
+                fprintf(stderr, "Erreur: handleMerchantZone(): joueurGagneBibelotViaRareteMax() a échoué\n");
+                player->perles += cost; // On rembourse
+            }
         }
         else {
             printf("⛔ Fonds insuffisants !\n");
