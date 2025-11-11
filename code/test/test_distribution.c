@@ -7,12 +7,12 @@
 #define RARETE_EXP 1.2
 
 typedef enum {
-    DESACTIVE
-    COMMUN
-    PEU_COMMUN
-    RARE
-    TRES_RARE
-    ABERANT
+    DESACTIVE,
+    COMMUN,
+    PEU_COMMUN,
+    RARE,
+    TRES_RARE,
+    ABERANT,
     LENGTH_Rarete
 } Rarete;
 
