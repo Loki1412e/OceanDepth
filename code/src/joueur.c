@@ -320,6 +320,13 @@ int appliquerConsommationOxygeneProfondeur(Plongeur *joueur) {
     return perte_ox;
 }
 
+unsigned joueurGagnePerlesViaProfondeur(Plongeur *joueur, int pallier) {
+    Rarete rarete = tirerRareteSelonProfondeur(pallier);
+    unsigned gained_perles = rarete * 10 + random_int(0, 10); // entre 10 et 60 perles
+    joueur->perles += gained_perles;
+    return gained_perles;
+}
+
 Objet *joueurGagneConsommableViaRareteMax(Plongeur *joueur, ListeObjet *modalObjectsList, Rarete rarete_max) {
     if (!joueur || !modalObjectsList || rarete_max < COMMUN || rarete_max >= LENGTH_Rarete) {
         fprintf(stderr, "Erreur: joueurGagneConsommableViaRareteMax(): Invalid params\n");

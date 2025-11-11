@@ -8,6 +8,7 @@
     #include "objets.h"
     #include "bibelots.h"
     #include "armes.h"
+    #include "jeu.h"
 
     void freeDiverContent(Plongeur *diver);
     void freeDiver(Plongeur *diver);
@@ -16,6 +17,7 @@
     
     int appliquerConsommationOxygeneProfondeur(Plongeur *joueur);
 
+    unsigned joueurGagnePerlesViaProfondeur(Plongeur *joueur, int pallier);
     Objet *joueurGagneConsommableViaRareteMax(Plongeur *joueur, ListeObjet *modalObjectsList, Rarete rarete_max);
     Objet *joueurGagneBibelotViaRareteMax(Plongeur *joueur, ListeObjet *modalObjectsList, Rarete rarete_max);
     Arme *joueurGagneRandomArmeViaRarete(Plongeur *joueur, Arsenal *modalArsenal, Rarete rarete);
