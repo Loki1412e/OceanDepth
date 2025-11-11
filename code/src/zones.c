@@ -90,11 +90,11 @@ TierMap *build_tier(int tier, unsigned seed, PlayerProgress *p, short isNewTier)
         p->cleared_cells = NULL;
         p->cleared_count = 0;
     }
-    // Sinon, on garde les cleared_cells (cas du chargement de sauvegarde)
 
     // Taux qui scalent avec le palier
     int blocked_rate  = 15 + tier*5;  if(blocked_rate>60) blocked_rate=60;    // bloqué plus fréquents
     int treasure_rate = 20 - tier*2;  if(treasure_rate<5) treasure_rate=5;    // trésor plus rares
+    int merchant_rate = 3 + tier;     if(merchant_rate>10) merchant_rate=10;  // 🆕 marchands rares
 
     // 1) Remplissage aléatoire initial
     for(int r=0;r<height;r++){
@@ -102,12 +102,15 @@ TierMap *build_tier(int tier, unsigned seed, PlayerProgress *p, short isNewTier)
             Zone z = generate_zone(tier*1000 + r*TIER_LANES + c);
             z.tier = tier;
             unsigned roll = trnd()%100;
-            
+
             if(roll < (unsigned)blocked_rate)
                 z.type = ZONE_BLOCKED;
 
             else if(roll < (unsigned)(blocked_rate+treasure_rate))
                 z.type = ZONE_TREASURE;
+
+            else if(roll < (unsigned)(blocked_rate+treasure_rate+merchant_rate))
+                z.type = ZONE_MERCHANT; // 🧿 apparition du marchand
 
             else
                 z.type = ZONE_PATH;
@@ -127,32 +130,28 @@ TierMap *build_tier(int tier, unsigned seed, PlayerProgress *p, short isNewTier)
         if(nc<0) nc=0;
         if(nc>=TIER_LANES) nc=TIER_LANES-1;
 
-        // On ouvre aléatoirement un "pont" pour permettre le déplacement
+        // Ouvre toujours un chemin vers le bas
         if(trnd_int(0,1) == 0){
-            // Ouvre le chemin "Bas -> Côté"
             AT(m, r+1, c).type = ZONE_PATH;
         } else {
-            // Ouvre le chemin "Côté -> Bas"
             AT(m, r, nc).type = ZONE_PATH;
         }
-        
-        // On ouvre TOUJOURS la destination finale sur la rangée suivante
-        AT(m, r+1, nc).type = ZONE_PATH; 
-
-        c = nc; // On passe à la colonne suivante
+        AT(m, r+1, nc).type = ZONE_PATH;
+        c = nc;
     }
-    // La dernière rangée est le Boss
+
+    // Dernière rangée = boss
     AT(m,height-1,c).type = ZONE_BOSS;
     m->boss_col = c;
 
-    // 3) Spawn monsters with frequency increasing with the tier
+    // 3) Spawn des monstres
     if (spawn_monsters(m, tier) != EXIT_SUCCESS) {
         fprintf(stderr, "Erreur: build_tier(): spawn_monsters()\n");
         free_tier(m);
         return NULL;
     }
 
-    // 4) Assurer que la cellule de départ est propre
+    // 4) Cellule de départ toujours libre
     AT(m,0, (p->start_col>=0 && p->start_col<TIER_LANES)? p->start_col:0).type = ZONE_PATH;
 
     // 5) Masquer les cellules déjà nettoyées
@@ -173,7 +172,6 @@ int spawn_monsters(TierMap *m, int tier){
         return EXIT_FAILURE;
     }
 
-    // Simule des cases contenant des monstres avec fréquence selon le palier
     int monster_rate = 5 + tier*5; // % de cases avec monstres, max 40%
     if(monster_rate > 40) monster_rate = 40;
 
@@ -198,6 +196,7 @@ char *get_zone_symbol(const Zone *z) {
         case ZONE_BLOCKED:  return "🪨";
         case ZONE_TREASURE: return "🪙";
         case ZONE_MONSTER:  return "🐙";
+        case ZONE_MERCHANT: return "🧿"; // 🆕 symbole marchand
         default:            return "  ";
     }
 }
@@ -211,7 +210,7 @@ void draw_tier(char *prefix,const TierMap *m, int player_row, int player_col){
         }
         printf("\n");
     }
-    printf("\n%sLégende : | 🤿 Joueur | 👹 Boss | 🪨 Rocher | 🪙 Trésor | 🐙 Monstre |\n\n", prefix ? prefix : "");
+    printf("\n%sLégende : | 🤿 Joueur | 👹 Boss | 🪨 Rocher | 🪙 Trésor | 🐙 Monstre | 🧿 Marchand |\n\n", prefix ? prefix : "");
     const Zone *z = &AT((TierMap*)m, player_row, player_col);
     printf("%sBiome : %s\tDanger : ", prefix ? prefix : "", z->biome);
     int stars = 1 + (z->tier/2); if(stars>5) stars=5; for(int i=0;i<stars;i++) printf("*");
@@ -222,7 +221,7 @@ void draw_tier(char *prefix,const TierMap *m, int player_row, int player_col){
 Zone generate_zone(int index){
     Zone z;
     z.index = index;
-    z.tier = (index / 3) + 1;    // difficulté augmente tous les 3 niveaux
+    z.tier = (index / 3) + 1;
     snprintf(z.biome, sizeof(z.biome), "%s",
         BIOMES[trnd_int(0, (int)(sizeof(BIOMES)/sizeof(*BIOMES))-1)]
     );
@@ -239,28 +238,23 @@ void show_zone(const Zone* z){
 }
 
 // --------------- TIER INITIALIZATION FROM SAVE ----------------
-// Initialise un palier à partir de la progression du joueur
-// Si isNewTier = `true`, initialise un nouveau palier
 TierMap *initTier(PlayerProgress *player_progress, short isNewTier) {
     if (!player_progress) {
         fprintf(stderr, "Erreur: initTier(): PlayerProgress est NULL\n");
         return NULL;
     }
-    
+
     TierMap *map = NULL;
 
-    // Check if this is a new tier or loading from save
     if (isNewTier == false && (
         player_progress->col < 0 ||
         player_progress->col >= TIER_LANES ||
         player_progress->row < 0
     )) {
-        // Invalid save data
         fprintf(stderr, "Erreur: initTier(): Données de sauvegarde invalides pour le palier.\n");
         return NULL;
     }
     else if (isNewTier) {
-        // New tier initialization
         player_progress->tier = 1;
         player_progress->start_col = TIER_LANES/2;
         player_progress->row = 0;
@@ -268,7 +262,6 @@ TierMap *initTier(PlayerProgress *player_progress, short isNewTier) {
         player_progress->tier_seed = getRandomSeed();
     }
 
-    // Construire le palier initial/reconstruit
     map = build_tier(player_progress->tier, player_progress->tier_seed, player_progress, isNewTier);
     if (!map) {
         fprintf(stderr, "Erreur: Échec de la construction du palier.\n");

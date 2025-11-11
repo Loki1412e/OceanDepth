@@ -114,7 +114,7 @@
         ZONE_TREASURE,
         ZONE_BOSS,
         ZONE_MONSTER,
-        // Suite ...
+        ZONE_MERCHANT,
         LENGTH_ZoneType
     } ZoneType;
 
