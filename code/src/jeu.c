@@ -30,7 +30,7 @@ void handleMerchantZone(Plongeur *player, ListeObjet *modalConsumablesList, List
 
         if (choix == 1 && player->perles >= 25) {
             player->perles -= 25;
-            long id_obj = getRandomObjectIdWithRarete(modalConsumablesList, RARE);
+            long id_obj = getRandomObjectIdWithRareteMax(modalConsumablesList, RARE);
             if (id_obj >= 0) {
                 ajouterObjet(modalConsumablesList, player->liste_consommables, id_obj);
                 Objet *loot = player->liste_consommables->objets[player->liste_consommables->longueur - 1];
@@ -39,7 +39,7 @@ void handleMerchantZone(Plongeur *player, ListeObjet *modalConsumablesList, List
         }
         else if (choix == 2 && player->perles >= 60) {
             player->perles -= 60;
-            long id_obj = getRandomObjectIdWithRarete(modalOrnamentsList, TRES_RARE);
+            long id_obj = getRandomObjectIdWithRareteMax(modalOrnamentsList, TRES_RARE);
             if (id_obj >= 0) {
                 ajouterObjet(modalOrnamentsList, player->liste_bibelots, id_obj);
                 Objet *loot = player->liste_bibelots->objets[player->liste_bibelots->longueur - 1];
@@ -91,7 +91,7 @@ void handleTreasureZone(Plongeur *player, PlayerProgress *playerProgress, ListeO
     Objet *loot = NULL;
 
     if (choix == 0) {
-        long id_obj = getRandomObjectIdWithRarete(modalConsumablesList, rarete_max);
+        long id_obj = getRandomObjectIdWithRareteMax(modalConsumablesList, rarete_max);
         if (id_obj < 0) {
             printf("⚠ Aucun consommable trouvé à cette rareté.\n");
             pressEnterToContinue();
@@ -104,7 +104,7 @@ void handleTreasureZone(Plongeur *player, PlayerProgress *playerProgress, ListeO
         printf("\n>> 🎁 Vous avez trouvé un consommable [%s] : [%s] !\n",
                enumRareteToChar(loot->rarete), loot->nom);
     } else {
-        long id_obj = getRandomObjectIdWithRarete(modalOrnamentsList, rarete_max);
+        long id_obj = getRandomObjectIdWithRareteMax(modalOrnamentsList, rarete_max);
         if (id_obj < 0) {
             printf("⚠ Aucun bibelot trouvé à cette rareté.\n");
             pressEnterToContinue();

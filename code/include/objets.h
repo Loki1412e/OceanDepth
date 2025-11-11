@@ -8,7 +8,7 @@
     void freeListeObjets(ListeObjet *liste);
     void freeListeObjetsContent(ListeObjet *liste);
 
-    long getRandomObjectIdWithRarete(ListeObjet *modalObjectsList, Rarete rarete_max);
+    long getRandomObjectIdWithRareteMax(ListeObjet *modalObjectsList, Rarete rarete_max);
 
     ListeObjet *initModalListeObjet(char *path);
     int setListeObjetFromConf(ListeObjet *modalObjects, char *path);

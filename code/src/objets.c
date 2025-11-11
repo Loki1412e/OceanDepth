@@ -377,9 +377,9 @@ ListeObjet *initModalListeObjet(char *path) {
 }
 
 
-long getRandomObjectIdWithRarete(ListeObjet *modalObjectsList, Rarete rarete_max) {
+long getRandomObjectIdWithRareteMax(ListeObjet *modalObjectsList, Rarete rarete_max) {
     if (!modalObjectsList || rarete_max < 1) {
-        fprintf(stderr, "Erreur: getRandomObjectIdWithRarete(): Parametre(s) mal initialisé(s)\n");
+        fprintf(stderr, "Erreur: getRandomObjectIdWithRareteMax(): Parametre(s) mal initialisé(s)\n");
         return -1;
     }
 
@@ -393,7 +393,7 @@ long getRandomObjectIdWithRarete(ListeObjet *modalObjectsList, Rarete rarete_max
     }
 
     if (totalPoids == 0) {
-        fprintf(stderr, "Erreur: getRandomObjectIdWithRarete(): Aucun objet disponible avec une rareté valide.\n");
+        fprintf(stderr, "Erreur: getRandomObjectIdWithRareteMax(): Aucun objet disponible avec une rareté valide.\n");
         return -1;
     }
 
@@ -416,7 +416,7 @@ long getRandomObjectIdWithRarete(ListeObjet *modalObjectsList, Rarete rarete_max
     }
 
     // Si on arrive ici, c'est une erreur imprévue
-    fprintf(stderr, "Erreur: getRandomObjectIdWithRarete(): Pas d'objet choisi, erreur imprévue.\n");
+    fprintf(stderr, "Erreur: getRandomObjectIdWithRareteMax(): Pas d'objet choisi, erreur imprévue.\n");
     return -1;
 }
 
