@@ -59,7 +59,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: oceandepth-${{ runner.os }}-${{ runner.arch }}
-        path: code/output/oceandepth* # Récupère .exe ou le binaire linux/mac
+        path: code/output/
 
   # Job 2: Compilation croisée pour Linux arm64 (Raspberry Pi)
   build-linux-arm64:
@@ -81,4 +81,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: oceandepth-linux-arm64
-        path: code/output/oceandepth*
+        path: code/output/
