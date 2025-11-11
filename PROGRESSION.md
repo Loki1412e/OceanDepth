@@ -4,12 +4,12 @@
 ## Étapes réalisées
 
 - [ e ] Étape 1 : Génération créatures
-- [ e ] Étape 2 : Attaque joueur
-- [ e ] Étape 3 : Attaque créatures
-- [ _ ] Étape 4 : Récompenses
+- [ * ] Étape 2 : Attaque joueur
+- [ * ] Étape 3 : Attaque créatures
+- [ e ] Étape 4 : Récompenses
 - [ e ] Étape 5 : Sauvegarde/Chargement
-- [ _ ] Étape 6 : Compétences aquatiques
-- [ _ ] Étape 7 : Cartographie des océans
+- [ * ] Étape 6 : Compétences aquatiques
+- [ * ] Étape 7 : Cartographie des océans
 
 Légende :
 - [ _ ] à faire
@@ -27,17 +27,18 @@ Légende :
 
 # Etat Actuel
 
-// a faire :
+Il y a tres probablement d'autres fonctionnalité à update / créer mais pour le moment :
 
-IMPORTANT:
-- creatures.c -> ne gere pas les effects que les creatures peuvent mettre ni leur compétences (voir struct mais en comm pour le moment)
+## Trucs encore à faire :
 
-1 - ITEMS ??
+* 👺 Voir obtention arme (marchands/coffres/??) --->  on verra apres merge taff soso
 
+* 👺  Mieux gérer l'apparition des groupes de créatures en fonction de leur niv de dangerosité
 
-2 - EFFETS : Gestion des effets -> boucle combat / 2 types attaques
+* ⚠️ Revoir la gestion de la fatigue (pas ouf pour le moment)
 
+* ℹ️ Accumuler les effets des bibelots quand on en obtient 1 en double (pas du tt fait)
 
-3 - CARTES : thinina
+## A faire à la fin (ou au fur et à mesure) :
 
-4 - Interface graphique via `lib` : sofiane
+* 👺 Faire les fichiers de documentation (liste des fonctionnalités, etc...)

@@ -7,8 +7,11 @@
     #include "creatures.h"
     #include "effets.h"
 
-    int combat(Sauvegarde *actualSave, Plongeur *joueur, CreatureMarine **creatures, size_t nb_creatures);
+    int combat(Sauvegarde *actualSave, Plongeur *joueur, int isNewCombat);
 
+    // Initialisation
+    EtatCombat *initRandomCreaturesFromDangerosityGroupLevel(Bestiaire *modalBestiary, int dangerosityLevel);
+    void freeEtatCombat(EtatCombat *etat);
     // Utils
     void updateFatigue(Plongeur *joueur, int gain);
     int diminuerFatigue(Plongeur *joueur, int perte);

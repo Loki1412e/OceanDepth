@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -g
+CFLAGS = -Wall -Wextra -g -O2 -std=c99
 LDFLAGS = -lm
 TARGET = oceandepth
 SRCDIR = src

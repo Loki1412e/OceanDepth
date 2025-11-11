@@ -17,6 +17,7 @@
     int spawn_monsters(TierMap *m, int tier);
     int mark_cell_as_cleared(PlayerProgress *p, int r, int c);
 
+    char *get_zone_type_symbol(ZoneType type);
     char *get_zone_symbol(const Zone *z);
     void draw_tier(char *prefix,const TierMap *m, int player_row, int player_col);
     void show_zone(const Zone* z);

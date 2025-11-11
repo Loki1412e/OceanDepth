@@ -16,7 +16,14 @@ Prérequis :
 
 Voici comment configurer l'environement sous windows : [`setup_windows_msys2.md`](./documentation/setup_windows_msys2.md)
 
-**Linux**
+**Linux arm64/aarch64**
+
+```bash
+sudo apt update -y && sudo apt upgrade -y
+sudo apt install build-essential valgrind -y
+```
+
+**Linux x86_64/amd64**
 
 ```bash
 sudo apt update -y && sudo apt upgrade -y
@@ -27,18 +34,28 @@ sudo apt install build-essential gcc-aarch64-linux-gnu mingw-w64 valgrind -y
 
 ## 🚀 Lancer le projet
 
-Depuis le dossier racine du projet :
-
+- Depuis le dossier racine du projet
 ```bash
 cd ./code/
 make run
 ```
 
-Lancer en mode debug :
-
+- Compiler en mode debug
 ```bash
 cd ./code/
-make clean && make debug && make run
+make clean && make debug
+```
+
+- Lancer avec valgrind (linux uniquement)
+```bash
+cd ./code/
+clear && make valgrind
+```
+
+- Compiler pour toutes les platformes (linux x86_64/amd64 uniquement)
+```bash
+cd ./code/
+clear && make -f MakefileMultiArch64
 ```
 
 ## 📖 Description
@@ -59,12 +76,14 @@ GROUPE-02/
 │   PROGRESSION.md
 │   README.md
 │
-├───code
+├───code/
 │   │   Makefile
 │   │   MakefileMultiArch64
-│   │   
-│   ├───include
+│   │
+│   ├───include/
 │   │       actions.h
+│   │       armes.h
+│   │       bibelots.h
 │   │       combat.h
 │   │       competences.h
 │   │       conf.h
@@ -75,66 +94,73 @@ GROUPE-02/
 │   │       inventaire.h
 │   │       jeu.h
 │   │       joueur.h
+│   │       objets.h
 │   │       random.h
 │   │       repertoire.h
 │   │       sauvegarde.h
 │   │       utils.h
-│   │       zone.h
+│   │       zones.h
 │   │
-│   ├───output
+│   ├───output/
 │   │   │   oceandepth.exe
 │   │   │
-│   │   ├───assets
-│   │   │       README.md
+│   │   ├───assets/
+│   │   │   │   README.md
+│   │   │   │
+│   │   │   ├───fonts/
+│   │   │   │   └───Lato/
+│   │   │   │           Lato-Black.ttf
+│   │   │   │           Lato-BlackItalic.ttf
+│   │   │   │           Lato-Bold.ttf
+│   │   │   │           Lato-BoldItalic.ttf
+│   │   │   │           Lato-Italic.ttf
+│   │   │   │           Lato-Light.ttf
+│   │   │   │           Lato-LightItalic.ttf
+│   │   │   │           Lato-Regular.ttf
+│   │   │   │           Lato-Thin.ttf
+│   │   │   │           Lato-ThinItalic.ttf
+│   │   │   │           OFL.txt
+│   │   │   │
+│   │   │   └───logo/
+│   │   │           icon64x64.ico
+│   │   │           icon64x64.png
 │   │   │
-│   │   ├───config
+│   │   ├───config/
 │   │   │   ├───bestiaire
 │   │   │   │       competences.conf
 │   │   │   │       creatures.conf
+│   │   │   │       groupes.conf
 │   │   │   │
-│   │   │   └───plongeur
-│   │   │           competences.conf
-│   │   │           stats.conf
-│   │   │
-│   │   ├───defaultconf
-│   │   │   ├───docs
+│   │   │   ├───docs/
+│   │   │   │       actions.md
 │   │   │   │       competences.md
 │   │   │   │       effets.md
 │   │   │   │       liste_effets.md
-│   │   │   │       notation.md
 │   │   │   │       rarete.md
 │   │   │   │
-│   │   │   ├───objets
+│   │   │   ├───objets/
 │   │   │   │       armes.conf
-│   │   │   │       combinaisons.conf
-│   │   │   │       objets.conf
-│   │   │   │       idee.md
+│   │   │   │       bibelots.conf
+│   │   │   │       consommables.conf
 │   │   │   │
-│   │   │   ├───palliers
-│   │   │   │   └───1
-│   │   │   │       │   creatures.conf
-│   │   │   │       │   evenements.conf
-│   │   │   │       │   pallier.conf
-│   │   │   │       │   zones.conf
-│   │   │   │       │
-│   │   │   │       └───competences
-│   │   │   │               actives.conf
-│   │   │   │               passives.conf
-│   │   │   │
-│   │   │   └───plongeur
-│   │   │       │   stats.conf
-│   │   │       │
-│   │   │       └───competences
-│   │   │               actives.conf
-│   │   │               passives.conf
+│   │   │   └───plongeur/
+│   │   │           competences.conf
+│   │   │           stats.conf
 │   │   │
-│   │   └───save
-│   ├───rc
+│   │   └───save/
+│   │           dq
+│   │           ouiouibaguette
+│   │           qdfsf
+│   │           qsdv
+│   │
+│   ├───rc/
 │   │       icon.o
 │   │       icon.rc
 │   │
-│   └───src
+│   └───src/
 │           actions.c
+│           armes.c
+│           bibelots.c
 │           combat.c
 │           competences.c
 │           conf.c
@@ -145,25 +171,24 @@ GROUPE-02/
 │           jeu.c
 │           joueur.c
 │           main.c
+│           objets.c
 │           random.c
 │           repertoire.c
 │           sauvegarde.c
 │           utils.c
-│           zone.c
-│           utils.c
-│           zone.c
+│           zones.c
 │
-└───documentation
+└───documentation/
     │   fonctionnalites.md
     │   setup_windows_msys2.md
     │
-    ├───consignes
+    ├───consignes/
     │       2025 - OceanDepth.md
     │       2025 - OceanDepth.pdf
     │       SyllabusDuProjet.pdf
     │
-    └───src
-        └───setup
+    └───src/
+        └───setup/
                 setup_1.png
                 setup_2.png
 ```

@@ -94,7 +94,7 @@ ListeAction duplicateListeAction(ListeAction *modal, short *res) {
         if (*res == EXIT_FAILURE) {
             liste.longueur = i;
             freeActions(liste.actions, liste.longueur);
-            return liste;
+            return (ListeAction) {0};
         }
     }
 
