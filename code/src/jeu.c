@@ -4,15 +4,12 @@
 #define PRIX_CONSOMMABLE_DE_BASE 20
 #define PRIX_BIBELOT_DE_BASE     50
 
-Rarete tirerRareteSelonProfondeur(int profondeur) {
-    int base = profondeur * 2;
-    int r = rand() % 100;
-
-    if (r < 40 - base) return COMMUN;
-    else if (r < 70 - base/2) return PEU_COMMUN;
-    else if (r < 90) return RARE;
-    else if (r < 98) return TRES_RARE;
-    else return ABERANT;
+Rarete tirerRareteSelonProfondeur(int tier) {
+    if (tier > 2) return PEU_COMMUN;
+    if (tier > 4) return RARE;
+    if (tier > 6) return TRES_RARE;
+    if (tier < 8) return ABERANT;
+    return COMMUN;
 }
 
 void handleMerchantZone(Plongeur *player, ListeObjet *modalConsumablesList, ListeObjet *modalOrnamentsList) {
@@ -59,7 +56,7 @@ void handleMerchantZone(Plongeur *player, ListeObjet *modalConsumablesList, List
     clearConsole();
 }
 
-void handleTreasureZone(Plongeur *player, ListeObjet *modalConsumablesList, ListeObjet *modalOrnamentsList) {
+void handleTreasureZone(Plongeur *player, PlayerProgress *playerProgress, ListeObjet *modalConsumablesList, ListeObjet *modalOrnamentsList) {
     printf("\n🪙 Trésor trouvé !\n");
     pressEnterToContinue();
 
@@ -85,7 +82,7 @@ void handleTreasureZone(Plongeur *player, ListeObjet *modalConsumablesList, List
     }
 
     // rareté max selon la profondeur
-    Rarete rarete_max = tirerRareteSelonProfondeur(player->profondeur);
+    Rarete rarete_max = tirerRareteSelonProfondeur(playerProgress->tier);
     if (rarete_max > ABERANT) rarete_max = ABERANT;
 
     printf("✨ Vous fouillez le coffre...\n");
@@ -520,7 +517,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
             
             case ZONE_TREASURE: {
                 printf("\n🪙 Trésor trouvé !\n");
-                handleTreasureZone(player, modalConsumablesList, modalOrnamentsList);
+                handleTreasureZone(player, playerProgress, modalConsumablesList, modalOrnamentsList);
                 target_zone->type = ZONE_PATH; // On vide la case
                 mark_cell_as_cleared(playerProgress, playerProgress->row, playerProgress->col); // On marque comme nettoyée
                 pressEnterToContinue();
