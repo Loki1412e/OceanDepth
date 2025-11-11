@@ -378,7 +378,7 @@ ListeObjet *initModalListeObjet(char *path) {
 
 
 long getRandomObjectIdWithRareteMax(ListeObjet *modalObjectsList, Rarete rarete_max) {
-    if (!modalObjectsList || rarete_max < 1) {
+    if (!modalObjectsList || rarete_max < 1 || rarete_max >= LENGTH_Rarete) {
         fprintf(stderr, "Erreur: getRandomObjectIdWithRareteMax(): Parametre(s) mal initialisé(s)\n");
         return -1;
     }
@@ -389,7 +389,7 @@ long getRandomObjectIdWithRareteMax(ListeObjet *modalObjectsList, Rarete rarete_
     for (size_t i = 0; i < modalObjectsList->longueur; i++) {
         Objet *objet = modalObjectsList->objets[i];
         if (!objet || objet->rarete < COMMUN || objet->rarete > rarete_max) continue;
-        totalPoids += rareteToPoids(objet->rarete);  // On additionne le poids de rareté
+        totalPoids += rareteToPoids(objet->rarete);
     }
 
     if (totalPoids == 0) {
@@ -398,7 +398,7 @@ long getRandomObjectIdWithRareteMax(ListeObjet *modalObjectsList, Rarete rarete_
     }
 
     // Tirage pondéré basé sur la rareté
-    unsigned tirage = random_int(1, totalPoids);  // tirage entre 1 et totalPoids
+    unsigned tirage = random_int(1, totalPoids);
     unsigned cumulPoids = 0;
 
     for (size_t i = 0; i < modalObjectsList->longueur; i++) {

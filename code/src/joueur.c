@@ -333,12 +333,14 @@ Objet *joueurGagneConsommableViaRareteMax(Plongeur *joueur, ListeObjet *modalObj
         return NULL;
     }
 
-    Rarete rarete = random_int(COMMUN, rarete_max);
-    long id_objet = getRandomObjectIdWithRareteMax(modalObjectsList, rarete);
+    long id_objet = getRandomObjectIdWithRareteMax(modalObjectsList, rarete_max);
     if (id_objet == -1) {
         fprintf(stderr, "Erreur: joueurGagneConsommableViaRareteMax(): getRandomObjectIdWithRareteMax()\n");
         return NULL;
     }
+
+    printf("\nDEBUG joueurGagneConsommableViaRareteMax(): Rareté max consommable = %s\n", enumRareteToChar(rarete_max)); // DEBUG
+    printf("\nDEBUG joueurGagneConsommableViaRareteMax(): ID consommable select = %ld\n", id_objet); // DEBUG
 
     if (ajouterObjet(modalObjectsList, joueur->liste_consommables, id_objet)) {
         fprintf(stderr, "Erreur: joueurGagneConsommableViaRareteMax(): addObjetInListeObjet()\n");
@@ -354,12 +356,14 @@ Objet *joueurGagneBibelotViaRareteMax(Plongeur *joueur, ListeObjet *modalObjects
         return NULL;
     }
 
-    Rarete rarete = random_int(COMMUN, rarete_max);
-    long id_objet = getRandomObjectIdWithRareteMax(modalObjectsList, rarete);
+    long id_objet = getRandomObjectIdWithRareteMax(modalObjectsList, rarete_max);
     if (id_objet == -1) {
         fprintf(stderr, "Erreur: joueurGagneBibelotViaRareteMax(): getRandomObjectIdWithRareteMax()\n");
         return NULL;
     }
+
+    printf("\nDEBUG joueurGagneBibelotViaRareteMax(): Rareté max bibelot = %s\n", enumRareteToChar(rarete_max)); // DEBUG
+    printf("\nDEBUG joueurGagneBibelotViaRareteMax(): ID bibelot select = %ld\n", id_objet); // DEBUG
 
     if (ajouterBibelot(modalObjectsList, joueur, id_objet)) {
         fprintf(stderr, "Erreur: joueurGagneBibelotViaRareteMax(): ajouterBibelot()\n");
