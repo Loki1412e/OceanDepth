@@ -1,6 +1,136 @@
 #include "../include/jeu.h"
 
 
+#define PRIX_CONSOMMABLE_DE_BASE 20
+#define PRIX_BIBELOT_DE_BASE     50
+
+Rarete tirerRareteSelonProfondeur(int profondeur) {
+    int base = profondeur * 2;
+    int r = rand() % 100;
+
+    if (r < 40 - base) return COMMUN;
+    else if (r < 70 - base/2) return PEU_COMMUN;
+    else if (r < 90) return RARE;
+    else if (r < 98) return TRES_RARE;
+    else return ABERANT;
+}
+
+void handleMerchantZone(Plongeur *player, ListeObjet *modalConsumablesList, ListeObjet *modalOrnamentsList) {
+    printf("\n🧿 Marchand rencontré !\n");
+
+    if (!player) {
+        fprintf(stderr, "Erreur: handleMerchantZone(): player est NULL.\n");
+        return;
+    }
+
+    int choix;
+    while (1) {
+        printf("\n💰 Vous avez %u perles.\n", player->perles);
+        printf("1️⃣ Acheter un consommable (25 perles)\n");
+        printf("2️⃣ Acheter un bibelot (60 perles)\n");
+        printf("0️⃣ Quitter\n> ");
+        choix = lireEntier();
+
+        if (choix == 0) break;
+
+        if (choix == 1 && player->perles >= 25) {
+            player->perles -= 25;
+            long id_obj = getRandomObjectIdWithRarete(modalConsumablesList, RARE);
+            if (id_obj >= 0) {
+                ajouterObjet(modalConsumablesList, player->liste_consommables, id_obj);
+                Objet *loot = player->liste_consommables->objets[player->liste_consommables->longueur - 1];
+                printf(">> 🧴 Vous achetez [%s] (%s)\n", loot->nom, enumRareteToChar(loot->rarete));
+            }
+        }
+        else if (choix == 2 && player->perles >= 60) {
+            player->perles -= 60;
+            long id_obj = getRandomObjectIdWithRarete(modalOrnamentsList, TRES_RARE);
+            if (id_obj >= 0) {
+                ajouterObjet(modalOrnamentsList, player->liste_bibelots, id_obj);
+                Objet *loot = player->liste_bibelots->objets[player->liste_bibelots->longueur - 1];
+                printf(">> 💎 Vous achetez [%s] (%s)\n", loot->nom, enumRareteToChar(loot->rarete));
+            }
+        }
+        else {
+            printf("⛔ Fonds insuffisants !\n");
+        }
+
+        pressEnterToContinue();
+    }
+
+    clearConsole();
+}
+
+void handleTreasureZone(Plongeur *player, ListeObjet *modalConsumablesList, ListeObjet *modalOrnamentsList) {
+    printf("\n🪙 Trésor trouvé !\n");
+    pressEnterToContinue();
+
+    if (!player) {
+        fprintf(stderr, "Erreur: handleTreasureZone(): player est NULL.\n");
+        return;
+    }
+
+    // sécurité : initialiser les listes si absentes
+    if (!player->liste_consommables) {
+        player->liste_consommables = calloc(1, sizeof(ListeObjet));
+        if (!player->liste_consommables) {
+            fprintf(stderr, "Erreur: handleTreasureZone(): impossible d’allouer liste_consommables.\n");
+            return;
+        }
+    }
+    if (!player->liste_bibelots) {
+        player->liste_bibelots = calloc(1, sizeof(ListeObjet));
+        if (!player->liste_bibelots) {
+            fprintf(stderr, "Erreur: handleTreasureZone(): impossible d’allouer liste_bibelots.\n");
+            return;
+        }
+    }
+
+    // rareté max selon la profondeur
+    Rarete rarete_max = tirerRareteSelonProfondeur(player->profondeur);
+    if (rarete_max > ABERANT) rarete_max = ABERANT;
+
+    printf("✨ Vous fouillez le coffre...\n");
+
+    int choix = rand() % 2; // 0 = consommable, 1 = bibelot
+    Objet *loot = NULL;
+
+    if (choix == 0) {
+        long id_obj = getRandomObjectIdWithRarete(modalConsumablesList, rarete_max);
+        if (id_obj < 0) {
+            printf("⚠ Aucun consommable trouvé à cette rareté.\n");
+            pressEnterToContinue();
+            return;
+        }
+
+        ajouterObjet(modalConsumablesList, player->liste_consommables, id_obj);
+        loot = player->liste_consommables->objets[player->liste_consommables->longueur - 1];
+
+        printf("\n>> 🎁 Vous avez trouvé un consommable [%s] : [%s] !\n",
+               enumRareteToChar(loot->rarete), loot->nom);
+    } else {
+        long id_obj = getRandomObjectIdWithRarete(modalOrnamentsList, rarete_max);
+        if (id_obj < 0) {
+            printf("⚠ Aucun bibelot trouvé à cette rareté.\n");
+            pressEnterToContinue();
+            return;
+        }
+
+        ajouterObjet(modalOrnamentsList, player->liste_bibelots, id_obj);
+        loot = player->liste_bibelots->objets[player->liste_bibelots->longueur - 1];
+
+        printf("\n>> 💎 Vous découvrez un bibelot [%s] : [%s] !\n",
+               enumRareteToChar(loot->rarete), loot->nom);
+    }
+
+    pressEnterToContinue();
+    clearConsole();
+}
+
+
+
+
+
 void printTierMapActionMenu() {
     printf("\n========================================= Actions Disponibles =========================================\n");
     printf("[Z] Monter | [S] Descendre | [O] Utiliser Objet       | [A] Changer d'Arme | [X] Quitter et sauvegarder\n");
@@ -97,7 +227,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
     // // Affichage modalBestiary
     // printBestiary(modalBestiary);
     // pressEnterToContinue();
-    
+
     // // On ajoute des armes de base au joueur (si pas déjà présentes)
     // ajouterArme(modalArsenal, player->arsenal, 0);
     // ajouterArme(modalArsenal, player->arsenal, 2);
@@ -116,7 +246,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
             pressEnterToContinue();
             break;
         }
-        
+
         afficherInterfaceExploration(player, tierMap, playerProgress->row, playerProgress->col);
         printTierMapActionMenu();
         c = getCharInputToUpper();
@@ -127,11 +257,11 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
         }
 
         // --- Actions qui ne sont PAS des mouvements ---
-        
+
         // Sauvegarder et/ou Quitter
         if(c=='X' || c=='W'){
             if(saveGame(actualSave) == EXIT_SUCCESS) {
-                printf("\n>> ✅ Progression sauvegardée !\n"); 
+                printf("\n>> ✅ Progression sauvegardée !\n");
             } else {
                 printf("\n>> ❌ Échec de la sauvegarde !\n");
             }
@@ -201,7 +331,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                 clearConsole();
                 continue;
             }
-            
+
             if (comp_choisie->ciblage != SOI_MEME) {
                 printf("\n>> Seules les compétences ciblant 'Soi-même' sont implémentées pour l'instant en exploration.\n");
                 pressEnterToContinue();
@@ -257,7 +387,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                 fprintf(stderr, "Erreur: combat(): consommerObjet()\n");
                 printf(">> L'objet n'a pas pu être consommé.\n");
             }
-            
+
             pressEnterToContinue();
             clearConsole();
             continue;
@@ -359,7 +489,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
         // Vérification de la case cible (bloqué)
         Zone* target_zone = &AT(tierMap, new_row, new_col);
         if (target_zone->type == ZONE_BLOCKED) {
-            printf("\n🪨 Chemin bloqué !\n"); 
+            printf("\n🪨 Chemin bloqué !\n");
             pressEnterToContinue();
             continue; // On ne bouge pas
         }
@@ -371,14 +501,20 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
 
         // --- 4. Gérer les conséquences (UNE SEULE FOIS) ---
         switch (target_zone->type) {
-            
-            case ZONE_TREASURE: {
-                printf("\n🪙 Trésor trouvé ! (loot plus tard)\n");
-                target_zone->type = ZONE_PATH; // On vide la case
-                mark_cell_as_cleared(playerProgress, new_row, new_col); // On marque comme nettoyée
-                pressEnterToContinue();
+
+            case ZONE_TREASURE:
+                handleTreasureZone(player, modalConsumablesList, modalOrnamentsList);
+                target_zone->type = ZONE_PATH;
+                mark_cell_as_cleared(playerProgress, new_row, new_col);
                 continue;
-            }
+
+            case ZONE_MERCHANT:
+                handleMerchantZone(player, modalConsumablesList, modalOrnamentsList);
+                target_zone->type = ZONE_PATH;
+                mark_cell_as_cleared(playerProgress, new_row, new_col);
+                continue;
+
+
 
             case ZONE_MONSTER: {
                 printf("\n🐙 Monstre rencontré !\n");
@@ -423,7 +559,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
             case ZONE_BOSS: {
                 printf("\n👹 Boss atteint !\n");
                 pressEnterToContinue();
-                
+
                 int dangerosityLevel = 5;
                 Bestiaire *bestiary = initRandomBestiaryFromDangerosityGroupLevel(modalBestiary, dangerosityLevel);
                 if (!bestiary) {
@@ -460,7 +596,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                     break;
                 }
                 printf(">> 🎁 Vous avez obtenu le bibelot [%s] : [%s] !\n", enumRareteToChar(loot->rarete), loot->nom);
-                
+
                 pressEnterToContinue();
 
                 // Génération du palier suivant
@@ -553,11 +689,11 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
     // pressEnterToContinue();
 
     /*===== free && return ====*/
-    
+
     free_tier(tierMap);
-    
+
     freeBestiary(modalBestiary);
-    
+
     freeListeCompetence(&modalCreaturesSkills);
     freeListeObjets(modalConsumablesList);
     freeListeObjets(modalOrnamentsList);
