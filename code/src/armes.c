@@ -345,9 +345,9 @@ int appliquerActionsArme(Plongeur *joueur, void *cible, EntiteType cible_type) {
 }
 
 
-long getRandomWeaponIdFromRareteMax(Arsenal *modalArsenal, Rarete rarete) {
+long getRandomWeaponIdFromRarete(Arsenal *modalArsenal, Rarete rarete) {
     if (!modalArsenal || rarete < 1 || rarete >= LENGTH_Rarete) {
-        fprintf(stderr, "Erreur: getRandomWeaponIdFromRareteMax(): Parametre(s) mal initialisé(s)\n");
+        fprintf(stderr, "Erreur: getRandomWeaponIdFromRarete(): Parametre(s) mal initialisé(s)\n");
         return -1;
     }
 
@@ -361,7 +361,7 @@ long getRandomWeaponIdFromRareteMax(Arsenal *modalArsenal, Rarete rarete) {
     }
 
     if (totalPoids == 0) {
-        fprintf(stderr, "Erreur: getRandomWeaponIdFromRareteMax(): Aucune arme disponible avec une rareté valide.\n");
+        fprintf(stderr, "Erreur: getRandomWeaponIdFromRarete(): Aucune arme disponible avec une rareté valide.\n");
         return -1;
     }
 
@@ -384,7 +384,7 @@ long getRandomWeaponIdFromRareteMax(Arsenal *modalArsenal, Rarete rarete) {
     }
 
     // Si on arrive ici, c'est une erreur imprévue
-    fprintf(stderr, "Erreur: getRandomWeaponIdFromRareteMax(): Pas d'arme choisie, erreur imprévue.\n");
+    fprintf(stderr, "Erreur: getRandomWeaponIdFromRarete(): Pas d'arme choisie, erreur imprévue.\n");
     return -1;
 }
 
