@@ -16,8 +16,6 @@ Rarete tirerRareteSelonProfondeur(int profondeur) {
 }
 
 void handleMerchantZone(Plongeur *player, ListeObjet *modalConsumablesList, ListeObjet *modalOrnamentsList) {
-    printf("\n🧿 Marchand rencontré !\n");
-
     if (!player) {
         fprintf(stderr, "Erreur: handleMerchantZone(): player est NULL.\n");
         return;
@@ -26,9 +24,9 @@ void handleMerchantZone(Plongeur *player, ListeObjet *modalConsumablesList, List
     int choix;
     while (1) {
         printf("\n💰 Vous avez %u perles.\n", player->perles);
-        printf("1️⃣ Acheter un consommable (25 perles)\n");
-        printf("2️⃣ Acheter un bibelot (60 perles)\n");
-        printf("0️⃣ Quitter\n> ");
+        printf("[1] - Acheter un consommable (25 perles)\n");
+        printf("[2] - Acheter un bibelot (60 perles)\n");
+        printf("[0] - Quitter\n> ");
         choix = lireEntier();
 
         if (choix == 0) break;
@@ -252,6 +250,9 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
 
     // Boucle principale d'exploration
     while (1) {
+        player->profondeur = playerProgress->tier * 10; // initialisation profondeur
+
+        
         if (player->pv <= 0) {
             printf("\n💀 Vous ne pouvez plus continuer votre aventure... GAME OVER.\n");
             pressEnterToContinue();
@@ -518,21 +519,24 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
         switch (target_zone->type) {
             
             case ZONE_TREASURE: {
-                printf("\n🪙 Trésor trouvé ! (loot plus tard)\n");
+                printf("\n🪙 Trésor trouvé !\n");
                 handleTreasureZone(player, modalConsumablesList, modalOrnamentsList);
                 target_zone->type = ZONE_PATH; // On vide la case
                 mark_cell_as_cleared(playerProgress, playerProgress->row, playerProgress->col); // On marque comme nettoyée
                 pressEnterToContinue();
                 playerProgress->zone_actuelle = ZONE_PATH; // on update la zone actuelle (pour sauvegarde)
                 continue;
+            }
 
-            case ZONE_MERCHANT:
+            case ZONE_MERCHANT: {
+                printf("\n🧿 Marchand rencontré !\n");
                 handleMerchantZone(player, modalConsumablesList, modalOrnamentsList);
                 target_zone->type = ZONE_PATH;
-                mark_cell_as_cleared(playerProgress, new_row, new_col);
+                mark_cell_as_cleared(playerProgress, playerProgress->row, playerProgress->col); // On marque comme nettoyée
+                pressEnterToContinue();
+                playerProgress->zone_actuelle = ZONE_PATH; // on update la zone actuelle (pour sauvegarde)
                 continue;
-
-
+            }
 
             case ZONE_MONSTER: {
                 int dangerosityLevel = 1;
@@ -642,6 +646,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
 
                 // Génération du palier suivant
                 playerProgress->tier++;
+                player->fatigue = 0; // on réinitialise la fatigue
                 playerProgress->row = 0; // On repart d'en haut
                 // On utilise la colonne d'arrivée comme colonne de départ du palier suivant
                 playerProgress->start_col = playerProgress->col;
