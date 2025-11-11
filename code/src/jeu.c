@@ -53,10 +53,7 @@ void handleMerchantZone(Plongeur *player, TierMap *tierMap, PlayerProgress *play
     }
 }
 
-void handleTreasureZone(Plongeur *player, PlayerProgress *playerProgress, ListeObjet *modalConsumablesList, ListeObjet *modalOrnamentsList) {
-    printf("\n🪙 Trésor trouvé !\n");
-    pressEnterToContinue();
-
+void handleTreasureZone(Plongeur *player, TierMap *tierMap, PlayerProgress *playerProgress, ListeObjet *modalConsumablesList, ListeObjet *modalOrnamentsList) {
     if (!player) {
         fprintf(stderr, "Erreur: handleTreasureZone(): player est NULL.\n");
         return;
@@ -82,7 +79,9 @@ void handleTreasureZone(Plongeur *player, PlayerProgress *playerProgress, ListeO
     Rarete rarete_max = tirerRareteSelonProfondeur(playerProgress->tier);
     if (rarete_max > ABERANT) rarete_max = ABERANT;
 
-    printf("✨ Vous fouillez le coffre...\n");
+    printf("✨ Vous fouillez le trésor...\n");
+    pressEnterToContinue();
+    afficherInterfaceExploration(player, tierMap, playerProgress->row, playerProgress->col);
 
     int choix = rand() % 2; // 0 = consommable, 1 = bibelot
     Objet *loot = NULL;
@@ -90,7 +89,7 @@ void handleTreasureZone(Plongeur *player, PlayerProgress *playerProgress, ListeO
     if (choix == 0) {
         long id_obj = getRandomObjectIdWithRareteMax(modalConsumablesList, rarete_max);
         if (id_obj < 0) {
-            printf("⚠ Aucun consommable trouvé à cette rareté.\n");
+            fprintf(stderr, "⚠ Aucun consommable trouvé à cette rareté.\n");
             pressEnterToContinue();
             return;
         }
@@ -114,13 +113,7 @@ void handleTreasureZone(Plongeur *player, PlayerProgress *playerProgress, ListeO
         printf("\n>> 💎 Vous découvrez un bibelot [%s] : [%s] !\n",
                enumRareteToChar(loot->rarete), loot->nom);
     }
-
-    pressEnterToContinue();
-    clearConsole();
 }
-
-
-
 
 
 void printTierMapActionMenu() {
@@ -519,7 +512,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
             
             case ZONE_TREASURE: {
                 printf("\n🪙 Trésor trouvé !\n");
-                handleTreasureZone(player, playerProgress, modalConsumablesList, modalOrnamentsList);
+                handleTreasureZone(player, tierMap, playerProgress, modalConsumablesList, modalOrnamentsList);
                 target_zone->type = ZONE_PATH; // On vide la case
                 mark_cell_as_cleared(playerProgress, playerProgress->row, playerProgress->col); // On marque comme nettoyée
                 pressEnterToContinue();
