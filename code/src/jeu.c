@@ -21,8 +21,8 @@ void handleMerchantZone(Plongeur *player, TierMap *tierMap, PlayerProgress *play
         afficherInterfaceExploration(player, tierMap, playerProgress->row, playerProgress->col);
         printf("\n💰 Vous avez %u perles.\n", player->perles);
         printf("[1] - Acheter un consommable (25 perles)\n");
-        printf("[2] - Acheter un bibelot (60 perles)\n");
-        printf("[3] - Acheter une arme (100 perles)\n");
+        printf("[2] - Acheter une arme (60 perles)\n");
+        printf("[3] - Acheter un bibelot (100 perles)\n");
         printf("[0] - Quitter\n> ");
         choix = lireEntier();
 
@@ -35,13 +35,13 @@ void handleMerchantZone(Plongeur *player, TierMap *tierMap, PlayerProgress *play
         }
         else if (choix == 2 && player->perles >= 60) {
             player->perles -= 60;
-            Objet *loot = joueurGagneBibelotViaRareteMax(player, modalOrnamentsList, ABERANT); // entre COMMUN et ABERANT
-            printf(">> 💎 Vous achetez [%s] (%s)\n", loot->nom, enumRareteToChar(loot->rarete));
+            Arme *loot = joueurGagneRandomArmeViaRarete(player, modalArsenal, TRES_RARE);
+            printf(">> ⚔️ Vous achetez [%s] (%s)\n", loot->nom, enumRareteToChar(loot->rarete));
         }
         else if (choix == 3 && player->perles >= 100) {
             player->perles -= 100;
-            Arme *loot = joueurGagneRandomArmeViaRarete(player, modalArsenal, TRES_RARE);
-            printf(">> ⚔️ Vous achetez [%s] (%s)\n", loot->nom, enumRareteToChar(loot->rarete));
+            Objet *loot = joueurGagneBibelotViaRareteMax(player, modalOrnamentsList, ABERANT); // entre COMMUN et ABERANT
+            printf(">> 💎 Vous achetez [%s] (%s)\n", loot->nom, enumRareteToChar(loot->rarete));
         }
         else {
             printf("⛔ Fonds insuffisants !\n");
