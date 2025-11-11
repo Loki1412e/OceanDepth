@@ -582,8 +582,6 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
             }
 
             case ZONE_BOSS: {
-                printf("\n👹 Boss atteint !\n");
-                pressEnterToContinue();
                 int dangerosityLevel = 5;
 
                 if (!actualSave->etat_combat) {
