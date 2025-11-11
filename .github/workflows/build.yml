@@ -11,7 +11,7 @@ jobs:
         os: 
           - ubuntu-latest        # Linux x86_64
           - windows-latest       # Windows x86_64
-          - windows-latest-arm64 # Windows arm64
+          # - windows-latest-arm64 # Windows arm64
           - macos-15-intel       # macOS x86_64 (Intel)
           - macos-latest         # macOS arm64 (Apple Silicon)
 
@@ -41,16 +41,16 @@ jobs:
           mingw-w64-x86_64-gcc
           mingw-w64-x86_64-binutils
 
-    - name: 2. Installer les outils (Windows ARM64)
-      if: runner.os == 'Windows' && runner.arch == 'ARM64'
-      uses: msys2/setup-msys2@v2
-      with:
-        msystem: MINGW-AARCH64 # Le bon système MSYS2 pour ARM64
-        update: false  # Accélère le build
-        install: >-
-          mingw-w64-ucrt-aarch64-gcc
-          mingw-w64-ucrt-aarch64-binutils
-          mingw-w64-ucrt-aarch64-windres
+    # - name: 2. Installer les outils (Windows ARM64)
+    #   if: runner.os == 'Windows' && runner.arch == 'ARM64'
+    #   uses: msys2/setup-msys2@v2
+    #   with:
+    #     msystem: MINGW-AARCH64 # Le bon système MSYS2 pour ARM64
+    #     update: false  # Accélère le build
+    #     install: >-
+    #       mingw-w64-ucrt-aarch64-gcc
+    #       mingw-w64-ucrt-aarch64-binutils
+    #       mingw-w64-ucrt-aarch64-windres
 
     - name: 3. Compiler le projet
       run: make -C code
