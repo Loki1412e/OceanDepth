@@ -5,10 +5,10 @@
 #define PRIX_BIBELOT_DE_BASE     50
 
 Rarete tirerRareteSelonProfondeur(int tier) {
-    if (tier > 2) return PEU_COMMUN;
-    if (tier > 4) return RARE;
+    if (tier > 8) return ABERANT;
     if (tier > 6) return TRES_RARE;
-    if (tier < 8) return ABERANT;
+    if (tier > 4) return RARE;
+    if (tier > 2) return PEU_COMMUN;
     return COMMUN;
 }
 
@@ -53,7 +53,7 @@ void handleMerchantZone(Plongeur *player, TierMap *tierMap, PlayerProgress *play
     }
 }
 
-void handleTreasureZone(Plongeur *player, TierMap *tierMap, PlayerProgress *playerProgress, ListeObjet *modalConsumablesList, ListeObjet *modalOrnamentsList) {
+void handleTreasureZone(Plongeur *player, TierMap *tierMap, PlayerProgress *playerProgress, ListeObjet *modalConsumablesList, ListeObjet *modalOrnamentsList, Arsenal *modalArsenal) {
     if (!player) {
         fprintf(stderr, "Erreur: handleTreasureZone(): player est NULL.\n");
         return;
@@ -78,41 +78,40 @@ void handleTreasureZone(Plongeur *player, TierMap *tierMap, PlayerProgress *play
     // rareté max selon la profondeur
     Rarete rarete_max = tirerRareteSelonProfondeur(playerProgress->tier);
     if (rarete_max > ABERANT) rarete_max = ABERANT;
+    if (rarete_max <= DESACTIVE) rarete_max = COMMUN;
 
     printf("✨ Vous fouillez le trésor...\n");
     pressEnterToContinue();
     afficherInterfaceExploration(player, tierMap, playerProgress->row, playerProgress->col);
 
-    int choix = rand() % 2; // 0 = consommable, 1 = bibelot
-    Objet *loot = NULL;
+    int choix = rand() % 100 + 1; // entre 1 et 100
 
-    if (choix == 0) {
-        long id_obj = getRandomObjectIdWithRareteMax(modalConsumablesList, rarete_max);
-        if (id_obj < 0) {
-            fprintf(stderr, "⚠ Aucun consommable trouvé à cette rareté.\n");
-            pressEnterToContinue();
-            return;
-        }
-
-        ajouterObjet(modalConsumablesList, player->liste_consommables, id_obj);
-        loot = player->liste_consommables->objets[player->liste_consommables->longueur - 1];
-
+    // 45% de chance (entre 1 et 45) -> perles
+    if (choix <= 45) {
+        unsigned perles_gagnees = rarete_max * 10 + random_int(0, 10); // entre 10 et 60 perles
+        player->perles += perles_gagnees;
+        printf("\n>> 💰 Vous trouvez %u perles dans le trésor !\n", perles_gagnees);
+    }
+    // 40% de chance (entre 46 et 80) -> consommable
+    else if (choix <= 45 + 40) {
+        Objet *loot = joueurGagneConsommableViaRareteMax(player, modalConsumablesList, rarete_max);
         printf("\n>> 🥐 Vous avez trouvé un consommable [%s] : [%s] !\n",
-               enumRareteToChar(loot->rarete), loot->nom);
-    } else {
-        long id_obj = getRandomObjectIdWithRareteMax(modalOrnamentsList, rarete_max);
-        if (id_obj < 0) {
-            printf("⚠ Aucun bibelot trouvé à cette rareté.\n");
-            pressEnterToContinue();
-            return;
-        }
-
-        ajouterObjet(modalOrnamentsList, player->liste_bibelots, id_obj);
-        loot = player->liste_bibelots->objets[player->liste_bibelots->longueur - 1];
-
-        printf("\n>> 💎 Vous découvrez un bibelot [%s] : [%s] !\n",
+                enumRareteToChar(loot->rarete), loot->nom);
+    }
+    // 10% de chance (entre 81 et 90) -> arme (non implémenté pour l'instant)
+    else if (choix <= 45 + 40 + 10) {
+        Arme *loot = joueurGagneRandomArmeViaRarete(player, modalArsenal, rarete_max);
+        printf("\n>> ⚔️ Vous avez trouvé une arme [%s] : [%s] !\n",
                enumRareteToChar(loot->rarete), loot->nom);
     }
+    // 5% de chance (entre 96 et 100) -> bibelot
+    else if (choix <= 100) {
+        Objet *loot = joueurGagneBibelotViaRareteMax(player, modalOrnamentsList, rarete_max);
+        printf("\n>> 💎 Vous avez trouvé un bibelot [%s] : [%s] !\n",
+               enumRareteToChar(loot->rarete), loot->nom);
+    }
+
+    pressEnterToContinue();
 }
 
 
@@ -512,10 +511,9 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
             
             case ZONE_TREASURE: {
                 printf("\n🪙 Trésor trouvé !\n");
-                handleTreasureZone(player, tierMap, playerProgress, modalConsumablesList, modalOrnamentsList);
+                handleTreasureZone(player, tierMap, playerProgress, modalConsumablesList, modalOrnamentsList, modalArsenal);
                 target_zone->type = ZONE_PATH; // On vide la case
                 mark_cell_as_cleared(playerProgress, playerProgress->row, playerProgress->col); // On marque comme nettoyée
-                pressEnterToContinue();
                 playerProgress->zone_actuelle = ZONE_PATH; // on update la zone actuelle (pour sauvegarde)
                 continue;
             }
