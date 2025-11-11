@@ -12,8 +12,8 @@ jobs:
           - ubuntu-latest        # Linux x86_64
           - windows-latest       # Windows x86_64
           - windows-latest-arm64 # Windows arm64
-          - macos-13             # macOS x86_64 (Intel)
-          - macos-14             # macOS arm64 (Apple Silicon)
+          - macos-15-intel       # NOUVEAU: macOS x86_64 (Intel)
+          - macos-latest         # NOUVEAU: macOS arm64 (Apple Silicon)
 
     runs-on: ${{ matrix.os }}
 
@@ -54,12 +54,10 @@ jobs:
           mingw-w64-ucrt-aarch64-windres
 
     - name: 3. Compiler le projet
-      # Cette commande fonctionne partout maintenant
-      # MSYS2 ajoute automatiquement le 'make' de Windows au PATH
       run: make -C code
 
     - name: 4. Sauvegarder le binaire (l'Artifact)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: oceandepth-${{ runner.os }}-${{ runner.arch }}
         path: code/output/oceandepth* # Récupère .exe ou le binaire linux/mac
@@ -78,11 +76,10 @@ jobs:
         sudo apt-get install -y gcc-aarch64-linux-gnu make
 
     - name: 3. Compiler le projet (cross-compile)
-      # On force le compilateur (CC) dans le Makefile
       run: make -C code CC=aarch64-linux-gnu-gcc
     
     - name: 4. Sauvegarder le binaire (l'Artifact)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: oceandepth-linux-arm64
         path: code/output/oceandepth*
