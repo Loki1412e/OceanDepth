@@ -107,7 +107,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
     /*===== Boucle principale ====*/
     /*============================*/
 
-    printSave(actualSave);
+    printSave(actualSave); // DEBUG
     printf("========== [%s] entre dans les profondeurs maritimes. ==========\n\n", player->nom);
     pressEnterToContinue();
 
