@@ -141,46 +141,6 @@ GroupeCreatureMarine *initRandomGroupByDangerosity(Bestiaire *modalBestiary, int
     return modalBestiary->groupes[index_group];
 }
 
-Bestiaire *initRandomBestiaryFromDangerosityGroupLevel(Bestiaire *modalBestiary, int dangerosityLevel) {
-    if (!modalBestiary || !modalBestiary->creatures || modalBestiary->longueur_creatures == 0 || !modalBestiary->groupes || modalBestiary->longueur_groupes == 0) {
-        fprintf(stderr, "Erreur: initRandomBestiaryFromDangerosityGroupLevel(): Parametre(s) mal initialisé(s)\n");
-        return NULL;
-    }
-
-    GroupeCreatureMarine *group = initRandomGroupByDangerosity(modalBestiary, dangerosityLevel);
-    if (!group) {
-        fprintf(stderr, "Erreur: initRandomBestiaryFromDangerosityGroupLevel(): Aucune groupe valide trouvée\n");
-        return NULL;
-    }
-
-    Bestiaire *bestiary = calloc(1, sizeof(Bestiaire));
-    if (!bestiary) {
-        fprintf(stderr, "Erreur: initRandomBestiaryFromDangerosityGroupLevel(): Allocation mémoire échouée\n");
-        return NULL;
-    }
-
-    bestiary->longueur_creatures = group->longueur;
-    bestiary->creatures = calloc(group->longueur, sizeof(CreatureMarine*));
-    if (!bestiary->creatures) {
-        fprintf(stderr, "Erreur: initRandomBestiaryFromDangerosityGroupLevel(): Allocation mémoire échouée\n");
-        freeBestiary(bestiary);
-        return NULL;
-    }
-
-    for (size_t i = 0; i < group->longueur; i++) {
-        bestiary->creatures[i] = duplicateCreature(modalBestiary->creatures[group->id_creatures[i]]);
-        if (!bestiary->creatures[i]) {
-            fprintf(stderr, "Erreur: initRandomBestiaryFromDangerosityGroupLevel(): Allocation mémoire échouée\n");
-            freeBestiary(bestiary);
-            return NULL;
-        }
-    }
-
-    sortCreaturesBySpeed(bestiary->creatures, bestiary->longueur_creatures);
-
-    return bestiary;
-}
-
 
 int addCreatureInBestiary(Bestiaire *modalBestiary, Bestiaire *bestiary, long idConf) {
     if (!modalBestiary || !modalBestiary->creatures || modalBestiary->longueur_creatures == 0 || !bestiary)
@@ -398,19 +358,6 @@ int setBestiaryCreaturesFromConf(Bestiaire *modalBestiary, ListeCompetence *moda
             modalBestiary->creatures[index]->nom = my_strdup(line + 4);
             if (!modalBestiary->creatures[index]->nom) {
                 fprintf(stderr, "Erreur: setBestiaryCreaturesFromConf(): my_strdup() -> \"nom=\"\n");
-                freeBestiary(modalBestiary);
-                fclose(f);
-                return EXIT_FAILURE;
-            }
-        }
-
-        else if (strncmp(line, "pv_min=", 7) == 0) {
-            line[strcspn(line, "\n")] = 0; // retirer le \n si besoin
-            if (line[7] == '\0') continue; // ligne vide
-
-            modalBestiary->creatures[index]->pv_min = my_strToInt(line + 7, &res);
-            if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur: setBestiaryCreaturesFromConf(): my_strToInt() -> \"pv_min=\"\n");
                 freeBestiary(modalBestiary);
                 fclose(f);
                 return EXIT_FAILURE;
@@ -713,7 +660,6 @@ CreatureMarine *duplicateCreature(CreatureMarine *modal) {
     // Init
     
     creature->id = modal->id;
-    creature->pv_min = modal->pv_min;
     creature->pv_max = modal->pv_max;
     creature->pv = modal->pv;
     creature->attaque_min = modal->attaque_min;

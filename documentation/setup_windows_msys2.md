@@ -60,9 +60,9 @@ cd ./code/
 make run
 ```
 
-Lancer en mode debug :
+Compiler en mode debug :
 
 ```bash
 cd ./code/
-make clean && make debug && make run
+cls && make clean && make debug
 ```

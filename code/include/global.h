@@ -214,7 +214,6 @@
     typedef struct {
         long id;
         char *nom;
-        int pv_min;
         int pv_max;
         int pv;
         int attaque_min;
@@ -261,6 +260,15 @@
 
 
     typedef struct {
+        CreatureMarine **creatures;
+        size_t longueur_creatures;
+        int action_restante;
+        int action_max;
+    } EtatCombat;
+    
+
+
+    typedef struct {
         int row;
         int col;
     } ClearedCell;
@@ -273,6 +281,7 @@
         int start_col; // colonne de départ du joueur (0..TIER_LANES-1)
         ClearedCell *cleared_cells;  // tableau dynamique des cellules nettoyées
         size_t cleared_count; // nombre de cellules nettoyées
+        ZoneType zone_actuelle;
     } PlayerProgress;
 
     typedef struct {
@@ -295,6 +304,7 @@
         size_t derniere_modification; // time(null) -> en secondes
         Plongeur *diver;
         PlayerProgress *player_progress;
+        EtatCombat *etat_combat; // NULL si pas en combat
     } Sauvegarde;
 
     typedef struct {

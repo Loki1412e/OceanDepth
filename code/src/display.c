@@ -337,7 +337,7 @@ void printCreature(CreatureMarine *creature) {
     }
     printf("CreatureMarine ID: %ld\n", creature->id);
     printf("Nom Type: %s\n", creature->nom ? creature->nom : "(null)");
-    printf("PV: %d (Min: %d, Max: %d)\n", creature->pv, creature->pv_min, creature->pv_max);
+    printf("PV: %d/%d\n", creature->pv, creature->pv_max);
     printf("Attaque: Min %d, Max %d\n", creature->attaque_min, creature->attaque_max);
     printf("Defense: %d\n", creature->defense);
     printf("Vitesse: %d\n", creature->vitesse);
@@ -486,6 +486,33 @@ void printSaveLastRun(Sauvegarde *save) {
     printf("\n");
 }
 
+void printPlayerProgress(PlayerProgress *progress) {
+    if (!progress) {
+        printf("NULL Progression pointer\n");
+        return;
+    }
+    printf("Progression du joueur:\n");
+    printf(" Palier actuel: %d\n", progress->tier);
+    printf(" Position: (row: %d, col: %d)\n", progress->row, progress->col);
+    printf(" Colonne de départ: %d\n", progress->start_col);
+    printf(" Cellules nettoyées: %zu\n", progress->cleared_count);
+    printf(" Zone actuelle: %s\n", get_zone_type_symbol(progress->zone_actuelle));
+}
+
+void printEtatCombat(EtatCombat *etat) {
+    if (!etat) {
+        printf("NULL EtatCombat pointer (pas en combat)\n");
+        return;
+    }
+    printf("État du combat:\n");
+    printf(" Action restante: %d/%d\n", etat->action_restante, etat->action_max);
+    printf(" Nombre de créatures: %zu\n", etat->longueur_creatures);
+    for (size_t i = 0; i < etat->longueur_creatures; i++) {
+        printf("  - Créature [%zu]: ", i);
+        printCreature(etat->creatures[i]);
+    }
+}
+
 void printListSave(ListeSauvegardes *saves) {    
     if (saves->longueur_sauvegardes == 0) {
         printf("\nAucune sauvegarde pour le moment.\n\n");
@@ -504,8 +531,15 @@ void printListSave(ListeSauvegardes *saves) {
 
 
 void printSave(Sauvegarde *save) {
+    printf("\n====================================\n");
     printSaveLastRun(save);
+    
     printDiver(save->diver);
+
+    printPlayerProgress(save->player_progress);
+    printf("\n====================================\n\n");
+    printEtatCombat(save->etat_combat);
+    printf("\n====================================\n\n");
 }
 
 

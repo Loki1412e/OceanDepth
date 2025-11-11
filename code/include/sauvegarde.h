@@ -6,6 +6,7 @@
     #include "objets.h"
     #include "armes.h"
     #include "zones.h"
+    #include "combat.h"
 
     typedef struct {
         FILE *file;
@@ -14,6 +15,7 @@
     } SaveTmpFile;
 
     Sauvegarde *initSave();
+    void freeSauvegardeEtatCombat(Sauvegarde *save);
     void freeSauvegarde(Sauvegarde *save);
     void freeSauvegardes(ListeSauvegardes *saves);
 
