@@ -180,10 +180,12 @@ void printListeAction(ListeAction actions, char *prefix) {
     }
 }
 
-void printModififierStatActions(ListeAction actions) {
-    if (actions.longueur == 0 || actions.actions == NULL) {
+void printModififierStatActions(Objet *obj) {
+    if (!obj || obj->listeAction.longueur == 0 || obj->listeAction.actions == NULL) {
         return;
     }
+
+    ListeAction actions = obj->listeAction;
 
     short res;
     int value;
@@ -203,7 +205,7 @@ void printModififierStatActions(ListeAction actions) {
 
         if (count++ > 0) printf(" ");
         else printf(" → ");
-        printf("[%s%d %s]", (value > 0 ? "+" : ""), value, stat_name);
+        printf("[%s%d %s]", (value > 0 ? "+" : ""), value * obj->quantite, stat_name);
     }
 }
 
@@ -284,11 +286,11 @@ void printBibelotsActifs(ListeObjet *bibelots) {
 
     printf("\n\n\t    Bibelots actifs (%zu):\n", bibelots->longueur);
     for (size_t i = 0; i < bibelots->longueur; i++) {
-        Objet *c = bibelots->objets[i];
-        if (!c) continue;
-        printf("\t      - %s", c->nom ? c->nom : "(null)");
-        printModififierStatActions(c->listeAction);
-        printImmuneEffetActions(c->listeAction);
+        Objet *obj = bibelots->objets[i];
+        if (!obj) continue;
+        printf("\t      - %s", obj->nom ? obj->nom : "(null)");
+        printModififierStatActions(obj);
+        printImmuneEffetActions(obj->listeAction);
         printf("\n");
     }
 }

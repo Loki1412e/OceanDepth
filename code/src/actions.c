@@ -287,6 +287,11 @@ int executerAction(Action *action, void *lanceur_ptr, EntiteType lanceur_type, v
                 if (*pv < 0) *pv = 0;
                 printf(">> [%s] a régénéré %d PV.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
             }
+            else if (strcmp(stat_nom, "pv_max") == 0) {
+                *pv_max += valeur;
+                if (*pv_max < 0) *pv_max = 0;
+                printf(">> [%s] a modifié ses PV max de %d.\n", cible_plongeur ? cible_plongeur->nom : cible_creature->nom, valeur);
+            }
             else if (strcmp(stat_nom, "oxygene") == 0 && cible_plongeur) {
                  *oxygene += valeur;
                  if (*oxygene > *oxygene_max) *oxygene = *oxygene_max;

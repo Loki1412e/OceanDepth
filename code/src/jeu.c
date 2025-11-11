@@ -1,18 +1,16 @@
 #include "../include/jeu.h"
 
 
-#define PRIX_CONSOMMABLE_DE_BASE 20
-#define PRIX_BIBELOT_DE_BASE     50
-
 Rarete tirerRareteSelonProfondeur(int tier) {
-    if (tier > 2) return PEU_COMMUN;
-    if (tier > 4) return RARE;
+    if (tier > 8) return ABERANT;
     if (tier > 6) return TRES_RARE;
-    if (tier < 8) return ABERANT;
+    if (tier > 4) return RARE;
+    if (tier > 2) return PEU_COMMUN;
     return COMMUN;
 }
 
-void handleMerchantZone(Plongeur *player, ListeObjet *modalConsumablesList, ListeObjet *modalOrnamentsList) {
+
+void handleMerchantZone(Plongeur *player, TierMap *tierMap, PlayerProgress *playerProgress, ListeObjet *modalConsumablesList, ListeObjet *modalOrnamentsList, Arsenal *modalArsenal) {
     if (!player) {
         fprintf(stderr, "Erreur: handleMerchantZone(): player est NULL.\n");
         return;
@@ -20,30 +18,49 @@ void handleMerchantZone(Plongeur *player, ListeObjet *modalConsumablesList, List
 
     int choix;
     while (1) {
+        afficherInterfaceExploration(player, tierMap, playerProgress->row, playerProgress->col);
         printf("\n💰 Vous avez %u perles.\n", player->perles);
         printf("[1] - Acheter un consommable (25 perles)\n");
-        printf("[2] - Acheter un bibelot (60 perles)\n");
+        printf("[2] - Acheter une arme (60 perles)\n");
+        printf("[3] - Acheter un bibelot (100 perles)\n");
         printf("[0] - Quitter\n> ");
         choix = lireEntier();
 
         if (choix == 0) break;
 
+        int cost;
+
         if (choix == 1 && player->perles >= 25) {
-            player->perles -= 25;
-            long id_obj = getRandomObjectIdWithRareteMax(modalConsumablesList, RARE);
-            if (id_obj >= 0) {
-                ajouterObjet(modalConsumablesList, player->liste_consommables, id_obj);
-                Objet *loot = player->liste_consommables->objets[player->liste_consommables->longueur - 1];
-                printf(">> 🧴 Vous achetez [%s] (%s)\n", loot->nom, enumRareteToChar(loot->rarete));
+            cost = 25;
+            player->perles -= cost;
+            Objet *loot = joueurGagneConsommableViaRareteMax(player, modalConsumablesList, ABERANT); // entre COMMUN et ABERANT
+            if (loot) {
+                printf(">> 🥐 Vous achetez [%s] (%s)\n", loot->nom, enumRareteToChar(loot->rarete));
+            } else {
+                fprintf(stderr, "Erreur: handleMerchantZone(): joueurGagneConsommableViaRareteMax() a échoué\n");
+                player->perles += cost; // On rembourse
             }
         }
         else if (choix == 2 && player->perles >= 60) {
-            player->perles -= 60;
-            long id_obj = getRandomObjectIdWithRareteMax(modalOrnamentsList, TRES_RARE);
-            if (id_obj >= 0) {
-                ajouterObjet(modalOrnamentsList, player->liste_bibelots, id_obj);
-                Objet *loot = player->liste_bibelots->objets[player->liste_bibelots->longueur - 1];
+            cost = 60;
+            player->perles -= cost;
+            Arme *loot = joueurGagneRandomArmeViaRarete(player, modalArsenal, TRES_RARE);
+            if (loot) {
+                printf(">> ⚔️ Vous achetez [%s] (%s)\n", loot->nom, enumRareteToChar(loot->rarete));
+            } else {
+                fprintf(stderr, "Erreur: handleMerchantZone(): joueurGagneRandomArmeViaRarete() a échoué\n");
+                player->perles += cost; // On rembourse
+            }
+        }
+        else if (choix == 3 && player->perles >= 100) {
+            cost = 100;
+            player->perles -= cost;
+            Objet *loot = joueurGagneBibelotViaRareteMax(player, modalOrnamentsList, ABERANT); // entre COMMUN et ABERANT
+            if (loot) {
                 printf(">> 💎 Vous achetez [%s] (%s)\n", loot->nom, enumRareteToChar(loot->rarete));
+            } else {
+                fprintf(stderr, "Erreur: handleMerchantZone(): joueurGagneBibelotViaRareteMax() a échoué\n");
+                player->perles += cost; // On rembourse
             }
         }
         else {
@@ -52,14 +69,9 @@ void handleMerchantZone(Plongeur *player, ListeObjet *modalConsumablesList, List
 
         pressEnterToContinue();
     }
-
-    clearConsole();
 }
 
-void handleTreasureZone(Plongeur *player, PlayerProgress *playerProgress, ListeObjet *modalConsumablesList, ListeObjet *modalOrnamentsList) {
-    printf("\n🪙 Trésor trouvé !\n");
-    pressEnterToContinue();
-
+void handleTreasureZone(Plongeur *player, TierMap *tierMap, PlayerProgress *playerProgress, ListeObjet *modalConsumablesList, ListeObjet *modalOrnamentsList, Arsenal *modalArsenal) {
     if (!player) {
         fprintf(stderr, "Erreur: handleTreasureZone(): player est NULL.\n");
         return;
@@ -84,46 +96,40 @@ void handleTreasureZone(Plongeur *player, PlayerProgress *playerProgress, ListeO
     // rareté max selon la profondeur
     Rarete rarete_max = tirerRareteSelonProfondeur(playerProgress->tier);
     if (rarete_max > ABERANT) rarete_max = ABERANT;
+    if (rarete_max <= DESACTIVE) rarete_max = COMMUN;
 
-    printf("✨ Vous fouillez le coffre...\n");
+    printf("✨ Vous fouillez le trésor...\n");
+    pressEnterToContinue();
+    afficherInterfaceExploration(player, tierMap, playerProgress->row, playerProgress->col);
 
-    int choix = rand() % 2; // 0 = consommable, 1 = bibelot
-    Objet *loot = NULL;
+    int choix = rand() % 100 + 1; // entre 1 et 100
 
-    if (choix == 0) {
-        long id_obj = getRandomObjectIdWithRareteMax(modalConsumablesList, rarete_max);
-        if (id_obj < 0) {
-            printf("⚠ Aucun consommable trouvé à cette rareté.\n");
-            pressEnterToContinue();
-            return;
-        }
-
-        ajouterObjet(modalConsumablesList, player->liste_consommables, id_obj);
-        loot = player->liste_consommables->objets[player->liste_consommables->longueur - 1];
-
-        printf("\n>> 🎁 Vous avez trouvé un consommable [%s] : [%s] !\n",
+    // 50% de chance (entre 1 et 50) -> perles
+    if (choix <= 50) {
+        unsigned perles_gagnees = joueurGagnePerlesViaProfondeur(player, playerProgress->tier);
+        printf("\n>> 💰 Vous trouvez %u perles dans le trésor !\n", perles_gagnees);
+    }
+    // 38% de chance (entre 51 et 88) -> consommable
+    else if (choix <= 50 + 38) {
+        Objet *loot = joueurGagneConsommableViaRareteMax(player, modalConsumablesList, rarete_max);
+        printf("\n>> 🥐 Vous avez trouvé un consommable [%s] : [%s] !\n",
+                enumRareteToChar(loot->rarete), loot->nom);
+    }
+    // 10% de chance (entre 89 et 98) -> arme
+    else if (choix <= 50 + 38 + 10) {
+        Arme *loot = joueurGagneRandomArmeViaRarete(player, modalArsenal, rarete_max);
+        printf("\n>> ⚔️ Vous avez trouvé une arme [%s] : [%s] !\n",
                enumRareteToChar(loot->rarete), loot->nom);
-    } else {
-        long id_obj = getRandomObjectIdWithRareteMax(modalOrnamentsList, rarete_max);
-        if (id_obj < 0) {
-            printf("⚠ Aucun bibelot trouvé à cette rareté.\n");
-            pressEnterToContinue();
-            return;
-        }
-
-        ajouterObjet(modalOrnamentsList, player->liste_bibelots, id_obj);
-        loot = player->liste_bibelots->objets[player->liste_bibelots->longueur - 1];
-
-        printf("\n>> 💎 Vous découvrez un bibelot [%s] : [%s] !\n",
+    }
+    // 2% de chance (entre 99 et 100) -> bibelot
+    else if (choix <= 100) {
+        Objet *loot = joueurGagneBibelotViaRareteMax(player, modalOrnamentsList, rarete_max);
+        printf("\n>> 💎 Vous avez trouvé un bibelot [%s] : [%s] !\n",
                enumRareteToChar(loot->rarete), loot->nom);
     }
 
     pressEnterToContinue();
-    clearConsole();
 }
-
-
-
 
 
 void printTierMapActionMenu() {
@@ -220,19 +226,10 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
         return EXIT_FAILURE;
     }
 
-    // // Affichage modalBestiary
-    // printBestiary(modalBestiary);
-    // pressEnterToContinue();
-
-    // // On ajoute des armes de base au joueur (si pas déjà présentes)
-    // ajouterArme(modalArsenal, player->arsenal, 0);
-    // ajouterArme(modalArsenal, player->arsenal, 2);
-
     /*============================*/
     /*===== Boucle principale ====*/
     /*============================*/
 
-    printSave(actualSave); // DEBUG
     printf("========== [%s] entre dans les profondeurs maritimes. ==========\n\n", player->nom);
     pressEnterToContinue();
 
@@ -244,11 +241,6 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
         playerProgress->zone_actuelle = target_zone->type; // on save la zone actuelle (pour sauvegarde)
         goto SWITCH_CHECK_ZONE; // on saute directement au combat
     }
-
-    // // DEBUG: test loot arme
-    // joueurGagneRandomArmeViaRarete(player, modalArsenal, COMMUN); // DEBUG: appel getRandomWeaponIdFromRareteMax(modalArsenal, rarete);
-    // printDiver(player); // DEBUG
-    // pressEnterToContinue(); // DEBUG
 
     // Boucle principale d'exploration
     while (1) {
@@ -522,19 +514,20 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
             
             case ZONE_TREASURE: {
                 printf("\n🪙 Trésor trouvé !\n");
-                handleTreasureZone(player, playerProgress, modalConsumablesList, modalOrnamentsList);
+                handleTreasureZone(player, tierMap, playerProgress, modalConsumablesList, modalOrnamentsList, modalArsenal);
                 target_zone->type = ZONE_PATH; // On vide la case
                 mark_cell_as_cleared(playerProgress, playerProgress->row, playerProgress->col); // On marque comme nettoyée
-                pressEnterToContinue();
                 playerProgress->zone_actuelle = ZONE_PATH; // on update la zone actuelle (pour sauvegarde)
                 continue;
             }
 
             case ZONE_MERCHANT: {
-                printf("\n🧿 Marchand rencontré !\n");
-                handleMerchantZone(player, modalConsumablesList, modalOrnamentsList);
+                printf("\n🧐 Marchand rencontré !\n");
+                pressEnterToContinue();
+                handleMerchantZone(player, tierMap, playerProgress, modalConsumablesList, modalOrnamentsList, modalArsenal);
                 target_zone->type = ZONE_PATH;
                 mark_cell_as_cleared(playerProgress, playerProgress->row, playerProgress->col); // On marque comme nettoyée
+                printf("\n>> 👋 Le marchand s'en va.\n");
                 pressEnterToContinue();
                 playerProgress->zone_actuelle = ZONE_PATH; // on update la zone actuelle (pour sauvegarde)
                 continue;
@@ -565,8 +558,6 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                     fprintf(stderr, "Erreur: runGame(): res = combat()\n");
                     break;
                 }
-                printSave(actualSave); // DEBUG
-                pressEnterToContinue(); // DEBUG
                 freeSauvegardeEtatCombat(actualSave); // On libère l'état de combat après le combat
                 // Si le joueur a choisi de quitter
                 if (res == -1) break;
@@ -575,13 +566,19 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                 // Joueur pas mort
                 Objet *loot = NULL;
 
-                // Attribution du loot (consommable aléatoire de rareté max = dangerosité)
+                // Attribution du loot
+                
+                // Perles selon profondeur
+                unsigned gained_perles = joueurGagnePerlesViaProfondeur(player, playerProgress->tier);
+                printf("\n>> 💰 Vous avez obtenu %u perles !\n", gained_perles);
+
+                // Consommable aléatoire de rareté max = dangerosité
                 loot = joueurGagneConsommableViaRareteMax(player, modalConsumablesList, (Rarete) dangerosityLevel);
                 if (!loot) {
                     fprintf(stderr, "Erreur: runGame(): joueurGagneConsommableViaRareteMax()\n");
                     break;
                 }
-                printf("\n>> 🎁 Vous avez obtenu le consommable [%s] : [%s] !\n", enumRareteToChar(loot->rarete), loot->nom);
+                printf("\n>> 🥐 Vous avez obtenu le consommable [%s] : [%s] !\n", enumRareteToChar(loot->rarete), loot->nom);
                 pressEnterToContinue();
 
                 // Nettoyage de la case
@@ -592,8 +589,6 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
             }
 
             case ZONE_BOSS: {
-                printf("\n👹 Boss atteint !\n");
-                pressEnterToContinue();
                 int dangerosityLevel = 5;
 
                 if (!actualSave->etat_combat) {
@@ -618,8 +613,6 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                     fprintf(stderr, "Erreur: runGame(): res = combat()\n");
                     break;
                 }
-                printSave(actualSave); // DEBUG
-                pressEnterToContinue(); // DEBUG
                 freeSauvegardeEtatCombat(actualSave); // On libère l'état de combat après le combat
                 // Si le joueur a choisi de quitter
                 if (res == -1) break;
@@ -628,13 +621,19 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                 // Joueur pas mort
                 Objet *loot = NULL;
 
-                // Attribution du loot (consommable aléatoire de rareté max = dangerosité)
+                // Attribution du loot
+                
+                // Perles selon profondeur (x2 pour les boss)
+                unsigned gained_perles = joueurGagnePerlesViaProfondeur(player, playerProgress->tier) * 2;
+                printf("\n>> 💰 Vous avez obtenu %u perles !\n", gained_perles);
+
+                // Consommable aléatoire de rareté max = dangerosité
                 loot = joueurGagneConsommableViaRareteMax(player, modalConsumablesList, (Rarete) dangerosityLevel);
                 if (!loot) {
                     fprintf(stderr, "Erreur: runGame(): joueurGagneConsommableViaRareteMax()\n");
                     break;
                 }
-                printf("\n>> 🎁 Vous avez obtenu le consommable [%s] : [%s] !\n", enumRareteToChar(loot->rarete), loot->nom);
+                printf("\n>> 🥐 Vous avez obtenu le consommable [%s] : [%s] !\n", enumRareteToChar(loot->rarete), loot->nom);
 
                 // Attribution du loot (bibelot aléatoire de rareté max = dangerosité)
                 loot = joueurGagneBibelotViaRareteMax(player, modalOrnamentsList, (Rarete) dangerosityLevel);
@@ -642,7 +641,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                     fprintf(stderr, "Erreur: runGame(): joueurGagneBibelotViaRareteMax()\n");
                     break;
                 }
-                printf(">> 🎁 Vous avez obtenu le bibelot [%s] : [%s] !\n", enumRareteToChar(loot->rarete), loot->nom);
+                printf(">> 💎 Vous avez obtenu le bibelot [%s] : [%s] !\n", enumRareteToChar(loot->rarete), loot->nom);
 
                 pressEnterToContinue();
 
