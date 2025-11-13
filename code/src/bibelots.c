@@ -13,16 +13,13 @@ int ajouterBibelot(ListeObjet *modal, Plongeur *joueur, long id_objet) {
 
     ListeObjet *list = joueur->liste_bibelots;
 
-    for (size_t i = 0; i < list->longueur; i++) {
-        // Si l'objet est déjà présent dans la liste des bibelots
-        if (list->objets[i]->id == id_objet) return EXIT_SUCCESS;
-    }
-
+    // On ajoute l'objet à la liste des bibelots du joueur
     if (ajouterObjet(modal, list, id_objet) != EXIT_SUCCESS) {
         fprintf(stderr, "Erreur: ajouterBibelot(): ajouterObjet(): Impossible d'ajouter l'objet avec l'id %ld à la liste des bibelots.\n", id_objet);
         return EXIT_FAILURE;
     }
 
+    // On applique les actions de l'objet
     if (appliquerActionsObjet(modal->objets[id_objet], joueur, ENTITE_PLONGEUR, NO_REVERSE) != EXIT_SUCCESS) {
         fprintf(stderr, "Erreur: ajouterBibelot(): appliquerActionsObjet(): Impossible d'appliquer l'objet avec l'id %ld à la liste des bibelots.\n", id_objet);
         // supprimerBibelot(list, id_objet);

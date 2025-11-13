@@ -1,5 +1,9 @@
 # OceanDepth 🤿🪙🐙
 
+[![Build MultiArch64 C/C++ Project](https://github.com/Loki1412e/OceanDepth/actions/workflows/build.yml/badge.svg)](https://github.com/Loki1412e/OceanDepth/actions/workflows/build.yml)
+
+## 📖 Description du Projet
+
 Projet OceanDepth 2025 de l’ESGI pour les étudiants de 3ᵉ année (3ESGI IABD CL B ALT RO) — Groupe 2  
 Membres : FUGON Sofiane, HADDAD Thinina, JAIEL FERRO Milhane
 
@@ -16,18 +20,11 @@ Prérequis :
 
 Voici comment configurer l'environement sous windows : [`setup_windows_msys2.md`](./documentation/setup_windows_msys2.md)
 
-**Linux arm64/aarch64**
+**Linux**
 
 ```bash
 sudo apt update -y && sudo apt upgrade -y
 sudo apt install build-essential valgrind -y
-```
-
-**Linux x86_64/amd64**
-
-```bash
-sudo apt update -y && sudo apt upgrade -y
-sudo apt install build-essential gcc-aarch64-linux-gnu mingw-w64 valgrind -y
 ```
 
 ### Pour finir il faut télécharger les assets dans le dossier ./code/assets/  ([télécharger via GoogleDrive](https://drive.google.com/drive/folders/1PaWy5Z0gs6dmZUdHXEOvd_NeacdMIMX7?usp=drive_link))
@@ -36,26 +33,17 @@ sudo apt install build-essential gcc-aarch64-linux-gnu mingw-w64 valgrind -y
 
 - Depuis le dossier racine du projet
 ```bash
-cd ./code/
-make run
+make -C ./code/ run
 ```
 
 - Compiler en mode debug
 ```bash
-cd ./code/
-make clean && make debug
+make -C ./code/ clean && make -C ./code/ debug
 ```
 
 - Lancer avec valgrind (linux uniquement)
 ```bash
-cd ./code/
-clear && make valgrind
-```
-
-- Compiler pour toutes les platformes (linux x86_64/amd64 uniquement)
-```bash
-cd ./code/
-clear && make -f MakefileMultiArch64
+clear && make -C ./code/ valgrind
 ```
 
 ## 📖 Description
@@ -78,7 +66,6 @@ GROUPE-02/
 │
 ├───code/
 │   │   Makefile
-│   │   MakefileMultiArch64
 │   │
 │   ├───include/
 │   │       actions.h

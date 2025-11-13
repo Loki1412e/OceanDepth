@@ -1,6 +1,7 @@
 .vscode/*
 
 code/output/save/*
+code/output/defaultconf/*
 code/output/assets/*
 !code/output/assets/README.md
 

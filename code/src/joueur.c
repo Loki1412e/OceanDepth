@@ -320,14 +320,20 @@ int appliquerConsommationOxygeneProfondeur(Plongeur *joueur) {
     return perte_ox;
 }
 
+unsigned joueurGagnePerlesViaProfondeur(Plongeur *joueur, int pallier) {
+    Rarete rarete = tirerRareteSelonProfondeur(pallier);
+    unsigned gained_perles = rarete * 10 + random_int(0, 10); // entre 10 et 60 perles
+    joueur->perles += gained_perles;
+    return gained_perles;
+}
+
 Objet *joueurGagneConsommableViaRareteMax(Plongeur *joueur, ListeObjet *modalObjectsList, Rarete rarete_max) {
     if (!joueur || !modalObjectsList || rarete_max < COMMUN || rarete_max >= LENGTH_Rarete) {
         fprintf(stderr, "Erreur: joueurGagneConsommableViaRareteMax(): Invalid params\n");
         return NULL;
     }
 
-    Rarete rarete = random_int(COMMUN, rarete_max);
-    long id_objet = getRandomObjectIdWithRareteMax(modalObjectsList, rarete);
+    long id_objet = getRandomObjectIdWithRareteMax(modalObjectsList, rarete_max);
     if (id_objet == -1) {
         fprintf(stderr, "Erreur: joueurGagneConsommableViaRareteMax(): getRandomObjectIdWithRareteMax()\n");
         return NULL;
@@ -347,8 +353,7 @@ Objet *joueurGagneBibelotViaRareteMax(Plongeur *joueur, ListeObjet *modalObjects
         return NULL;
     }
 
-    Rarete rarete = random_int(COMMUN, rarete_max);
-    long id_objet = getRandomObjectIdWithRareteMax(modalObjectsList, rarete);
+    long id_objet = getRandomObjectIdWithRareteMax(modalObjectsList, rarete_max);
     if (id_objet == -1) {
         fprintf(stderr, "Erreur: joueurGagneBibelotViaRareteMax(): getRandomObjectIdWithRareteMax()\n");
         return NULL;
@@ -369,9 +374,9 @@ Arme *joueurGagneRandomArmeViaRarete(Plongeur *joueur, Arsenal *modalArsenal, Ra
         return NULL;
     }
 
-    long id_arme = getRandomWeaponIdFromRareteMax(modalArsenal, rarete);
+    long id_arme = getRandomWeaponIdFromRarete(modalArsenal, rarete);
     if (id_arme == -1) {
-        fprintf(stderr, "Erreur: joueurGagneRandomArmeViaRarete(): getRandomWeaponIdFromRareteMax()\n");
+        fprintf(stderr, "Erreur: joueurGagneRandomArmeViaRarete(): getRandomWeaponIdFromRarete()\n");
         return NULL;
     }
 

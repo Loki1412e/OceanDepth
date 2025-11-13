@@ -28,7 +28,7 @@
     void printObjectsList(ListeObjet *objects);
     void printBibelotsActifs(ListeObjet *bibelots);
 
-    void printSaveLastRun(Sauvegarde *save);
+    void printLastRunTimeDiff(Sauvegarde *save);
     void printListSave(ListeSauvegardes *saves);
 
     void printSave(Sauvegarde *save);

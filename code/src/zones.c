@@ -112,13 +112,13 @@ TierMap *build_tier(int tier, unsigned seed, PlayerProgress *p, short isNewTier)
                 z.type = ZONE_TREASURE;
 
             else if(roll < (unsigned)(blocked_rate + treasure_rate + merchant_rate))
-    			z.type = ZONE_MERCHANT;
+    			      z.type = ZONE_MERCHANT;
 
-			else if(roll < (unsigned)(blocked_rate + treasure_rate + merchant_rate + bubble_rate))
-    			z.type = ZONE_BUBBLE;
+            else if(roll < (unsigned)(blocked_rate + treasure_rate + merchant_rate + bubble_rate))
+                z.type = ZONE_BUBBLE;
 
-			else
-    			z.type = ZONE_PATH;
+            else
+                z.type = ZONE_PATH;
 
             AT(m,r,c) = z;
         }
@@ -201,7 +201,7 @@ char *get_zone_type_symbol(ZoneType type) {
         case ZONE_BLOCKED:  return "🪨";
         case ZONE_TREASURE: return "🪙";
         case ZONE_MONSTER:  return "🐙";
-        case ZONE_MERCHANT: return "🧿";
+        case ZONE_MERCHANT: return "🧐";
         case ZONE_BUBBLE:   return "🫧";
         default:            return "  ";
     }
@@ -220,7 +220,7 @@ void draw_tier(char *prefix,const TierMap *m, int player_row, int player_col){
         }
         printf("\n");
     }
-    printf("\n%sLégende : | 🤿 Joueur | 👹 Boss | 🪨 Rocher | 🪙 Trésor | 🐙 Monstre | 🧿 Marchand | 🫧 Bulle |\n\n",
+    printf("\n%sLégende : | 🤿 Joueur | 👹 Boss | 🪨 Rocher | 🪙 Trésor | 🐙 Monstre | 🧐 Marchand | 🫧 Bulle |\n\n",
        prefix ? prefix : "");
 
     const Zone *z = &AT((TierMap*)m, player_row, player_col);

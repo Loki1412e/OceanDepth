@@ -1,0 +1,85 @@
+name: Build MultiArch64 C/C++ Project
+
+# on: [push, pull_request, workflow_dispatch]
+# Se déclenche pull request et manuellement
+on: [pull_request, workflow_dispatch]
+
+jobs:
+  # Job 1: Compiler pour toutes les plateformes "natives"
+  build-native:
+    strategy:
+      matrix:
+        os: 
+          - ubuntu-latest        # Linux x86_64
+          - windows-latest       # Windows x86_64
+          # - windows-latest-arm64 # Windows arm64
+          - macos-15-intel       # macOS x86_64 (Intel)
+          - macos-latest         # macOS arm64 (Apple Silicon)
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: 1. Récupérer le code
+      uses: actions/checkout@v3
+
+    - name: 2. Installer les outils (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential make
+
+    - name: 2. Installer les outils (macOS)
+      if: runner.os == 'macOS'
+      run: brew install make
+
+    - name: 2. Installer les outils (Windows x86_64)
+      if: runner.os == 'Windows' && runner.arch == 'X64'
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW64
+        update: false  # Accélère le build (pas de mise à jour)
+        install: >-
+          mingw-w64-x86_64-gcc
+          mingw-w64-x86_64-binutils
+
+    # - name: 2. Installer les outils (Windows ARM64)
+    #   if: runner.os == 'Windows' && runner.arch == 'ARM64'
+    #   uses: msys2/setup-msys2@v2
+    #   with:
+    #     msystem: MINGW-AARCH64 # Le bon système MSYS2 pour ARM64
+    #     update: false  # Accélère le build
+    #     install: >-
+    #       mingw-w64-ucrt-aarch64-gcc
+    #       mingw-w64-ucrt-aarch64-binutils
+    #       mingw-w64-ucrt-aarch64-windres
+
+    - name: 3. Compiler le projet
+      run: make -C code
+
+    - name: 4. Sauvegarder le binaire (l'Artifact)
+      uses: actions/upload-artifact@v4
+      with:
+        name: oceandepth-${{ runner.os }}-${{ runner.arch }}
+        path: code/output/
+
+  # Job 2: Compilation croisée pour Linux arm64 (Raspberry Pi)
+  build-linux-arm64:
+    runs-on: ubuntu-latest # On utilise une machine Linux x86_64
+    steps:
+    - name: 1. Récupérer le code
+      uses: actions/checkout@v3
+
+    - name: 2. Installer le compilateur croisé ARM
+      run: |
+        sudo apt-get update
+        # Installe le compilateur croisé ET make
+        sudo apt-get install -y gcc-aarch64-linux-gnu make
+
+    - name: 3. Compiler le projet (cross-compile)
+      run: make -C code CC=aarch64-linux-gnu-gcc
+    
+    - name: 4. Sauvegarder le projet (binaire + conf/ + assets/) (l'Artifact)
+      uses: actions/upload-artifact@v4
+      with:
+        name: oceandepth-linux-arm64
+        path: code/output/
