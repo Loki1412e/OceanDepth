@@ -1,8 +1,8 @@
 name: Build MultiArch64 C/C++ Project
 
 # on: [push, pull_request, workflow_dispatch]
-# Se déclenche manuellement
-on: [workflow_dispatch]
+# Se déclenche pull request et manuellement
+on: [pull_request, workflow_dispatch]
 
 jobs:
   # Job 1: Compiler pour toutes les plateformes "natives"
