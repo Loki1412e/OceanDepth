@@ -556,15 +556,15 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
             case ZONE_BUBBLE: {
     			printf("\n🫧 Zone de bulles apaisantes !\n");
 
-				player->fatigue +=3;
-    		// On évite de dépasser le maximum
-    			if (player->fatigue > player->fatigue_max)
-        			player->fatigue = player->fatigue_max;
+				player->fatigue -= 3;
+    		    // On évite de dépasser le minimum
+    			if (player->fatigue < 0)
+        			player->fatigue = 0;
 
 
     			printf("✨ Vous respirez profondément dans les bulles. Votre Oxygene remonte à %d \n",player->oxygene_max);
-    			printf("💤 Fatigue +3 fatigue vaut %d)\n",
-           			 player->fatigue);
+    			printf("💤 Fatigue -3 (%d/%d)\n",
+           			 player->fatigue, player->fatigue_max);
 
     			// Nettoyage de la zone
     			target_zone->type = ZONE_PATH;
