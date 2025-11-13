@@ -16,6 +16,11 @@ void handleMerchantZone(Plongeur *player, TierMap *tierMap, PlayerProgress *play
         return;
     }
 
+    // rareté max selon la profondeur
+    Rarete rarete_max = tirerRareteSelonProfondeur(playerProgress->tier);
+    if (rarete_max > ABERANT) rarete_max = ABERANT;
+    if (rarete_max <= DESACTIVE) rarete_max = COMMUN;
+
     int choix;
     while (1) {
         afficherInterfaceExploration(player, tierMap, playerProgress->row, playerProgress->col);
@@ -44,7 +49,7 @@ void handleMerchantZone(Plongeur *player, TierMap *tierMap, PlayerProgress *play
         else if (choix == 2 && player->perles >= 60) {
             cost = 60;
             player->perles -= cost;
-            Arme *loot = joueurGagneRandomArmeViaRarete(player, modalArsenal, TRES_RARE);
+            Arme *loot = joueurGagneRandomArmeViaRarete(player, modalArsenal, rarete_max);
             if (loot) {
                 printf(">> ⚔️ Vous achetez [%s] (%s)\n", loot->nom, enumRareteToChar(loot->rarete));
             } else {
