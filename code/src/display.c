@@ -547,13 +547,13 @@ void printSave(Sauvegarde *save) {
 
 void printProgressBar(char *prefix, int actuel, int max, int longueur) {
     if (actuel < 0) actuel = 0;
-    printf("%-10s: [", prefix);
+    printf("%-10s: ", prefix);
     int nb_pleins = (int)(((float)actuel / max) * longueur);
     for (int i = 0; i < longueur; i++) {
         if (i < nb_pleins) printf("█");
         else printf("▒");
     }
-    printf("] %3d/%-3d", actuel, max);
+    printf(" %3d/%-3d", actuel, max);
 }
 
 
@@ -566,7 +566,7 @@ void afficherInterfaceJoueur(Plongeur *joueur) {
     int ox_percent = joueur->oxygene * 100 / joueur->oxygene_max;
     
     // --- STATS DU JOUEUR ---
-    printf("%-10s: [ %s ]\n", "\n\t    Nom", joueur->nom);
+    printf("\n\t    %-10s: [ %s ]\n", "Nom", joueur->nom);
     printf("\n\t    "); printProgressBar("Vie", joueur->pv, joueur->pv_max, 40);
     if (joueur->oxygene <= 0) printf("  ⛔ Plus d'oxygène, vous suffoquez ! -%d PV\n", perte);
     
@@ -574,6 +574,8 @@ void afficherInterfaceJoueur(Plongeur *joueur) {
     if (ox_percent <= 10) printf("  ⚠️  Alerte critique : oxygène bas (%d%%) !\n", ox_percent);
     
     printf("\n\t    "); printProgressBar("Fatigue", joueur->fatigue, joueur->fatigue_max, 10);
+
+    printf("\n\t    %-10s: %hu\n", "Perles", joueur->perles);
 
     if (joueur->liste_etats.longueur > 0) {
         printf("\n\n\t    Etats :  ");
