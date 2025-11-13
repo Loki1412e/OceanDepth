@@ -33,20 +33,17 @@ sudo apt install build-essential valgrind -y
 
 - Depuis le dossier racine du projet
 ```bash
-cd ./code/
-make run
+make -C ./code/ run
 ```
 
 - Compiler en mode debug
 ```bash
-cd ./code/
-make clean && make debug
+make -C ./code/ clean && make -C ./code/ debug
 ```
 
 - Lancer avec valgrind (linux uniquement)
 ```bash
-cd ./code/
-clear && make valgrind
+clear && make -C ./code/ valgrind
 ```
 
 ## 📖 Description
