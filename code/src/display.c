@@ -12,7 +12,6 @@ void printBestiary(Bestiaire *bestiary);
 void printDiver(Plongeur *diver);
 void printListeEtat(ListeEtat etats);
 
-void printSaveLastRun(Sauvegarde *save);
 void printListSave(ListeSauvegardes *saves);
 
 void printSave(Sauvegarde *save);
@@ -466,26 +465,21 @@ void printDiver(Plongeur *diver) {
     printf("====================================\n\n");
 }
 
-
-void printSaveLastRun(Sauvegarde *save) {
-    size_t diff;
-    
-    printf("%s / ", save->nom);
-    diff = difftime(time(NULL), (time_t) save->derniere_modification);
+void printLastRunTimeDiff(Sauvegarde *save) {
+    if (!save) return;
+    size_t diff = difftime(time(NULL), (time_t) save->derniere_modification);
         
     if (diff < 60)
-        printf("%zus", diff);
+        printf("%zu s", diff);
         
     else if (diff < 3600)
-        printf("%zumin", diff / 60);
+        printf("%zu min", diff / 60);
         
     else if (diff < 86400)
-        printf("%zuh", diff / 3600);
+        printf("%zu h", diff / 3600);
         
     else
-        printf("%zuj", diff / 86400);
-    
-    printf("\n");
+        printf("%zu j", diff / 86400);
 }
 
 void printPlayerProgress(PlayerProgress *progress) {
@@ -515,17 +509,18 @@ void printEtatCombat(EtatCombat *etat) {
     }
 }
 
-void printListSave(ListeSauvegardes *saves) {    
-    if (saves->longueur_sauvegardes == 0) {
+void printListSave(ListeSauvegardes *listSave) {    
+    if (listSave->longueur_sauvegardes == 0) {
         printf("\nAucune sauvegarde pour le moment.\n\n");
         return;
     }
 
     printf("\nListe des sauvegardes:\n");
 
-    for (size_t i = 0; i < saves->longueur_sauvegardes; i++) {
-        printf("[%zu] - ", i);
-        printSaveLastRun(saves->sauvegardes[i]);
+    for (size_t i = 0; i < listSave->longueur_sauvegardes; i++) {
+        printf("[ %3zu ]     %-12s     ", i + 1, listSave->sauvegardes[i]->nom);
+        printLastRunTimeDiff(listSave->sauvegardes[i]);
+        printf("\n");
     }
     
     printf("\n");
@@ -534,7 +529,10 @@ void printListSave(ListeSauvegardes *saves) {
 
 void printSave(Sauvegarde *save) {
     printf("\n====================================\n");
-    printSaveLastRun(save);
+    printf("SAVE: %s\n", save->nom);
+    printf("Dernière modification: ");
+    printLastRunTimeDiff(save);
+    printf("\n------------------------------------\n");
     
     printDiver(save->diver);
 
