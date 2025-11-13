@@ -196,7 +196,7 @@ char *get_zone_type_symbol(ZoneType type) {
         case ZONE_BLOCKED:  return "🪨";
         case ZONE_TREASURE: return "🪙";
         case ZONE_MONSTER:  return "🐙";
-        case ZONE_MERCHANT: return "🧐"; // 🆕 symbole marchand
+        case ZONE_MERCHANT: return "🧐";
         default:            return "  ";
     }
 }
