@@ -1,5 +1,9 @@
 # OceanDepth 🤿🪙🐙
 
+[![Build C/C++ Project](https://github.com/Loki1412e/OceanDepth/actions/workflows/build.yml/badge.svg)](https://github.com/Loki1412e/OceanDepth/actions/workflows/build.yml)
+
+## 📖 Description du Projet
+
 Projet OceanDepth 2025 de l’ESGI pour les étudiants de 3ᵉ année (3ESGI IABD CL B ALT RO) — Groupe 2  
 Membres : FUGON Sofiane, HADDAD Thinina, JAIEL FERRO Milhane
 
