@@ -6,21 +6,23 @@
 
 // Choix de la save si il y en a plusieurs
 size_t saveChoice(ListeSauvegardes *listSaves){
+    if (listSaves->longueur_sauvegardes == 1) return 1;
     
-    if (listSaves->longueur_sauvegardes == 1) return 0;
-
-    printf("Choisir la sauvegarde (entre 0 et %zu)\n> ", listSaves->longueur_sauvegardes - 1);
-    size_t choice = listSaves->longueur_sauvegardes;
+    printf("Choisir la sauvegarde (0 pour quitter)\n> ");
+    
+    size_t choice;
     int maxAttemp = 5;
     int attemp = 0;
-    while (choice >= listSaves->longueur_sauvegardes && attemp < maxAttemp) {
+    
+    while (true) {
+        if (attemp++ >= maxAttemp) return 0;
         choice = lireEntier();
-        if (choice >= listSaves->longueur_sauvegardes)
-            printf("Choix invalide, choisir entre [0] et [%zu]\n> ", listSaves->longueur_sauvegardes - 1);
-        attemp++;
+        if (choice <= listSaves->longueur_sauvegardes)
+            return choice;
+        printf("Choix invalide, choisir entre [0] et [%zu]\n> ", listSaves->longueur_sauvegardes);
     }
     
-    return choice;
+    return 0;
 }
 
 
@@ -147,13 +149,13 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
                 
             // Choix de la save si il y en a plusieurs
             choice = saveChoice(listSaves);
-            if (choice >= listSaves->longueur_sauvegardes) break;
+            if (choice == 0 || choice > listSaves->longueur_sauvegardes) break;
                 
             // Allocation mémoire && Load Save
             maxAttemp = 5;
             attemp = 0;
             while (!actualSave && attemp < maxAttemp) {
-                actualSave = loadSave(listSaves->sauvegardes[choice]->nom, false); // false: on veut tte la save (pas de preLoad)
+                actualSave = loadSave(listSaves->sauvegardes[choice - 1]->nom, false); // false: on veut tte la save (pas de preLoad)
                 if (!actualSave) {
                     fprintf(stderr, "\n>>> Erreur lors du chargement de la sauvegarde.\n");
                     pressEnterToContinue();
@@ -187,14 +189,14 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
 
             // Choix de la save si il y en a plusieurs
             choice = saveChoice(listSaves);
-            if (choice >= listSaves->longueur_sauvegardes) break;
+            if (choice == 0 || choice > listSaves->longueur_sauvegardes) break;
 
             // Suppression du fichier
             res = EXIT_FAILURE;
             maxAttemp = 5;
             attemp = 0;
             while (res != EXIT_SUCCESS && attemp < maxAttemp) {
-                strBuff = build_filepath(SAVE_DIR, listSaves->sauvegardes[choice]->nom);
+                strBuff = build_filepath(SAVE_DIR, listSaves->sauvegardes[choice - 1]->nom);
                 if (strBuff) {
                     res = remove_file(strBuff);
                     if (res != EXIT_SUCCESS)
@@ -269,23 +271,27 @@ int main() {
         }
 
         else if (listSaves->longueur_sauvegardes == 1) {
+            printf("[0] - Continuer la dernière partie jouée \"%s\" (Il y a ", listSaves->sauvegardes[0]->nom);
+            printLastRunTimeDiff(listSaves->sauvegardes[0]);
+            printf(").\n");
             printf("\
-[0] - Continuer la partie ('%s')\n\
 [1] - Nouvelle partie\n\
 [2] - Supprimer la sauvegarde\n\
 [3] - Quitter\n\
-> ", listSaves->sauvegardes[0]->nom);
+> ");
             menu_size = 4;
         }
 
         else {
+            printf("[0] - Continuer la dernière partie jouée \"%s\" (Il y a ", listSaves->sauvegardes[0]->nom);
+            printLastRunTimeDiff(listSaves->sauvegardes[0]);
+            printf(").\n");
             printf("\
-[0] - Continuer la partie ('%s')\n\
 [1] - Nouvelle partie\n\
 [2] - Charger une sauvegarde\n\
 [3] - Supprimer une sauvegarde\n\
 [4] - Quitter\n\
-> ", listSaves->sauvegardes[0]->nom);
+> ");
             menu_size = 5;
         }
 
