@@ -1,4 +1,4 @@
-name: Build C/C++ Project
+name: Build MultiArch64 C/C++ Project
 
 # on: [push, pull_request, workflow_dispatch]
 # Se déclenche manuellement
