@@ -18,6 +18,8 @@
     void freeCreatures(CreatureMarine **creatures, size_t length);
     void freeCreature(CreatureMarine *creature);
 
+    int getRandomDangerosityLevel();
+
     void sortCreaturesBySpeed(CreatureMarine **creatures, size_t nb_creatures);
     GroupeCreatureMarine *initRandomGroupByDangerosity(Bestiaire *modalBestiary, int dangerosityLevel);
     void freeGroups(GroupeCreatureMarine **groups, size_t length);
