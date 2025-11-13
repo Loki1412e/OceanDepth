@@ -115,6 +115,7 @@
         ZONE_BOSS,
         ZONE_MONSTER,
         ZONE_MERCHANT,
+      	ZONE_BUBBLE,
         LENGTH_ZoneType
     } ZoneType;
 
