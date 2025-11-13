@@ -1,6 +1,6 @@
 # OceanDepth 🤿🪙🐙
 
-[![Build C/C++ Project](https://github.com/Loki1412e/OceanDepth/actions/workflows/build.yml/badge.svg)](https://github.com/Loki1412e/OceanDepth/actions/workflows/build.yml)
+[![Build MultiArch64 C/C++ Project](https://github.com/Loki1412e/OceanDepth/actions/workflows/build.yml/badge.svg)](https://github.com/Loki1412e/OceanDepth/actions/workflows/build.yml)
 
 ## 📖 Description du Projet
 
