@@ -1,7 +1,8 @@
 name: Build C/C++ Project
 
-# Se déclenche à chaque push ou pull request, et manuellement
-on: [push, pull_request, workflow_dispatch]
+# on: [push, pull_request, workflow_dispatch]
+# Se déclenche manuellement
+on: [workflow_dispatch]
 
 jobs:
   # Job 1: Compiler pour toutes les plateformes "natives"
