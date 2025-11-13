@@ -12,7 +12,6 @@ void printBestiary(Bestiaire *bestiary);
 void printDiver(Plongeur *diver);
 void printListeEtat(ListeEtat etats);
 
-void printSaveLastRun(Sauvegarde *save);
 void printListSave(ListeSauvegardes *saves);
 
 void printSave(Sauvegarde *save);
@@ -180,10 +179,12 @@ void printListeAction(ListeAction actions, char *prefix) {
     }
 }
 
-void printModififierStatActions(ListeAction actions) {
-    if (actions.longueur == 0 || actions.actions == NULL) {
+void printModififierStatActions(Objet *obj) {
+    if (!obj || obj->listeAction.longueur == 0 || obj->listeAction.actions == NULL) {
         return;
     }
+
+    ListeAction actions = obj->listeAction;
 
     short res;
     int value;
@@ -203,7 +204,7 @@ void printModififierStatActions(ListeAction actions) {
 
         if (count++ > 0) printf(" ");
         else printf(" → ");
-        printf("[%s%d %s]", (value > 0 ? "+" : ""), value, stat_name);
+        printf("[%s%d %s]", (value > 0 ? "+" : ""), value * obj->quantite, stat_name);
     }
 }
 
@@ -284,11 +285,11 @@ void printBibelotsActifs(ListeObjet *bibelots) {
 
     printf("\n\n\t    Bibelots actifs (%zu):\n", bibelots->longueur);
     for (size_t i = 0; i < bibelots->longueur; i++) {
-        Objet *c = bibelots->objets[i];
-        if (!c) continue;
-        printf("\t      - %s", c->nom ? c->nom : "(null)");
-        printModififierStatActions(c->listeAction);
-        printImmuneEffetActions(c->listeAction);
+        Objet *obj = bibelots->objets[i];
+        if (!obj) continue;
+        printf("\t      - %s", obj->nom ? obj->nom : "(null)");
+        printModififierStatActions(obj);
+        printImmuneEffetActions(obj->listeAction);
         printf("\n");
     }
 }
@@ -464,26 +465,21 @@ void printDiver(Plongeur *diver) {
     printf("====================================\n\n");
 }
 
-
-void printSaveLastRun(Sauvegarde *save) {
-    size_t diff;
-    
-    printf("%s / ", save->nom);
-    diff = difftime(time(NULL), (time_t) save->derniere_modification);
+void printLastRunTimeDiff(Sauvegarde *save) {
+    if (!save) return;
+    size_t diff = difftime(time(NULL), (time_t) save->derniere_modification);
         
     if (diff < 60)
-        printf("%zus", diff);
+        printf("%zu s", diff);
         
     else if (diff < 3600)
-        printf("%zumin", diff / 60);
+        printf("%zu min", diff / 60);
         
     else if (diff < 86400)
-        printf("%zuh", diff / 3600);
+        printf("%zu h", diff / 3600);
         
     else
-        printf("%zuj", diff / 86400);
-    
-    printf("\n");
+        printf("%zu j", diff / 86400);
 }
 
 void printPlayerProgress(PlayerProgress *progress) {
@@ -513,17 +509,18 @@ void printEtatCombat(EtatCombat *etat) {
     }
 }
 
-void printListSave(ListeSauvegardes *saves) {    
-    if (saves->longueur_sauvegardes == 0) {
+void printListSave(ListeSauvegardes *listSave) {    
+    if (listSave->longueur_sauvegardes == 0) {
         printf("\nAucune sauvegarde pour le moment.\n\n");
         return;
     }
 
     printf("\nListe des sauvegardes:\n");
 
-    for (size_t i = 0; i < saves->longueur_sauvegardes; i++) {
-        printf("[%zu] - ", i);
-        printSaveLastRun(saves->sauvegardes[i]);
+    for (size_t i = 0; i < listSave->longueur_sauvegardes; i++) {
+        printf("[ %3zu ]     %-12s     ", i + 1, listSave->sauvegardes[i]->nom);
+        printLastRunTimeDiff(listSave->sauvegardes[i]);
+        printf("\n");
     }
     
     printf("\n");
@@ -532,7 +529,10 @@ void printListSave(ListeSauvegardes *saves) {
 
 void printSave(Sauvegarde *save) {
     printf("\n====================================\n");
-    printSaveLastRun(save);
+    printf("SAVE: %s\n", save->nom);
+    printf("Dernière modification: ");
+    printLastRunTimeDiff(save);
+    printf("\n------------------------------------\n");
     
     printDiver(save->diver);
 
@@ -545,13 +545,13 @@ void printSave(Sauvegarde *save) {
 
 void printProgressBar(char *prefix, int actuel, int max, int longueur) {
     if (actuel < 0) actuel = 0;
-    printf("%-10s: [", prefix);
+    printf("%-10s: ", prefix);
     int nb_pleins = (int)(((float)actuel / max) * longueur);
     for (int i = 0; i < longueur; i++) {
         if (i < nb_pleins) printf("█");
         else printf("▒");
     }
-    printf("] %3d/%-3d", actuel, max);
+    printf(" %3d/%-3d", actuel, max);
 }
 
 
@@ -564,7 +564,7 @@ void afficherInterfaceJoueur(Plongeur *joueur) {
     int ox_percent = joueur->oxygene * 100 / joueur->oxygene_max;
     
     // --- STATS DU JOUEUR ---
-    printf("%-10s: [ %s ]\n", "\n\t    Nom", joueur->nom);
+    printf("\n\t    %-10s: [ %s ]\n", "Nom", joueur->nom);
     printf("\n\t    "); printProgressBar("Vie", joueur->pv, joueur->pv_max, 40);
     if (joueur->oxygene <= 0) printf("  ⛔ Plus d'oxygène, vous suffoquez ! -%d PV\n", perte);
     
@@ -572,6 +572,8 @@ void afficherInterfaceJoueur(Plongeur *joueur) {
     if (ox_percent <= 10) printf("  ⚠️  Alerte critique : oxygène bas (%d%%) !\n", ox_percent);
     
     printf("\n\t    "); printProgressBar("Fatigue", joueur->fatigue, joueur->fatigue_max, 10);
+
+    printf("\n\t    %-10s: %hu\n", "Perles", joueur->perles);
 
     if (joueur->liste_etats.longueur > 0) {
         printf("\n\n\t    Etats :  ");

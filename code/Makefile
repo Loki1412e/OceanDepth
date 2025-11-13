@@ -8,9 +8,9 @@ SOURCES = $(wildcard ./$(SRCDIR)/*.c)
 
 # Détection Windows (MSYS2) / Linux
 ifeq ($(OS),Windows_NT)
-    RESOURCES = rc/icon.o
-    ICON = ./$(OUTDIR)/assets/logo/icon64x64.ico
-    RCFILE = rc/icon.rc
+    RESOURCES = icon/icon.o
+    ICON = icon/icon64x64.ico
+    RCFILE = icon/icon.rc
 else
     RESOURCES =
     ICON =

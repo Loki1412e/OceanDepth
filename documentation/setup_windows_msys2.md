@@ -11,7 +11,7 @@ Aller sur le site officiel : [https://www.msys2.org/](https://www.msys2.org/)
 ## Etape 2 - Mise à jour du système
 
 A executer dans le terminal MSYS2 :
-```bash
+```pwsh
 pacman -Syu
 ```
 
@@ -19,7 +19,7 @@ pacman -Syu
 
 Toujours dans le terminal MSYS2, installez les paquets nécessaires :
 
-```bash
+```pwsh
 pacman -S mingw-w64-x86_64-gcc make
 ```
 
@@ -40,12 +40,12 @@ En faisant cela toutes les commandes utilisables via MSYS2 seront disponibles pa
 Lancer un nouveau terminal (cmd ou powershell)
 
 - Tester la version de gcc :
-```bash
+```pwsh
 gcc --version
 ```
 
 - Tester la version de make :
-```bash
+```pwsh
 make --version
 ```
 
@@ -55,14 +55,12 @@ Si les 2 fonctionnent c'est bon 👌
 
 Depuis le dossier racine du projet :
 
-```bash
-cd ./code/
-make run
+```pwsh
+make -C ./code/ run
 ```
 
 Compiler en mode debug :
 
-```bash
-cd ./code/
-cls && make clean && make debug
+```pwsh
+cls && make -C ./code/ clean && make -C ./code/ debug
 ```

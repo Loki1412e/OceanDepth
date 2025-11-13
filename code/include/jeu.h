@@ -14,5 +14,6 @@
     #include "combat.h"
 
     int runGame(Sauvegarde *actualSave, short isNewSave);
+    Rarete tirerRareteSelonProfondeur(int tier);
 
 #endif

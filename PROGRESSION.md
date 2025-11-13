@@ -6,8 +6,8 @@
 - [ e ] Étape 1 : Génération créatures
 - [ * ] Étape 2 : Attaque joueur
 - [ * ] Étape 3 : Attaque créatures
-- [ e ] Étape 4 : Récompenses
-- [ e ] Étape 5 : Sauvegarde/Chargement
+- [ * ] Étape 4 : Récompenses
+- [ * ] Étape 5 : Sauvegarde/Chargement
 - [ * ] Étape 6 : Compétences aquatiques
 - [ * ] Étape 7 : Cartographie des océans
 
@@ -29,15 +29,18 @@ Légende :
 
 Il y a tres probablement d'autres fonctionnalité à update / créer mais pour le moment :
 
-## Trucs encore à faire :
+## En cours :
 
-* 👺 Voir obtention arme (marchands/coffres/??) --->  on verra apres merge taff soso
+* ⚠️ Revoir la gestion de la fatigue (pas ouf pour le moment)
+> Ajout zone bubble (pas encore fait) + réinitialiser fatigue entre chaque zone (on l'a deja fait ensemble dcp)
+
+* ⚠️ Mieux gérer l'évolution du marché (marchands) -> augmentation prix (normalement la répartition rareté armes / objets est bien mais à voir)
+
+## Trucs encore à faire :
 
 * 👺  Mieux gérer l'apparition des groupes de créatures en fonction de leur niv de dangerosité
 
-* ⚠️ Revoir la gestion de la fatigue (pas ouf pour le moment)
-
-* ℹ️ Accumuler les effets des bibelots quand on en obtient 1 en double (pas du tt fait)
+* ⚠️ Revoir les probas de spawn dans les palliers
 
 ## A faire à la fin (ou au fur et à mesure) :
 
