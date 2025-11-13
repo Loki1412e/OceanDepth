@@ -714,6 +714,16 @@ int setDeathStateCreature(CreatureMarine *creature) {
 }
 
 
+int getRandomDangerosityLevel() {
+    int tirage = random_int(1, 100);
+
+    if (tirage <= 40) return 1; // 40% Faible
+    if (tirage <= 70) return 2; // 30% Moyen
+    if (tirage <= 90) return 3; // 20% Elevé
+    return 4; // 10% Extrême
+}
+
+
 void freeCreature(CreatureMarine *creature) {
     
     if (!creature) return;

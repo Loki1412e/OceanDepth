@@ -578,7 +578,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
 			}
 
             case ZONE_MONSTER: {
-                int dangerosityLevel = 1;
+                int dangerosityLevel = getRandomDangerosityLevel();
 
                 if (!actualSave->etat_combat) {
                     // Initialisation de l'état de combat
@@ -633,7 +633,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
             }
 
             case ZONE_BOSS: {
-                int dangerosityLevel = 5;
+                int dangerosityLevel = 5; // Les boss sont toujours de dangerosité 5
 
                 if (!actualSave->etat_combat) {
 
