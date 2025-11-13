@@ -112,18 +112,33 @@ void handleTreasureZone(Plongeur *player, TierMap *tierMap, PlayerProgress *play
     // 38% de chance (entre 51 et 88) -> consommable
     else if (choix <= 50 + 38) {
         Objet *loot = joueurGagneConsommableViaRareteMax(player, modalConsumablesList, rarete_max);
+        if (!loot) {
+            fprintf(stderr, "Erreur: handleTreasureZone(): joueurGagneConsommableViaRareteMax() a échoué\n");
+            pressEnterToContinue();
+            return;
+        }
         printf("\n>> 🥐 Vous avez trouvé un consommable [%s] : [%s] !\n",
                 enumRareteToChar(loot->rarete), loot->nom);
     }
     // 10% de chance (entre 89 et 98) -> arme
     else if (choix <= 50 + 38 + 10) {
         Arme *loot = joueurGagneRandomArmeViaRarete(player, modalArsenal, rarete_max);
+        if (!loot) {
+            fprintf(stderr, "Erreur: handleTreasureZone(): joueurGagneRandomArmeViaRarete() a échoué\n");
+            pressEnterToContinue();
+            return;
+        }
         printf("\n>> ⚔️ Vous avez trouvé une arme [%s] : [%s] !\n",
                enumRareteToChar(loot->rarete), loot->nom);
     }
     // 2% de chance (entre 99 et 100) -> bibelot
     else if (choix <= 100) {
         Objet *loot = joueurGagneBibelotViaRareteMax(player, modalOrnamentsList, rarete_max);
+        if (!loot) {
+            fprintf(stderr, "Erreur: handleTreasureZone(): joueurGagneBibelotViaRareteMax() a échoué\n");
+            pressEnterToContinue();
+            return;
+        }
         printf("\n>> 💎 Vous avez trouvé un bibelot [%s] : [%s] !\n",
                enumRareteToChar(loot->rarete), loot->nom);
     }
