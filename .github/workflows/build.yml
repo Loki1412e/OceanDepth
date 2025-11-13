@@ -77,7 +77,7 @@ jobs:
     - name: 3. Compiler le projet (cross-compile)
       run: make -C code CC=aarch64-linux-gnu-gcc
     
-    - name: 4. Sauvegarder le binaire (l'Artifact)
+    - name: 4. Sauvegarder le projet (binaire + conf/ + assets/) (l'Artifact)
       uses: actions/upload-artifact@v4
       with:
         name: oceandepth-linux-arm64
