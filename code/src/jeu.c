@@ -561,8 +561,10 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
     			if (player->fatigue < 0)
         			player->fatigue = 0;
 
+                // Restauration oxygène au max
+                player->oxygene = player->oxygene_max;
 
-    			printf("✨ Vous respirez profondément dans les bulles. Votre Oxygene remonte à %d \n",player->oxygene_max);
+    			printf("✨ Vous respirez profondément dans les bulles. Votre Oxygene remonte à %d \n", player->oxygene_max);
     			printf("💤 Fatigue -3 (%d/%d)\n",
            			 player->fatigue, player->fatigue_max);
 
