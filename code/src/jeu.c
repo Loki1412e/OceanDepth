@@ -540,6 +540,34 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                 continue;
             }
 
+            case ZONE_BUBBLE: {
+    			printf("\n🫧 Zone de bulles apaisantes !\n");
+
+    			// Fatigue restaurée = 5 + palier
+    			int amount = 5 + playerProgress->tier;
+
+    			int before = player->fatigue;
+    			player->fatigue += amount;
+
+    		// On évite de dépasser le maximum
+    			if (player->fatigue > player->fatigue_max)
+        			player->fatigue = player->fatigue_max;
+
+    			int real_gain = player->fatigue - before;
+
+    			printf("✨ Vous respirez profondément dans les bulles.\n");
+    			printf("💤 Fatigue +%d   (Actuel: %d / %d)\n",
+           			real_gain, player->fatigue, player->fatigue_max);
+
+    			// Nettoyage de la zone
+    			target_zone->type = ZONE_PATH;
+    			mark_cell_as_cleared(playerProgress, playerProgress->row, playerProgress->col);
+    			playerProgress->zone_actuelle = ZONE_PATH;
+
+    			pressEnterToContinue();
+    			continue;
+			}
+
             case ZONE_MONSTER: {
                 int dangerosityLevel = 1;
 
@@ -597,7 +625,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                 int dangerosityLevel = 5;
 
                 if (!actualSave->etat_combat) {
-                    // Initialisation de l'état de combat
+
                     printf("\n👹 Boss atteint !\n");
                     pressEnterToContinue();
                     
