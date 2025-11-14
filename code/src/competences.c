@@ -123,6 +123,138 @@ ListeCompetence duplicateListeCompetence(ListeCompetence *modal, short *res) {
     return liste;
 }
 
+ListeEffet *duplicateListeEffet(ListeEffet *modal) {
+    if (!modal) {
+        fprintf(stderr, "Erreur: duplicateListeEffet(): Invalid params\n");
+        return NULL;
+    }
+
+    ListeEffet *liste = calloc(1, sizeof(ListeEffet));
+    if (!liste) {
+        fprintf(stderr, "Erreur: duplicateListeEffet(): Allocation mémoire calloc\n");
+        return NULL;
+    }
+
+    liste->longueur = modal->longueur;
+
+    if (modal->longueur == 0) {
+        liste->effets = NULL;
+        return liste;
+    }
+
+    liste->effets = calloc(modal->longueur, sizeof(Effet));
+    if (!liste->effets) {
+        fprintf(stderr, "Erreur: duplicateListeEffet(): Allocation mémoire calloc\n");
+        free(liste);
+        return NULL;
+    }
+
+    for (size_t i = 0; i < modal->longueur; i++) {
+        liste->effets[i] = modal->effets[i];
+    }
+
+    return liste;
+}
+
+// Contient des competences qui sont déjà allouées dans liste1 ou liste2
+ListeCompetence *getComplementaireCompList(ListeCompetence *liste1, ListeCompetence *liste2) {
+    if (!liste1 || !liste2) {
+        fprintf(stderr, "Erreur: getComplementaireCompList(): Invalid params\n");
+        return NULL;
+    }
+
+    ListeCompetence *complementaire = calloc(1, sizeof(ListeCompetence));
+    if (!complementaire) {
+        fprintf(stderr, "Erreur: getComplementaireCompList(): Allocation mémoire calloc\n");
+        return NULL;
+    }
+
+    // Détérmine la longueur de la liste complémentaire
+    for (size_t i = 0; i < liste2->longueur; i++) {
+        int found = false;
+        for (size_t j = 0; j < liste1->longueur; j++) {
+            if (liste2->competences[i].id == liste1->competences[j].id) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) complementaire->longueur++;
+    }
+
+    // Allocation mémoire
+    complementaire->competences = calloc(complementaire->longueur, sizeof(Competence));
+    if (!complementaire->competences) {
+        fprintf(stderr, "Erreur: getComplementaireCompList(): Allocation mémoire calloc\n");
+        free(complementaire);
+        return NULL;
+    }
+
+    // Affectation des compétences
+    size_t index = 0;
+    for (size_t i = 0; i < liste2->longueur; i++) {
+        int found = false;
+        for (size_t j = 0; j < liste1->longueur; j++) {
+            if (liste2->competences[i].id == liste1->competences[j].id) {
+                found = true;
+                break;
+            }
+        }
+        if (!found)
+            complementaire->competences[index++] = liste2->competences[i];
+    }
+
+    complementaire->longueur = index;
+    return complementaire;
+}
+
+
+int ajouterCompetence(ListeCompetence *modalList, ListeCompetence *targetList, long id_competence) {
+    if (!modalList || !targetList) {
+        fprintf(stderr, "Erreur: ajouterCompetence(): Invalid params\n");
+        return EXIT_FAILURE;
+    }
+
+    // Recherche de la compétence dans la liste modale
+    Competence *competenceToAdd = NULL;
+    for (size_t i = 0; i < modalList->longueur; i++) {
+        if (modalList->competences[i].id == id_competence) {
+            competenceToAdd = &modalList->competences[i];
+            break;
+        }
+    }
+    if (!competenceToAdd) {
+        fprintf(stderr, "Erreur: ajouterCompetence(): Compétence avec id %ld non trouvée dans la liste modale\n", id_competence);
+        return EXIT_FAILURE;
+    }
+
+    // Vérification si la compétence existe déjà dans la liste cible
+    for (size_t i = 0; i < targetList->longueur; i++) {
+        if (targetList->competences[i].id == id_competence) {
+            // La compétence existe déjà, ne rien faire
+            return EXIT_SUCCESS;
+        }
+    }
+
+    // Ajout de la compétence à la liste cible
+    Competence *newCompetences = realloc(targetList->competences, (targetList->longueur + 1) * sizeof(Competence));
+    if (!newCompetences) {
+        fprintf(stderr, "Erreur: ajouterCompetence(): Allocation mémoire realloc\n");
+        return EXIT_FAILURE;
+    }
+    targetList->competences = newCompetences;
+
+    short res;
+    targetList->competences[targetList->longueur] = duplicateCompetence(competenceToAdd, &res);
+    if (res == EXIT_FAILURE) {
+        fprintf(stderr, "Erreur: ajouterCompetence(): duplicateCompetence()\n");
+        return EXIT_FAILURE;
+    }
+
+    targetList->longueur++;
+
+    return EXIT_SUCCESS;
+}
+
 
 int setListeCompetenceFromConf(ListeCompetence *modalCreaturesSkills, char *path) {
     if (!modalCreaturesSkills || !modalCreaturesSkills->competences || modalCreaturesSkills->longueur == 0 || !path)
@@ -278,26 +410,26 @@ ListeCompetence initSkillsList(short *res, char *path) {
     }
 
     // Allocation mémoire -> calloc pour tout init 0 ou NULL
-    ListeCompetence modalCreaturesSkills = initEmptySkillList();
-    modalCreaturesSkills.competences = calloc(count_all_unique_model, sizeof(Competence));
-    if (!modalCreaturesSkills.competences) {
+    ListeCompetence modalComp = initEmptySkillList();
+    modalComp.competences = calloc(count_all_unique_model, sizeof(Competence));
+    if (!modalComp.competences) {
         fprintf(stderr, "Erreur: initSkillsList(): Allocation mémoire competences\n");
-        freeListeCompetence(&modalCreaturesSkills);
+        freeListeCompetence(&modalComp);
         *res = EXIT_FAILURE;
-        return modalCreaturesSkills;
+        return modalComp;
     }
-    modalCreaturesSkills.longueur = count_all_unique_model;
+    modalComp.longueur = count_all_unique_model;
 
-    // Initialisation du Bestiaire Model
+    // Initialisation des compétences depuis le fichier de configuration
 
-    if (setListeCompetenceFromConf(&modalCreaturesSkills, path)) {
+    if (setListeCompetenceFromConf(&modalComp, path)) {
         fprintf(stderr, "Erreur: initSkillsList(): setListeCompetenceFromConf()\n");
-        freeListeCompetence(&modalCreaturesSkills);
+        freeListeCompetence(&modalComp);
         *res = EXIT_FAILURE;
-        return modalCreaturesSkills;
+        return modalComp;
     }
     
-    return modalCreaturesSkills;
+    return modalComp;
 }
 
 
@@ -448,4 +580,16 @@ void freeListeCompetence(ListeCompetence *liste_competences) {
     }
     
     liste_competences->longueur = 0;
+}
+
+void freeListeCompetenceComplementaire(ListeCompetence *liste_competences) {
+    if (!liste_competences) return;
+    
+    if (liste_competences->competences) {        
+        free(liste_competences->competences);
+        liste_competences->competences = NULL;
+    }
+    
+    liste_competences->longueur = 0;
+    free(liste_competences);
 }
