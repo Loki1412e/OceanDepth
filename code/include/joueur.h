@@ -9,6 +9,7 @@
     #include "bibelots.h"
     #include "armes.h"
     #include "jeu.h"
+    #include "display.h"
 
     void freeDiverContent(Plongeur *diver);
     void freeDiver(Plongeur *diver);
@@ -21,5 +22,6 @@
     Objet *joueurGagneConsommableViaRareteMax(Plongeur *joueur, ListeObjet *modalObjectsList, Rarete rarete_max);
     Objet *joueurGagneBibelotViaRareteMax(Plongeur *joueur, ListeObjet *modalObjectsList, Rarete rarete_max);
     Arme *joueurGagneRandomArmeViaRarete(Plongeur *joueur, Arsenal *modalArsenal, Rarete rarete);
+    int joueurChoixCompetence(Plongeur *joueur, ListeCompetence *modalListComp);
 
 #endif

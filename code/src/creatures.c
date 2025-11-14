@@ -202,6 +202,17 @@ CreatureMarine *initEmptyCreature() {
         fprintf(stderr, "Erreur: initEmptyCreature(): Allocation mémoire\n");
         return NULL;
     }
+
+    // Initialiser effets_immunises avec une liste vide
+    creature->effets_immunises = calloc(1, sizeof(ListeEffet));
+    if (!creature->effets_immunises) {
+        fprintf(stderr, "Erreur: initEmptyCreature(): Allocation mémoire effets_immunises\n");
+        free(creature);
+        return NULL;
+    }
+    creature->effets_immunises->longueur = 0;
+    creature->effets_immunises->effets = NULL;
+
     return creature;
 }
 
@@ -692,7 +703,14 @@ CreatureMarine *duplicateCreature(CreatureMarine *modal) {
         freeCreature(creature);
         return NULL;
     }
-    
+
+    creature->effets_immunises = duplicateListeEffet(modal->effets_immunises);
+    if (!creature->effets_immunises) {
+        fprintf(stderr, "Erreur: duplicateCreature(): duplicateListeEffet()\n");
+        freeCreature(creature);
+        return NULL;
+    }
+
     return creature;
 }
 
