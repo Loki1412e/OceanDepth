@@ -19,6 +19,10 @@
     ListeCompetence initEmptySkillList();
     Competence duplicateCompetence(Competence *modal, short *res);
     ListeCompetence duplicateListeCompetence(ListeCompetence *modal, short *res);
+    ListeEffet *duplicateListeEffet(ListeEffet *modal);
+
+    int ajouterCompetence(ListeCompetence *modalList, ListeCompetence *targetList, long id_competence);
+    ListeCompetence *getComplementaireCompList(ListeCompetence *liste1, ListeCompetence *liste2);
     
     Competence *choisirRandomCompetence(Competence *competences, size_t longueur);
     int decrementerCooldownsCompetences(ListeCompetence *liste_competences);

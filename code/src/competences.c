@@ -124,15 +124,17 @@ ListeCompetence duplicateListeCompetence(ListeCompetence *modal, short *res) {
 }
 
 ListeEffet *duplicateListeEffet(ListeEffet *modal) {
-    if (!modal) {
-        fprintf(stderr, "Erreur: duplicateListeEffet(): Invalid params\n");
-        return NULL;
-    }
-
     ListeEffet *liste = calloc(1, sizeof(ListeEffet));
     if (!liste) {
         fprintf(stderr, "Erreur: duplicateListeEffet(): Allocation mémoire calloc\n");
         return NULL;
+    }
+
+    // Si modal est NULL, retourner une liste vide
+    if (!modal) {
+        liste->longueur = 0;
+        liste->effets = NULL;
+        return liste;
     }
 
     liste->longueur = modal->longueur;
