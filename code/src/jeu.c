@@ -343,8 +343,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                 if (c->cout_oxygene == 0 && c->cout_pv == 0)
                     printf("Aucun");
                 printf(")");
-                if (c->cooldown_restant > 0)
-                    printf(" (cooldown: %d tour%s restant%s)", c->cooldown_restant, c->cooldown_restant > 1 ? "s" : "", c->cooldown_restant > 1 ? "s" : "");
+                printf(" (cooldown: %d/%d)", c->cooldown_restant, c->cooldown_max);
                 printf("\n    %s\n", c->description);
             }
             printf("> ");
@@ -713,16 +712,13 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
 
                 pressEnterToContinue();
 
-                Competence *chosenCompetence = joueurChoixCompetence(player, &modalComp);
-                if (!chosenCompetence) {
+                // Choix d'une compétence à apprendre
+                res = joueurChoixCompetence(player, &modalComp);
+                if (res == EXIT_FAILURE) {
                     fprintf(stderr, "Erreur: runGame(): joueurChoixCompetence()\n");
                     pressEnterToContinue();
                     break;
                 }
-
-                printf("\n🎉 Vous apprenez la compétence [%s] !\n", chosenCompetence->nom);
-
-                pressEnterToContinue();
 
                 // Génération du palier suivant
                 playerProgress->tier++;

@@ -488,8 +488,7 @@ int combat(Sauvegarde *actualSave, Plongeur *joueur, int isNewCombat) {
                         if (c->cout_oxygene == 0 && c->cout_pv == 0)
                             printf("Aucun");
                         printf(")");
-                        if (c->cooldown_restant > 0)
-                            printf(" (cooldown: %d tour%s restant%s)", c->cooldown_restant, c->cooldown_restant > 1 ? "s" : "", c->cooldown_restant > 1 ? "s" : "");
+                        printf(" (cooldown: %d/%d)", c->cooldown_restant, c->cooldown_max);
                         printf("\n    %s\n", c->description);
                     }
                     printf("> ");
