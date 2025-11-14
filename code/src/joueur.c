@@ -388,6 +388,93 @@ Arme *joueurGagneRandomArmeViaRarete(Plongeur *joueur, Arsenal *modalArsenal, Ra
     return modalArsenal->armes[id_arme];
 }
 
+int joueurChoixCompetence(Plongeur *joueur, ListeCompetence *modalListComp) {
+    if (!joueur || !modalListComp) {
+        fprintf(stderr, "Erreur: joueurChoixCompetence(): Invalid params\n");
+        return EXIT_FAILURE;
+    }
+
+    ListeCompetence *listCompJoueur = &joueur->liste_competences;
+
+    ListeCompetence *comp = getComplementaireCompList(listCompJoueur, modalListComp);
+    if (!comp) {
+        fprintf(stderr, "Erreur: joueurChoixCompetence(): getComplementaireCompList()\n");
+        return EXIT_FAILURE;
+    }
+
+    if (comp->longueur == 0) {
+        freeListeCompetenceComplementaire(comp);
+        printf("\n🎉 Vous avez déjà appris toutes les compétences disponibles !\n");
+        pressEnterToContinue();
+        return EXIT_SUCCESS;
+    }
+
+    size_t len = comp->longueur < 3 ? comp->longueur : 3;
+    long *list_id_rand = calloc(len, sizeof(long));
+    
+    // init des id aléatoires
+    for (size_t i = 0; i < len && len > 3; i++) {
+        long id_rand;
+        do {
+            id_rand = random_int(0, comp->longueur - 1);
+            // Vérifie que l'id n'est pas déjà dans la liste
+            int found = false;
+            for (size_t j = 0; j < i; j++) {
+                if (list_id_rand[j] == id_rand) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                list_id_rand[i] = id_rand;
+                break;
+            }
+        } while (1);
+    }
+
+    printf("Choisissez une compétence à apprendre parmi les suivantes :\n");
+    for (size_t i = 0; i < len; i++) {
+        long index = len > 3 ? list_id_rand[i] : (long) i;
+        Competence *c = &comp->competences[index];
+        printf("\n[%zu] %s (coût: ", i + 1, c->nom);
+        if (c->cout_oxygene > 0)
+            printf("%d Oxygène", c->cout_oxygene);
+        if (c->cout_pv > 0)
+            printf(" %d PV", c->cout_pv);
+        if (c->cout_oxygene == 0 && c->cout_pv == 0)
+            printf("Aucun");
+        printf(")");
+        printf(" (cooldown: %d/%d)", c->cooldown_restant, c->cooldown_max);
+        printf("\n    %s\n", c->description);
+    }
+
+    long choix;
+
+    while (1) {
+        printf("\nEntrez le numéro de la compétence que vous souhaitez apprendre :\n> ");
+        choix = lireEntier();
+        if (choix < 1 || (size_t) choix > comp->longueur) {
+            printf("Choix invalide. Veuillez réessayer.\n");
+            continue;
+        }
+        break;
+    }
+
+    long index = len > 3 ? list_id_rand[choix - 1] : choix - 1;
+    if (ajouterCompetence(modalListComp, listCompJoueur, comp->competences[index].id)) {
+        fprintf(stderr, "Erreur: joueurChoixCompetence(): ajouterCompetence()\n");
+        return EXIT_FAILURE;
+    }
+
+    printf("\n🎉 Vous apprenez la compétence [%s] !\n", comp->competences[index].nom);
+    pressEnterToContinue();
+
+    free(list_id_rand);
+    freeListeCompetenceComplementaire(comp);
+
+    return EXIT_SUCCESS;
+}
+
 
 void freeDiverContent(Plongeur *diver) {
     if (!diver) return;
