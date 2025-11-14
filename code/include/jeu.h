@@ -12,6 +12,7 @@
     #include "effets.h"
     #include "sauvegarde.h"
     #include "combat.h"
+    #include "competences.h"
 
     int runGame(Sauvegarde *actualSave, short isNewSave);
     Rarete tirerRareteSelonProfondeur(int tier);
