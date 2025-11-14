@@ -403,7 +403,7 @@ int joueurChoixCompetence(Plongeur *joueur, ListeCompetence *modalListComp) {
     }
 
     if (comp->longueur == 0) {
-        freeListeCompetence(comp);
+        freeListeCompetenceComplementaire(comp);
         printf("\n🎉 Vous avez déjà appris toutes les compétences disponibles !\n");
         pressEnterToContinue();
         return EXIT_SUCCESS;
