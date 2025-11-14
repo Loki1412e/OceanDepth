@@ -176,6 +176,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
     ListeObjet *modalConsumablesList = NULL;
     ListeObjet *modalOrnamentsList = NULL;
     Arsenal *modalArsenal = NULL;
+    ListeCompetence modalComp = {0};
 
     short res;
 
@@ -243,6 +244,18 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
         freeListeCompetence(&modalCreaturesSkills);
         free_tier(tierMap);
         fprintf(stderr, "runGame(): Erreur lors du chargement des armes.\n");
+        return EXIT_FAILURE;
+    }
+
+    modalComp = initSkillsList(&res, "config/plongeur/competences.conf");
+    if (res == EXIT_FAILURE) {
+        freeArsenal(modalArsenal);
+        freeListeObjets(modalOrnamentsList);
+        freeListeObjets(modalConsumablesList);
+        freeBestiary(modalBestiary);
+        freeListeCompetence(&modalCreaturesSkills);
+        free_tier(tierMap);
+        fprintf(stderr, "runGame(): Erreur lors du chargement des compétences.\n");
         return EXIT_FAILURE;
     }
 
@@ -598,6 +611,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                     actualSave->etat_combat = initRandomCreaturesFromDangerosityGroupLevel(modalBestiary, dangerosityLevel);
                     if (!actualSave->etat_combat) {
                         fprintf(stderr, "Erreur: runGame(): initRandomCreaturesFromDangerosityGroupLevel()\n");
+                        pressEnterToContinue();
                         break;
                     }
 
@@ -609,6 +623,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                 int res = combat(actualSave, player, isNewCombat);
                 if (res == EXIT_FAILURE) {
                     fprintf(stderr, "Erreur: runGame(): res = combat()\n");
+                    pressEnterToContinue();
                     break;
                 }
                 freeSauvegardeEtatCombat(actualSave); // On libère l'état de combat après le combat
@@ -695,6 +710,17 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                     break;
                 }
                 printf(">> 💎 Vous avez obtenu le bibelot [%s] : [%s] !\n", enumRareteToChar(loot->rarete), loot->nom);
+
+                pressEnterToContinue();
+
+                Competence *chosenCompetence = joueurChoixCompetence(player, &modalComp);
+                if (!chosenCompetence) {
+                    fprintf(stderr, "Erreur: runGame(): joueurChoixCompetence()\n");
+                    pressEnterToContinue();
+                    break;
+                }
+
+                printf("\n🎉 Vous apprenez la compétence [%s] !\n", chosenCompetence->nom);
 
                 pressEnterToContinue();
 
@@ -805,6 +831,8 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
     freeListeObjets(modalConsumablesList);
     freeListeObjets(modalOrnamentsList);
     freeArsenal(modalArsenal);
+
+    freeListeCompetence(&modalComp);
 
     return EXIT_SUCCESS;
 }

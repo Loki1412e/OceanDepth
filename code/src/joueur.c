@@ -388,6 +388,57 @@ Arme *joueurGagneRandomArmeViaRarete(Plongeur *joueur, Arsenal *modalArsenal, Ra
     return modalArsenal->armes[id_arme];
 }
 
+Competence *joueurChoixCompetence(Plongeur *joueur, ListeCompetence *modalListComp) {
+    if (!joueur || !modalListComp) {
+        fprintf(stderr, "Erreur: joueurChoixCompetence(): Invalid params\n");
+        return NULL;
+    }
+
+    ListeCompetence *listCompJoueur = &joueur->liste_competences;
+
+    ListeCompetence *comp = getComplementaireCompList(listCompJoueur, modalListComp);
+    if (!comp) {
+        fprintf(stderr, "Erreur: joueurChoixCompetence(): getComplementaireCompList()\n");
+        return NULL;
+    }
+
+    printf("Choisissez une compétence à apprendre parmi les suivantes :\n");
+    for (size_t i = 0; i < comp->longueur; i++) {
+        Competence *c = &comp->competences[i];
+        printf("\n[%zu] %s (coût: ", i + 1, c->nom);
+        if (c->cout_oxygene > 0)
+            printf("%d Oxygène", c->cout_oxygene);
+        if (c->cout_pv > 0)
+            printf(" %d PV", c->cout_pv);
+        if (c->cout_oxygene == 0 && c->cout_pv == 0)
+            printf("Aucun");
+        printf(")");
+        if (c->cooldown_restant > 0)
+            printf(" (cooldown: %d tour%s restant%s)", c->cooldown_restant, c->cooldown_restant > 1 ? "s" : "", c->cooldown_restant > 1 ? "s" : "");
+        printf("\n    %s\n", c->description);
+    }
+    printf("> ");
+
+    size_t choix;
+
+    while (1) {
+        printf("Entrez le numéro de la compétence que vous souhaitez apprendre :\n> ");
+        choix = lireEntier();
+        if (choix < 1 || choix > comp->longueur) {
+            printf("Choix invalide. Veuillez réessayer.\n");
+            continue;
+        }
+        break;
+    }
+
+    if (ajouterCompetence(modalListComp, listCompJoueur, comp->competences[choix - 1].id)) {
+        fprintf(stderr, "Erreur: joueurChoixCompetence(): ajouterCompetence()\n");
+        return NULL;
+    }
+
+    return &comp->competences[choix - 1];
+}
+
 
 void freeDiverContent(Plongeur *diver) {
     if (!diver) return;

@@ -24,7 +24,7 @@ EtatCombat *initRandomCreaturesFromDangerosityGroupLevel(Bestiaire *modalBestiar
     combat->creatures = calloc(group->longueur, sizeof(CreatureMarine*));
     if (!combat->creatures) {
         fprintf(stderr, "Erreur: initRandomCreaturesFromDangerosityGroupLevel(): Allocation mémoire échouée\n");
-        free(combat);
+        freeEtatCombat(combat);
         return NULL;
     }
 
@@ -32,7 +32,8 @@ EtatCombat *initRandomCreaturesFromDangerosityGroupLevel(Bestiaire *modalBestiar
         combat->creatures[i] = duplicateCreature(modalBestiary->creatures[group->id_creatures[i]]);
         if (!combat->creatures[i]) {
             fprintf(stderr, "Erreur: initRandomCreaturesFromDangerosityGroupLevel(): Allocation mémoire échouée\n");
-            free(combat);
+            combat->longueur_creatures = i; // Ajuster la longueur pour ne libérer que les créatures déjà allouées
+            freeEtatCombat(combat);
             return NULL;
         }
     }
