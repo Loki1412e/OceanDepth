@@ -556,7 +556,9 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
             case ZONE_BUBBLE: {
     			printf("\n🫧 Zone de bulles apaisantes !\n");
 
-				player->fatigue -= 3;
+                // Perte de 50% de la fatigue actuelle
+                int fatigue_perte = round(player->fatigue / 2.);
+				player->fatigue -= fatigue_perte;
     		    // On évite de dépasser le minimum
     			if (player->fatigue < 0)
         			player->fatigue = 0;
@@ -564,9 +566,16 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                 // Restauration oxygène au max
                 player->oxygene = player->oxygene_max;
 
-    			printf("✨ Vous respirez profondément dans les bulles. Votre Oxygene remonte à %d \n", player->oxygene_max);
-    			printf("💤 Fatigue -3 (%d/%d)\n",
-           			 player->fatigue, player->fatigue_max);
+                // Restauration 10% des PV max
+                int pv_gain = player->pv_max / 10;
+                player->pv += pv_gain;
+                if (player->pv > player->pv_max)
+                    player->pv = player->pv_max;
+
+    			printf("✨ Vous respirez profondément dans les bulles.\n");
+                printf("💧 Oxygène restauré au maximum (%d/%d)\n", player->oxygene, player->oxygene_max);
+                printf("❤️ PV +%d (%d/%d)\n", pv_gain, player->pv, player->pv_max);
+    			printf("💤 Fatigue -%d (%d/%d)\n", fatigue_perte, player->fatigue, player->fatigue_max);
 
     			// Nettoyage de la zone
     			target_zone->type = ZONE_PATH;
