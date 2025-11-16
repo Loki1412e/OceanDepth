@@ -56,6 +56,7 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
                     if (!actualSave->nom) {
                         printf("Sauvegarde innexistante.\n> ");
                         freeSauvegarde(actualSave);
+                        actualSave = NULL;
                         pressEnterToContinue();
                         break;
                     }
@@ -67,6 +68,10 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
             // Lancer le jeu
             pressEnterToContinue();
             res = runGame(actualSave, false);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: switchMenu(): res = runGame()\n");
+                pressEnterToContinue();
+            }
             break;
 
 
@@ -95,7 +100,10 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
                     free(strBuff);
                     strBuff = NULL;
                 }
-                else fprintf(stderr, "Erreur lors de la création de la sauvegarde.\n> ");
+                else {
+                    fprintf(stderr, "\n>> Erreur lors de la création de la sauvegarde.\n> ");
+                    pressEnterToContinue();
+                }
                 attemp++;
             }
             if (res != EXIT_SUCCESS) break;
@@ -103,8 +111,10 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
             // Load Default Competences Plongeur
             ListeCompetence modalDiverSkills = initSkillsList(&res, "config/plongeur/competences.conf");
             if (res == EXIT_FAILURE) {
-                fprintf(stderr, "Erreur lors du chargement des compétences.\n");
                 freeSauvegarde(actualSave);
+                actualSave = NULL;
+                fprintf(stderr, "switchMenu(): Erreur lors du chargement des compétences.\n");
+                pressEnterToContinue();
                 break;
             }
 
@@ -117,17 +127,19 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
                 if (strBuff) {
                     actualSave->diver = initModalDiver(strBuff, &modalDiverSkills);
                     if (!actualSave->diver)
-                        fprintf(stderr, "Erreur lors de la création du Plongeur.\n> ");
+                        fprintf(stderr, ">> Erreur lors de la création du Plongeur.\n> ");
                     free(strBuff);
                     strBuff = NULL;
                 }
-                else fprintf(stderr, "Erreur de lecture du nom\n> ");
+                else fprintf(stderr, ">> Erreur lors de la lecture du nom\n> ");
                 attemp++;
             }            
             if (!actualSave->diver) {
-                fprintf(stderr, "Erreur lors de la création du Plongeur.\n");
                 freeListeCompetence(&modalDiverSkills);
                 freeSauvegarde(actualSave);
+                actualSave = NULL;
+                fprintf(stderr, "\n>> Erreur lors de la création du Plongeur.\n");
+                pressEnterToContinue();
                 break;
             }
             freeListeCompetence(&modalDiverSkills);
@@ -137,6 +149,10 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
             // Lancer le jeu
             pressEnterToContinue();
             res = runGame(actualSave, true);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: switchMenu(): res = runGame()\n");
+                pressEnterToContinue();
+            }
             break;
             
             
@@ -166,6 +182,7 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
                     if (!actualSave->nom) {
                         printf("Sauvegarde innexistante.\n> ");
                         freeSauvegarde(actualSave);
+                        actualSave = NULL;
                         pressEnterToContinue();
                         break;
                     }
@@ -177,6 +194,10 @@ int switchMenu(size_t choice, int *runProgram, ListeSauvegardes *listSaves) {
             // Lancer le jeu
             pressEnterToContinue();
             res = runGame(actualSave, false);
+            if (res == EXIT_FAILURE) {
+                fprintf(stderr, "Erreur: switchMenu(): res = runGame()\n");
+                pressEnterToContinue();
+            }
             break;
 
 
@@ -242,6 +263,7 @@ int main() {
     /*===== Creation dossier sauvegarde (si necessaire) ====*/
     if (mkdir_p(SAVE_DIR) == EXIT_FAILURE) {
         fprintf(stderr, "Erreur lors de la création du dossier de sauvegarde.\n");
+        pressEnterToContinue();
         return EXIT_FAILURE;
     }
 
@@ -256,6 +278,7 @@ int main() {
         if (!listSaves) {
             runProgram = false;
             fprintf(stderr, "Erreur lors du chargement des sauvegardes.\n");
+            pressEnterToContinue();
             return EXIT_FAILURE;
         }
 
