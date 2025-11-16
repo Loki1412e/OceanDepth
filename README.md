@@ -3,8 +3,11 @@
 [![Build MultiArch64 C/C++ Project](https://github.com/Loki1412e/OceanDepth/actions/workflows/build.yml/badge.svg)](https://github.com/Loki1412e/OceanDepth/actions/workflows/build.yml)
 
 **🔗 Liens utiles :**
-- 📚 [Wiki du projet](https://github.com/Loki1412e/OceanDepth/wiki) (documentation complète)
 - 📂 [Repository GitHub](https://github.com/Loki1412e/OceanDepth)
+- 🎮 [Versions du Jeu](https://github.com/Loki1412e/OceanDepth/releases/)
+- 📚 [Wiki du projet](https://github.com/Loki1412e/OceanDepth/wiki) (documentation complète)
+
+---
 
 ## 📖 Description du Projet
 
