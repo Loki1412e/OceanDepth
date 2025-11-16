@@ -2,9 +2,14 @@
 
 [![Build MultiArch64 C/C++ Project](https://github.com/Loki1412e/OceanDepth/actions/workflows/build.yml/badge.svg)](https://github.com/Loki1412e/OceanDepth/actions/workflows/build.yml)
 
+**🔗 Liens utiles :**
+- 📚 [Wiki du projet](https://github.com/Loki1412e/OceanDepth/wiki) (documentation complète)
+- 📂 [Repository GitHub](https://github.com/Loki1412e/OceanDepth)
+- 📖 [Wiki local](./wiki/) (pour consultation hors ligne)
+
 ## 📖 Description du Projet
 
-Projet OceanDepth 2025 de l’ESGI pour les étudiants de 3ᵉ année (3ESGI IABD CL B ALT RO) — Groupe 2  
+Projet OceanDepth 2025 de l'ESGI pour les étudiants de 3ᵉ année (3ESGI IABD CL B ALT RO) — Groupe 2  
 Membres : FUGON Sofiane, HADDAD Thinina, JAIEL FERRO Milhane
 
 ## ⚠️ Setup ⚠️
@@ -55,7 +60,7 @@ Objectif : survivre, combattre des créatures marines et découvrir des trésors
 
 ### • [fonctionnalites.md](./documentation/fonctionnalites.md)
 
-## 📂 Structure / Rendu du projet
+## 📂 Structure du projet
 
 ```
 GROUPE-02/
@@ -166,7 +171,7 @@ GROUPE-02/
 │           zones.c
 │
 └───documentation/
-    │   fonctionnalites.md
+    │   fonctionnalites.md (pas forcement a jour, voir wiki pour une documentation à jour)
     │   setup_windows_msys2.md
     │
     ├───consignes/
