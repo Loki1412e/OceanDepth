@@ -18,6 +18,12 @@ Arsenal *chargerArmesDepuisFichier(char *filename) {
         return NULL;
     }
 
+    // Si aucune arme dans le fichier, retourner un arsenal vide
+    if (arsenal->longueur == 0) {
+        fclose(f);
+        return arsenal;
+    }
+
     arsenal->armes = calloc(arsenal->longueur, sizeof(Arme *));
     if (!arsenal->armes) {
         fprintf(stderr, "Erreur: chargerArmesDepuisFichier(): arsenal->armes = calloc()\n");

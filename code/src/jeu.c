@@ -13,6 +13,7 @@ Rarete tirerRareteSelonProfondeur(int tier) {
 void handleMerchantZone(Plongeur *player, TierMap *tierMap, PlayerProgress *playerProgress, ListeObjet *modalConsumablesList, ListeObjet *modalOrnamentsList, Arsenal *modalArsenal) {
     if (!player) {
         fprintf(stderr, "Erreur: handleMerchantZone(): player est NULL.\n");
+        pressEnterToContinue();
         return;
     }
 
@@ -87,6 +88,7 @@ void handleTreasureZone(Plongeur *player, TierMap *tierMap, PlayerProgress *play
         player->liste_consommables = calloc(1, sizeof(ListeObjet));
         if (!player->liste_consommables) {
             fprintf(stderr, "Erreur: handleTreasureZone(): impossible d’allouer liste_consommables.\n");
+            pressEnterToContinue();
             return;
         }
     }
@@ -94,6 +96,7 @@ void handleTreasureZone(Plongeur *player, TierMap *tierMap, PlayerProgress *play
         player->liste_bibelots = calloc(1, sizeof(ListeObjet));
         if (!player->liste_bibelots) {
             fprintf(stderr, "Erreur: handleTreasureZone(): impossible d’allouer liste_bibelots.\n");
+            pressEnterToContinue();
             return;
         }
     }
