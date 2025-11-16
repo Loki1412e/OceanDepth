@@ -11,8 +11,7 @@
 
 ## 📖 Description du Projet
 
-Projet OceanDepth 2025 de l'ESGI pour les étudiants de 3ᵉ année (3ESGI IABD CL B ALT RO) — Groupe 2  
-Membres : FUGON Sofiane, HADDAD Thinina, JAIEL FERRO Milhane
+Projet OceanDepth 2025 de l'ESGI pour les étudiants de 3ᵉ année (3ESGI IABD CL B ALT RO) — Groupe 2
 
 ## ⚠️ Setup ⚠️
 
