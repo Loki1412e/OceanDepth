@@ -13,6 +13,7 @@ Rarete tirerRareteSelonProfondeur(int tier) {
 void handleMerchantZone(Plongeur *player, TierMap *tierMap, PlayerProgress *playerProgress, ListeObjet *modalConsumablesList, ListeObjet *modalOrnamentsList, Arsenal *modalArsenal) {
     if (!player) {
         fprintf(stderr, "Erreur: handleMerchantZone(): player est NULL.\n");
+        pressEnterToContinue();
         return;
     }
 
@@ -42,7 +43,8 @@ void handleMerchantZone(Plongeur *player, TierMap *tierMap, PlayerProgress *play
             if (loot) {
                 printf(">> 🥐 Vous achetez [%s] (%s)\n", loot->nom, enumRareteToChar(loot->rarete));
             } else {
-                fprintf(stderr, "Erreur: handleMerchantZone(): joueurGagneConsommableViaRareteMax() a échoué\n");
+                fprintf(stderr, "Erreur: handleMerchantZone(): joueurGagneConsommableViaRareteMax()\n");
+                printf(">> L'achat a échoué.\n");
                 player->perles += cost; // On rembourse
             }
         }
@@ -53,7 +55,8 @@ void handleMerchantZone(Plongeur *player, TierMap *tierMap, PlayerProgress *play
             if (loot) {
                 printf(">> ⚔️ Vous achetez [%s] (%s)\n", loot->nom, enumRareteToChar(loot->rarete));
             } else {
-                fprintf(stderr, "Erreur: handleMerchantZone(): joueurGagneRandomArmeViaRarete() a échoué\n");
+                fprintf(stderr, "Erreur: handleMerchantZone(): joueurGagneRandomArmeViaRarete()\n");
+                printf(">> L'achat a échoué.\n");
                 player->perles += cost; // On rembourse
             }
         }
@@ -64,7 +67,8 @@ void handleMerchantZone(Plongeur *player, TierMap *tierMap, PlayerProgress *play
             if (loot) {
                 printf(">> 💎 Vous achetez [%s] (%s)\n", loot->nom, enumRareteToChar(loot->rarete));
             } else {
-                fprintf(stderr, "Erreur: handleMerchantZone(): joueurGagneBibelotViaRareteMax() a échoué\n");
+                fprintf(stderr, "Erreur: handleMerchantZone(): joueurGagneBibelotViaRareteMax()\n");
+                printf(">> L'achat a échoué.\n");
                 player->perles += cost; // On rembourse
             }
         }
@@ -87,6 +91,7 @@ void handleTreasureZone(Plongeur *player, TierMap *tierMap, PlayerProgress *play
         player->liste_consommables = calloc(1, sizeof(ListeObjet));
         if (!player->liste_consommables) {
             fprintf(stderr, "Erreur: handleTreasureZone(): impossible d’allouer liste_consommables.\n");
+            pressEnterToContinue();
             return;
         }
     }
@@ -94,6 +99,7 @@ void handleTreasureZone(Plongeur *player, TierMap *tierMap, PlayerProgress *play
         player->liste_bibelots = calloc(1, sizeof(ListeObjet));
         if (!player->liste_bibelots) {
             fprintf(stderr, "Erreur: handleTreasureZone(): impossible d’allouer liste_bibelots.\n");
+            pressEnterToContinue();
             return;
         }
     }
@@ -118,7 +124,8 @@ void handleTreasureZone(Plongeur *player, TierMap *tierMap, PlayerProgress *play
     else if (choix <= 50 + 38) {
         Objet *loot = joueurGagneConsommableViaRareteMax(player, modalConsumablesList, rarete_max);
         if (!loot) {
-            fprintf(stderr, "Erreur: handleTreasureZone(): joueurGagneConsommableViaRareteMax() a échoué\n");
+            fprintf(stderr, "Erreur: handleTreasureZone(): joueurGagneConsommableViaRareteMax()\n");
+            printf("\n>> Vous n'avez rien trouvé (Aucun consommable disponible).\n");
             pressEnterToContinue();
             return;
         }
@@ -129,7 +136,8 @@ void handleTreasureZone(Plongeur *player, TierMap *tierMap, PlayerProgress *play
     else if (choix <= 50 + 38 + 10) {
         Arme *loot = joueurGagneRandomArmeViaRarete(player, modalArsenal, rarete_max);
         if (!loot) {
-            fprintf(stderr, "Erreur: handleTreasureZone(): joueurGagneRandomArmeViaRarete() a échoué\n");
+            fprintf(stderr, "Erreur: handleTreasureZone(): joueurGagneRandomArmeViaRarete()\n");
+            printf("\n>> Vous n'avez rien trouvé (Aucune arme disponible).\n");
             pressEnterToContinue();
             return;
         }
@@ -140,7 +148,8 @@ void handleTreasureZone(Plongeur *player, TierMap *tierMap, PlayerProgress *play
     else if (choix <= 100) {
         Objet *loot = joueurGagneBibelotViaRareteMax(player, modalOrnamentsList, rarete_max);
         if (!loot) {
-            fprintf(stderr, "Erreur: handleTreasureZone(): joueurGagneBibelotViaRareteMax() a échoué\n");
+            fprintf(stderr, "Erreur: handleTreasureZone(): joueurGagneBibelotViaRareteMax()\n");
+            printf("\n>> Vous n'avez rien trouvé (Aucun bibelot disponible).\n");
             pressEnterToContinue();
             return;
         }
@@ -643,9 +652,10 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                 loot = joueurGagneConsommableViaRareteMax(player, modalConsumablesList, (Rarete) dangerosityLevel);
                 if (!loot) {
                     fprintf(stderr, "Erreur: runGame(): joueurGagneConsommableViaRareteMax()\n");
-                    break;
+                    printf("\n>> Aucun consommable disponible.\n");
+                } else {
+                    printf("\n>> 🥐 Vous avez obtenu le consommable [%s] : [%s] !\n", enumRareteToChar(loot->rarete), loot->nom);
                 }
-                printf("\n>> 🥐 Vous avez obtenu le consommable [%s] : [%s] !\n", enumRareteToChar(loot->rarete), loot->nom);
                 pressEnterToContinue();
 
                 // Nettoyage de la case
@@ -698,17 +708,19 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
                 loot = joueurGagneConsommableViaRareteMax(player, modalConsumablesList, (Rarete) dangerosityLevel);
                 if (!loot) {
                     fprintf(stderr, "Erreur: runGame(): joueurGagneConsommableViaRareteMax()\n");
-                    break;
+                    printf("\n>> Aucun consommable disponible.\n");
+                } else {
+                    printf("\n>> 🥐 Vous avez obtenu le consommable [%s] : [%s] !\n", enumRareteToChar(loot->rarete), loot->nom);
                 }
-                printf("\n>> 🥐 Vous avez obtenu le consommable [%s] : [%s] !\n", enumRareteToChar(loot->rarete), loot->nom);
 
                 // Attribution du loot (bibelot aléatoire de rareté max = dangerosité)
                 loot = joueurGagneBibelotViaRareteMax(player, modalOrnamentsList, (Rarete) dangerosityLevel);
                 if (!loot) {
                     fprintf(stderr, "Erreur: runGame(): joueurGagneBibelotViaRareteMax()\n");
-                    break;
+                    printf("\n>> Aucun bibelot disponible.\n");
+                } else {
+                    printf(">> 💎 Vous avez obtenu le bibelot [%s] : [%s] !\n", enumRareteToChar(loot->rarete), loot->nom);
                 }
-                printf(">> 💎 Vous avez obtenu le bibelot [%s] : [%s] !\n", enumRareteToChar(loot->rarete), loot->nom);
 
                 pressEnterToContinue();
 

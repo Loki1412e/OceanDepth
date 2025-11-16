@@ -348,6 +348,12 @@ ListeObjet *initModalListeObjet(char *path) {
     }
 
     modalObjectsList->longueur = count_all_unique;
+    
+    // Si aucun objet dans le fichier, retourner une liste vide
+    if (count_all_unique == 0) {
+        return modalObjectsList;
+    }
+    
     modalObjectsList->objets = calloc(count_all_unique, sizeof(Objet*));
     if (!modalObjectsList->objets) {
         fprintf(stderr, "Erreur: initModalListeObjet(): Allocation mémoire modalObjectsList->objets\n");
