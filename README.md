@@ -5,7 +5,6 @@
 **🔗 Liens utiles :**
 - 📚 [Wiki du projet](https://github.com/Loki1412e/OceanDepth/wiki) (documentation complète)
 - 📂 [Repository GitHub](https://github.com/Loki1412e/OceanDepth)
-- 📖 [Wiki local](./wiki/) (pour consultation hors ligne)
 
 ## 📖 Description du Projet
 
