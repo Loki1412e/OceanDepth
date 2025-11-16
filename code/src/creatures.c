@@ -246,6 +246,11 @@ Bestiaire *initModalBestiary(ListeCompetence *modalCreaturesSkills) {
     }
 
     modalBestiary->longueur_creatures = count_all_unique_model_creatures;
+    if (modalBestiary->longueur_creatures == 0) {
+        fprintf(stderr, "Erreur: initModalBestiary(): Aucune créature dans le model\n");
+        freeBestiary(modalBestiary);
+        return NULL;
+    }
     modalBestiary->creatures = calloc(count_all_unique_model_creatures, sizeof(CreatureMarine*));
     if (!modalBestiary->creatures) {
         fprintf(stderr, "Erreur: initModalBestiary(): Allocation mémoire modalBestiary->creatures\n");
@@ -265,6 +270,11 @@ Bestiaire *initModalBestiary(ListeCompetence *modalCreaturesSkills) {
     }
 
     modalBestiary->longueur_groupes = count_all_unique_model_groups;
+    if (modalBestiary->longueur_groupes == 0) {
+        fprintf(stderr, "Erreur: initModalBestiary(): Aucune groupe dans le model\n");
+        freeBestiary(modalBestiary);
+        return NULL;
+    }
     modalBestiary->groupes = calloc(count_all_unique_model_groups, sizeof(GroupeCreatureMarine*));
     if (!modalBestiary->groupes) {
         fprintf(stderr, "Erreur: initModalBestiary(): Allocation mémoire modalBestiary->groupes\n");
@@ -287,6 +297,7 @@ Bestiaire *initModalBestiary(ListeCompetence *modalCreaturesSkills) {
     // Init des creatures
     if (setBestiaryCreaturesFromConf(modalBestiary, modalCreaturesSkills, "config/bestiaire/creatures.conf") == EXIT_FAILURE) {
         fprintf(stderr, "Erreur: initModalBestiary(): setBestiaryCreaturesFromConf()\n");
+        freeBestiary(modalBestiary);
         return NULL;
     }
     // modalBestiary->creatures[i]->id = 0; -> deja à 0 avec calloc
@@ -297,6 +308,7 @@ Bestiaire *initModalBestiary(ListeCompetence *modalCreaturesSkills) {
     // Init des groupes
     if (setBestiaryGroupsFromConf(modalBestiary, "config/bestiaire/groupes.conf") == EXIT_FAILURE) {
         fprintf(stderr, "Erreur: initModalBestiary(): setBestiaryGroupsFromConf()\n");
+        freeBestiary(modalBestiary);
         return NULL;
     }
 
