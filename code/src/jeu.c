@@ -90,7 +90,7 @@ void handleTreasureZone(Plongeur *player, TierMap *tierMap, PlayerProgress *play
     if (!player->liste_consommables) {
         player->liste_consommables = calloc(1, sizeof(ListeObjet));
         if (!player->liste_consommables) {
-            fprintf(stderr, "Erreur: handleTreasureZone(): impossible d’allouer liste_consommables.\n");
+            fprintf(stderr, "Erreur: handleTreasureZone(): impossible d'allouer liste_consommables.\n");
             pressEnterToContinue();
             return;
         }
@@ -98,7 +98,7 @@ void handleTreasureZone(Plongeur *player, TierMap *tierMap, PlayerProgress *play
     if (!player->liste_bibelots) {
         player->liste_bibelots = calloc(1, sizeof(ListeObjet));
         if (!player->liste_bibelots) {
-            fprintf(stderr, "Erreur: handleTreasureZone(): impossible d’allouer liste_bibelots.\n");
+            fprintf(stderr, "Erreur: handleTreasureZone(): impossible d'allouer liste_bibelots.\n");
             pressEnterToContinue();
             return;
         }
@@ -326,13 +326,22 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
 
         // Utiliser compétence
         else if (c=='C') {
-            printf("\nQuelle compétence utiliser ? (0 pour annuler)\n");
             // On compte le nombre de compétences utilisables
             size_t count_comp = 0;
             for (size_t i = 0; i < player->liste_competences.longueur; i++) {
                 if (player->liste_competences.competences[i].ciblage == SOI_MEME)
                     count_comp++;
             }
+            
+            // Si aucune compétence utilisable, on informe et on continue
+            if (count_comp == 0) {
+                printf(">> Vous ne possédez aucune compétence ciblant 'Soi-même'.\n");
+                pressEnterToContinue();
+                clearConsole();
+                continue;
+            }
+            
+            printf("\nQuelle compétence utiliser ? (0 pour annuler)\n");
             // On affiche les compétences utilisables
             long valid_competences[count_comp];
             for (size_t i = 0, j = 0; i < player->liste_competences.longueur; i++) {
@@ -358,7 +367,7 @@ int runGame(Sauvegarde *actualSave, short isNewSave) {
             printf("> ");
 
             size_t choix_comp = lireEntier();
-            if (choix_comp == 0 || choix_comp > player->liste_competences.longueur) {
+            if (choix_comp == 0 || choix_comp > count_comp) {
                     if (choix_comp == 0)
                         printf("\n>> Action annulée.\n");
                     else
