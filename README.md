@@ -33,8 +33,6 @@ sudo apt update -y && sudo apt upgrade -y
 sudo apt install build-essential valgrind -y
 ```
 
-### Pour finir il faut télécharger les assets dans le dossier ./code/assets/  ([télécharger via GoogleDrive](https://drive.google.com/drive/folders/1PaWy5Z0gs6dmZUdHXEOvd_NeacdMIMX7?usp=drive_link))
-
 ## 🚀 Lancer le projet
 
 - Depuis le dossier racine du projet
@@ -57,21 +55,26 @@ clear && make -C ./code/ valgrind
 OceanDepth est un jeu d’aventure textuel en C où l’on incarne un plongeur explorant les abysses.  
 Objectif : survivre, combattre des créatures marines et découvrir des trésors enfouis.
 
-## 💾 Liste des fonctionnalités :
-
-### • [fonctionnalites.md](./documentation/fonctionnalites.md)
-
 ## 📂 Structure du projet
 
 ```
-GROUPE-02/
+OceanDepth/
 │   .gitignore
 │   identifiants.txt
 │   PROGRESSION.md
 │   README.md
 │
+├───.github/
+│   └───workflows
+│           build.yml
+│
 ├───code/
 │   │   Makefile
+│   │
+│   ├───icon/
+│   │       icon.o
+│   │       icon.rc
+│   │       icon64x64.ico
 │   │
 │   ├───include/
 │   │       actions.h
@@ -95,84 +98,57 @@ GROUPE-02/
 │   │       zones.h
 │   │
 │   ├───output/
-│   │   │   oceandepth.exe
 │   │   │
-│   │   ├───assets/
-│   │   │   │   README.md
-│   │   │   │
-│   │   │   ├───fonts/
-│   │   │   │   └───Lato/
-│   │   │   │           Lato-Black.ttf
-│   │   │   │           Lato-BlackItalic.ttf
-│   │   │   │           Lato-Bold.ttf
-│   │   │   │           Lato-BoldItalic.ttf
-│   │   │   │           Lato-Italic.ttf
-│   │   │   │           Lato-Light.ttf
-│   │   │   │           Lato-LightItalic.ttf
-│   │   │   │           Lato-Regular.ttf
-│   │   │   │           Lato-Thin.ttf
-│   │   │   │           Lato-ThinItalic.ttf
-│   │   │   │           OFL.txt
-│   │   │   │
-│   │   │   └───logo/
-│   │   │           icon64x64.ico
-│   │   │           icon64x64.png
-│   │   │
-│   │   ├───config/
-│   │   │   ├───bestiaire
-│   │   │   │       competences.conf
-│   │   │   │       creatures.conf
-│   │   │   │       groupes.conf
-│   │   │   │
-│   │   │   ├───docs/
-│   │   │   │       actions.md
-│   │   │   │       competences.md
-│   │   │   │       effets.md
-│   │   │   │       liste_effets.md
-│   │   │   │       rarete.md
-│   │   │   │
-│   │   │   ├───objets/
-│   │   │   │       armes.conf
-│   │   │   │       bibelots.conf
-│   │   │   │       consommables.conf
-│   │   │   │
-│   │   │   └───plongeur/
-│   │   │           competences.conf
-│   │   │           stats.conf
-│   │   │
-│   │   └───save/
-│   │           dq
-│   │           ouiouibaguette
-│   │           qdfsf
-│   │           qsdv
+│   │   └───config/
+│   │       ├───bestiaire/
+│   │       │       competences.conf
+│   │       │       creatures.conf
+│   │       │       groupes.conf
+│   │       │
+│   │       ├───docs/
+│   │       │       actions.md
+│   │       │       competences.md
+│   │       │       effets.md
+│   │       │       liste_effets.md
+│   │       │       rarete.md
+│   │       │
+│   │       ├───objets/
+│   │       │       armes.conf
+│   │       │       bibelots.conf
+│   │       │       consommables.conf
+│   │       │
+│   │       └───plongeur/
+│   │               competences.conf
+│   │               stats.conf
 │   │
-│   ├───rc/
-│   │       icon.o
-│   │       icon.rc
+│   ├───src/
+│   │       actions.c
+│   │       armes.c
+│   │       bibelots.c
+│   │       combat.c
+│   │       competences.c
+│   │       conf.c
+│   │       creatures.c
+│   │       display.c
+│   │       effets.c
+│   │       inventaire.c
+│   │       jeu.c
+│   │       joueur.c
+│   │       main.c
+│   │       objets.c
+│   │       random.c
+│   │       repertoire.c
+│   │       sauvegarde.c
+│   │       utils.c
+│   │       zones.c
 │   │
-│   └───src/
-│           actions.c
-│           armes.c
-│           bibelots.c
-│           combat.c
-│           competences.c
-│           conf.c
-│           creatures.c
-│           display.c
-│           effets.c
-│           inventaire.c
-│           jeu.c
-│           joueur.c
-│           main.c
-│           objets.c
-│           random.c
-│           repertoire.c
-│           sauvegarde.c
-│           utils.c
-│           zones.c
+│   └───test/
+│           Makefile
+│           test_distribution.c
+│           test_rarete.c
 │
 └───documentation/
-    │   fonctionnalites.md (pas forcement a jour, voir wiki pour une documentation à jour)
+    │   fonctionnalites.md
     │   setup_windows_msys2.md
     │
     ├───consignes/
@@ -181,6 +157,18 @@ GROUPE-02/
     │       SyllabusDuProjet.pdf
     │
     └───src/
+        ├───gameplay/
+        │       armes.png
+        │       bibelots.png
+        │       combat.png
+        │       comp_combat.png
+        │       comp_explo.png
+        │       consommables.png
+        │       exploration.png
+        │       menu.png
+        │       menu_liste.png
+        │       menu_newgame.png
+        │
         └───setup/
                 setup_1.png
                 setup_2.png
