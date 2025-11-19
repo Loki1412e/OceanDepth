@@ -55,6 +55,15 @@ clear && make -C ./code/ valgrind
 OceanDepth est un jeu d’aventure textuel en C où l’on incarne un plongeur explorant les abysses.  
 Objectif : survivre, combattre des créatures marines et découvrir des trésors enfouis.
 
+## ⚙️ Modding & Configuration
+
+OceanDepth est conçu pour être facilement modifiable. Il suffit d'ajuster l'équilibrage, créer de nouveaux objets ou monstres sans toucher au code C.
+
+*Dans les sauvegardes (binaire), les objets (stats, compétences, consommables, bibelots, armes, creatures) sont stockés en dur. Ainsi il est toujours possible de rajouter de nouveaux objets mais pas de modifier ceux déjà contenu dans l'inventaire / dans la sauvegarde.*
+
+* 📂 **Configuration** : Tous les fichiers `.conf` sont dans `code/output/config/`.
+* 📖 **Documentation** : Consultez le [Wiki du projet](https://github.com/ptitmorceaux/OceanDepth/wiki) pour apprendre la syntaxe des Actions et des Effets 
+
 ## 📂 Structure du projet
 
 ```
