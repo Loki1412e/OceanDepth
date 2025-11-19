@@ -1,6 +1,6 @@
 # Progression OceanDepths
 
-Ce fichier documente l'avancement du projet, les difficultés rencontrées et leurs solutions techniques, ainsi que des captures d'écran du gameplay. À lire en complément de la documentation technique du [Wiki](https://github.com/Loki1412e/OceanDepth/wiki/).
+Ce fichier documente l'avancement du projet, les difficultés rencontrées et leurs solutions techniques, ainsi que des captures d'écran du gameplay. À lire en complément de la documentation technique du [Wiki](https://github.com/ptitmorceaux/OceanDepth/wiki/).
 
 ## Étapes réalisées
 
@@ -80,7 +80,7 @@ Ce fichier documente l'avancement du projet, les difficultés rencontrées et le
 
 <img src="./documentation/src/gameplay/comp_combat.png" alt="Compétences - Combat" width="500">
 
-- **Lors de l'exploration. Seul les coméptences de type ciblage `SOI_MEME` peuvent être effectuées (mais ne coute pas d'actions dcp), *[voir wiki](https://github.com/Loki1412e/OceanDepth/wiki/05-Comp%C3%A9tences#Ciblage)***
+- **Lors de l'exploration. Seul les coméptences de type ciblage `SOI_MEME` peuvent être effectuées (mais ne coute pas d'actions dcp), *[voir wiki](https://github.com/ptitmorceaux/OceanDepth/wiki/05-Comp%C3%A9tences#Ciblage)***
 
 <img src="./documentation/src/gameplay/comp_explo.png" alt="Compétences - Exploration" width="500">
 
@@ -144,7 +144,7 @@ Ce fichier documente l'avancement du projet, les difficultés rencontrées et le
 
 ---
 
-### 5. Autres défis techniques *([voir wiki](https://github.com/Loki1412e/OceanDepth/wiki))*
+### 5. Autres défis techniques *([voir wiki](https://github.com/ptitmorceaux/OceanDepth/wiki))*
 
 - **Génération procédurale** : Garantir un chemin accessible dans chaque palier tout en gardant de l'aléatoire
 - **Système d'effets** : Gérer les interactions complexes entre différents effets de statut
